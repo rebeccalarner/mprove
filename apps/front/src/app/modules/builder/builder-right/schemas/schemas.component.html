@@ -421,6 +421,7 @@
                     }),
                     'hover:text-s1':
                       node.data.cachedColumn?.status !== 'completed' &&
+                      node.data.cachedColumn?.status !== 'error' &&
                       !(
                         node.data.cacheUniqueValues === true &&
                         !node.data.cachedColumn
