@@ -163,6 +163,10 @@ export class EditorSandboxService {
       projectId: session.projectId
     });
 
+    if (!project.e2bApiKey) {
+      return;
+    }
+
     await this.pauseSandbox({
       sandboxType: session.sandboxType as SandboxTypeEnum,
       sandboxId: session.sandboxId,
@@ -210,6 +214,10 @@ export class EditorSandboxService {
         let project = await this.projectsService.getProjectCheckExists({
           projectId: projectId
         });
+
+        if (!project.e2bApiKey) {
+          return;
+        }
 
         let editorSessions = sessions.filter(s => s.projectId === projectId);
 
