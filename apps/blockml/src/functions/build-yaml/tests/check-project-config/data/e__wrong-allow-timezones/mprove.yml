@@ -1,4 +1,4 @@
 mprove_dir: ./
 allow_timezones: unk
-default_timezone: UTC
+# default_timezone: UTC
 week_start: Sunday
