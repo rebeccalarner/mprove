@@ -51,7 +51,7 @@ test('1', async () => {
 --report-id ${reportId} \
 --row-id ${rowId} \
 --detail days \
---timezone Asia/Yekaterinburg \
+--timezone UTC \
 --get-sql \
 --get-data \
 --json`;
