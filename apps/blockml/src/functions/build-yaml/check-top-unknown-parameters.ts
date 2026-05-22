@@ -207,7 +207,7 @@ export function checkTopUnknownParameters(
                 ParameterEnum.MproveDir.toString(),
                 ParameterEnum.WeekStart.toString(),
                 ParameterEnum.DefaultTimezone.toString(),
-                ParameterEnum.AllowTimezones.toString(),
+                // ParameterEnum.AllowTimezones.toString(),
                 ParameterEnum.FormatNumber.toString(),
                 ParameterEnum.CurrencyPrefix.toString(),
                 ParameterEnum.CurrencySuffix.toString(),
