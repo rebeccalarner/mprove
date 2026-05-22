@@ -1,12 +1,13 @@
-import { ConfigService } from '@nestjs/config';
-import { BlockmlConfig } from '#blockml/config/blockml-config';
-import { BmError } from '#blockml/models/bm-error';
-import { CallerEnum } from '#common/enums/special/caller.enum';
+import type { ConfigService } from '@nestjs/config';
+import type { BlockmlConfig } from '#blockml/config/blockml-config';
+import type { BmError } from '#blockml/models/bm-error';
+import type { CallerEnum } from '#common/enums/special/caller.enum';
 import type { ProjectConnection } from '#common/zod/backend/project-connection';
 import type { BmlFile } from '#common/zod/blockml/bml-file';
 import type { FileMod } from '#common/zod/blockml/internal/file-mod';
-import { MalloyConnection } from '#node-common/functions/make-malloy-connections';
+import type { MalloyConnection } from '#node-common/functions/make-malloy-connections';
 import { buildMods } from './build-mods';
+import { checkBuildMetricsFieldGroups } from './check-build-metrics-field-groups';
 
 export async function buildModStart(
   item: {
@@ -33,6 +34,16 @@ export async function buildModStart(
       projectId: item.projectId,
       structId: item.structId,
       errors: item.errors,
+      caller: item.caller
+    },
+    cs
+  );
+
+  mods = checkBuildMetricsFieldGroups(
+    {
+      mods: mods,
+      errors: item.errors,
+      structId: item.structId,
       caller: item.caller
     },
     cs

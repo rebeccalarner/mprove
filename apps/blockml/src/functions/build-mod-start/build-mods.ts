@@ -7,8 +7,8 @@ import {
   modelDefToModelInfo
 } from '@malloydata/malloy';
 import {
-  ModelInfo as MalloyModelInfo,
-  ModelEntryValueWithSource
+  type ModelInfo as MalloyModelInfo,
+  type ModelEntryValueWithSource
 } from '@malloydata/malloy-interfaces';
 import { ConfigService } from '@nestjs/config';
 import fse from 'fs-extra';

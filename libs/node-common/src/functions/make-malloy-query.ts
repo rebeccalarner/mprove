@@ -463,17 +463,6 @@ export async function makeMalloyQuery(item: {
 
   let newMalloyQueryStable = astQuery.toMalloy();
 
-  let timezone =
-    queryOperations.length > 0 &&
-    queryOperations[0].type === QueryOperationTypeEnum.Get
-      ? queryOperations[0].timezone
-      : mconfig.timezone;
-
-  let newMalloyQueryExtra =
-    newMalloyQueryStable.slice(0, -1) +
-    `  timezone: '${timezone}'
-}`;
-
   let runtime = new MalloyRuntime({
     urlReader: {
       readURL: async (_url: URL) => {
@@ -492,6 +481,19 @@ export async function makeMalloyQuery(item: {
   let mm: ModelMaterializer = runtime._loadModelFromModelDef(
     model.malloyModelDef
   );
+
+  let timezone =
+    queryOperations.length > 0 &&
+    queryOperations[0].type === QueryOperationTypeEnum.Get
+      ? queryOperations[0].timezone
+      : mconfig.timezone;
+
+  let newMalloyQueryExtra =
+    timezone === 'UTC'
+      ? newMalloyQueryStable
+      : newMalloyQueryStable.slice(0, -1) +
+        `  timezone: '${timezone}'
+}`;
 
   let qm: QueryMaterializer = mm.loadQuery(newMalloyQueryExtra); // 0 ms
 

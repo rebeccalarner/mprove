@@ -8,6 +8,7 @@ source: c1_orders_table is c1_postgres.table('ecommerce.orders') extend {
   rename:
     _status is status
     _created_at is created_at
+    _created_at_ts is created_at_ts
     _user_id is user_id
 }
 
@@ -30,7 +31,7 @@ source: c1_orders_tx is c1_orders_table extend {
 
   #(mprove) build_metrics field_group="Created at"
   dimension: 
-    created_at_ts is sql_timestamp(""" TIMESTAMP 'epoch' + ${created_at_epoch} * INTERVAL '1 second' """)
+    created_at_ts is _created_at_ts
     created_at_day is created_at_ts.day
     created_at_week is created_at_ts.week
     created_at_month is created_at_ts.month

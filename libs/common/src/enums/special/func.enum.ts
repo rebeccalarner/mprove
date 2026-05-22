@@ -43,6 +43,7 @@ export enum FuncEnum {
 
   BuildMalloyModel = 'build-mod-start/build-malloy-model',
   BuildMods = 'build-mod-start/build-mods',
+  CheckBuildMetricsFieldGroups = 'build-mod-start/check-build-metrics-field-groups',
 
   CheckReport = 'build-report/check-report',
   CheckReportAccess = 'build-report/check-report-access',

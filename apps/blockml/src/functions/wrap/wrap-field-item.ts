@@ -39,7 +39,7 @@ export function wrapFieldItem(item: {
         ? FieldResultEnum.Number
         : typeKind === 'boolean_type'
           ? FieldResultEnum.Boolean
-          : typeKind === 'timestamp_type'
+          : typeKind === 'timestamp_type' || typeKind === 'timestamptz_type'
             ? FieldResultEnum.Ts
             : typeKind === 'date_type'
               ? FieldResultEnum.Date

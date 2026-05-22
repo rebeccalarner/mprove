@@ -401,15 +401,15 @@ FROM main;`;
               row.mconfig.select.length > 0
           )
           .forEach((row: Row) => {
-            let timeFieldId =
-              row.mconfig?.modelType === ModelTypeEnum.Malloy
-                ? row.mconfig?.select[0].split('.').join(DOUBLE_UNDERSCORE)
-                : row.mconfig?.select[0].split('.').join('_').toLowerCase();
+            let timeFieldId = this.getReportDataFieldSqlName({
+              row: row,
+              selectIndex: 0
+            });
 
-            let fieldId =
-              row.mconfig?.modelType === ModelTypeEnum.Malloy
-                ? row.mconfig?.select[1].split('.').join(DOUBLE_UNDERSCORE)
-                : row.mconfig?.select[1].split('.').join('_').toLowerCase();
+            let fieldId = this.getReportDataFieldSqlName({
+              row: row,
+              selectIndex: 1
+            });
 
             let dataRow;
 
@@ -465,7 +465,7 @@ FROM main;`;
 
               let normalizeTimeValue = (v: string) => {
                 const match = v?.match(
-                  /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(\.\d{3})?(?: UTC|Z)?$/
+                  /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(\.\d{3})?(?: UTC|Z|[+-]\d{2}(?::?\d{2})?)?$/
                 );
                 return match
                   ? `${match[1]}T${match[2]}${match[3] || '.000'}`
@@ -507,15 +507,15 @@ FROM main;`;
             row.rowType === RowTypeEnum.Metric && row.mconfig.select.length > 0
         )
         .forEach((row: Row) => {
-          let timeFieldId =
-            row.mconfig?.modelType === ModelTypeEnum.Malloy
-              ? row.mconfig?.select[0].split('.').join(DOUBLE_UNDERSCORE)
-              : row.mconfig?.select[0].split('.').join('_').toLowerCase();
+          let timeFieldId = this.getReportDataFieldSqlName({
+            row: row,
+            selectIndex: 0
+          });
 
-          let fieldId =
-            row.mconfig?.modelType === ModelTypeEnum.Malloy
-              ? row.mconfig?.select[1].split('.').join(DOUBLE_UNDERSCORE)
-              : row.mconfig?.select[1].split('.').join('_').toLowerCase();
+          let fieldId = this.getReportDataFieldSqlName({
+            row: row,
+            selectIndex: 1
+          });
 
           (row.query?.data as any[])?.forEach(x => {
             let dataRow =
@@ -587,5 +587,27 @@ FROM main;`;
     }
 
     return reportDataColumns;
+  }
+
+  private getReportDataFieldSqlName(item: {
+    row: Row;
+    selectIndex: number;
+  }): string {
+    let { row, selectIndex } = item;
+
+    let fieldId = row.mconfig?.select[selectIndex];
+
+    let mconfigField = row.mconfig?.fields.find(field => field.id === fieldId);
+
+    let fallbackSqlName =
+      row.mconfig?.modelType === ModelTypeEnum.Malloy
+        ? fieldId?.split('.').join(DOUBLE_UNDERSCORE)
+        : fieldId?.split('.').join('_');
+
+    let sqlName = isDefined(mconfigField?.sqlName)
+      ? mconfigField.sqlName
+      : fallbackSqlName;
+
+    return sqlName?.toLowerCase();
   }
 }
