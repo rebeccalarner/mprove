@@ -25,7 +25,7 @@ import type { ModelField } from '#common/zod/blockml/model-field';
 import type { ModelNode } from '#common/zod/blockml/model-node';
 import { getFieldItems } from '../extra/get-field-items';
 import { wrapField } from './wrap-field';
-import { FieldItemX, wrapFieldItem } from './wrap-field-item';
+import { FieldItemX, wrapMalloyFieldItem } from './wrap-malloy-field-item';
 // import fse from 'fs-extra';
 
 export function wrapModels(item: {
@@ -113,10 +113,13 @@ export function wrapModels(item: {
           // TODO: check "field.location?" for field type array and record
           let filePathStartIndex = field.location?.url.indexOf(`${projectId}/`);
 
-          let fieldItemX = Object.assign({}, fieldItem, <FieldItemX>{
+          let fieldItemX: FieldItemX = {
+            path: fieldItem.path,
+            field: fieldItem.field,
             filePath: field.location?.url.slice(filePathStartIndex),
-            lineNum: field.location?.range.start.line + 1
-          });
+            lineNum: field.location?.range.start.line + 1,
+            sourceField: field
+          };
 
           fieldItemXs.push(fieldItemX);
         });
@@ -165,7 +168,7 @@ export function wrapModels(item: {
           });
 
           nodeFieldItems.forEach(fieldItemX => {
-            let apiField: ModelField = wrapFieldItem({
+            let apiField: ModelField = wrapMalloyFieldItem({
               fieldItem: fieldItemX,
               alias: topId,
               filePath: x.filePath,

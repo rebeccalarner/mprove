@@ -10,6 +10,7 @@ export let zModelField = z
     id: z.string(),
     malloyFieldName: z.string().nullish(),
     malloyFieldPath: z.array(z.string()).nullish(),
+    malloyBaseFieldId: z.string().nullish(),
     malloyTags: z.array(zKeyValuePair).nullish(),
     mproveTags: z.array(zKeyValuePair).nullish(),
     hidden: z.boolean(),

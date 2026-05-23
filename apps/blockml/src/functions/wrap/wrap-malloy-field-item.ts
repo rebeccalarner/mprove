@@ -1,4 +1,4 @@
-import { AtomicType } from '@malloydata/malloy-interfaces';
+import type { AtomicType } from '@malloydata/malloy-interfaces';
 import {
   DOUBLE_UNDERSCORE,
   MPROVE_TAG_FIELD_GROUP,
@@ -14,12 +14,30 @@ import type { ModelField } from '#common/zod/blockml/model-field';
 import type { ModelNode } from '#common/zod/blockml/model-node';
 import { FieldItem } from '../extra/get-field-items';
 
+type MalloySourceExpression = {
+  node: string;
+  units?: string;
+  e?: {
+    node: string;
+    path?: string[];
+  };
+};
+
+type MalloySourceField = {
+  e?: MalloySourceExpression;
+};
+
+type FieldItemFieldWithAtomicType = FieldItem['field'] & {
+  type: AtomicType & { timeframe?: string };
+};
+
 export interface FieldItemX extends FieldItem {
   filePath: string;
   lineNum: number;
+  sourceField: unknown;
 }
 
-export function wrapFieldItem(item: {
+export function wrapMalloyFieldItem(item: {
   topNode: ModelNode;
   fieldItem: FieldItemX;
   alias: string;
@@ -30,7 +48,11 @@ export function wrapFieldItem(item: {
 
   let fieldId = [...fieldItem.path, fieldItem.field.name].join('.');
 
-  let typeKind = ((fieldItem.field as any).type as AtomicType).kind;
+  let field = fieldItem.field as FieldItemFieldWithAtomicType;
+
+  let fieldType = field.type;
+
+  let typeKind = fieldType.kind;
 
   let result =
     typeKind === 'string_type'
@@ -143,10 +165,26 @@ export function wrapFieldItem(item: {
     tag => tag.key === ParameterEnum.BuildMetrics
   );
 
+  let sourceField = fieldItem.sourceField as MalloySourceField;
+
+  let sourceExpression = sourceField.e;
+
+  let sourceExpressionFieldPath =
+    sourceExpression?.node === 'trunc' &&
+    sourceExpression?.units === fieldType.timeframe &&
+    sourceExpression?.e?.node === 'field'
+      ? sourceExpression.e.path
+      : undefined;
+
+  let malloyBaseFieldId = isDefined(sourceExpressionFieldPath)
+    ? [...fieldItem.path, ...sourceExpressionFieldPath].join('.')
+    : undefined;
+
   let modelField: ModelField = {
     id: fieldId,
     malloyFieldName: fieldItem.field.name,
     malloyFieldPath: fieldItem.path,
+    malloyBaseFieldId: malloyBaseFieldId,
     malloyTags: malloyTags,
     mproveTags: mproveTags,
     hidden: false,
@@ -159,7 +197,7 @@ export function wrapFieldItem(item: {
     currencyPrefix: currencyPrefixTag?.value,
     currencySuffix: currencySuffixTag?.value,
     buildMetrics: isDefined(buildMetricsTag),
-    timeframe: (fieldItem?.field as any)?.type?.timeframe,
+    timeframe: fieldType.timeframe,
     sqlName: fieldSqlName,
     topId: topNode.id,
     topLabel: topNode.label,

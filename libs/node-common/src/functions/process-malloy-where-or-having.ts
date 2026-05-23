@@ -9,6 +9,7 @@ import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { FractionOperatorEnum } from '#common/enums/fraction/fraction-operator.enum';
 import { FractionTypeEnum } from '#common/enums/fraction/fraction-type.enum';
+import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import type { Filter } from '#common/zod/blockml/filter';
 import type { Model } from '#common/zod/blockml/model';
@@ -100,7 +101,38 @@ export function processMalloyWhereOrHaving(item: {
         ].indexOf(fraction.type) < 0
     );
 
-    let filterModelField = model.fields.find(x => x.id === filter.fieldId);
+    // console.log('modelField');
+    // console.log(modelField);
+
+    let filterModelField = modelField;
+
+    if (
+      modelField.result === FieldResultEnum.Ts &&
+      isDefined(modelField.timeframe) &&
+      isDefined(modelField.malloyBaseFieldId)
+    ) {
+      let baseModelField = model.fields.find(
+        x =>
+          x.id === modelField.malloyBaseFieldId &&
+          x.result === FieldResultEnum.Ts
+      );
+
+      if (isDefined(baseModelField)) {
+        filterModelField = baseModelField;
+      }
+    }
+
+    // console.log('malloy filter field', {
+    //   inputFieldId: modelField.id,
+    //   inputMalloyFieldName: modelField.malloyFieldName,
+    //   inputMalloyFieldPath: modelField.malloyFieldPath,
+    //   inputTimeframe: modelField.timeframe,
+    //   inputMalloyBaseFieldId: modelField.malloyBaseFieldId,
+    //   outputFieldId: filterModelField.id,
+    //   outputMalloyFieldName: filterModelField.malloyFieldName,
+    //   outputMalloyFieldPath: filterModelField.malloyFieldPath,
+    //   outputTimeframe: filterModelField.timeframe
+    // });
 
     let filterFieldName = filterModelField.malloyFieldName;
     let filterFieldPath: string[] = filterModelField.malloyFieldPath;

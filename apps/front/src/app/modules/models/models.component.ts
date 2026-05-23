@@ -1378,6 +1378,7 @@ export class ModelsComponent implements OnInit, OnDestroy {
       mconfig: this.mconfig,
       parameterAddedFn: () => {
         this.filtersIsExpanded = true;
+        this.cd.detectChanges();
       }
     });
   }
