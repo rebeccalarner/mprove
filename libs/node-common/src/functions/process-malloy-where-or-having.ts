@@ -4,7 +4,7 @@ import {
   ASTViewOperation,
   ASTWhereViewOperation
 } from '@malloydata/malloy-query-builder';
-import { MALLOY_FILTER_ANY } from '#common/constants/top';
+import { MALLOY_FILTER_ANY, UTC } from '#common/constants/top';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { FractionOperatorEnum } from '#common/enums/fraction/fraction-operator.enum';
@@ -12,6 +12,7 @@ import { FractionTypeEnum } from '#common/enums/fraction/fraction-type.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import type { Filter } from '#common/zod/blockml/filter';
+import type { Fraction } from '#common/zod/blockml/fraction';
 import type { Model } from '#common/zod/blockml/model';
 import { getMalloyFiltersFractions } from './get-malloy-filters-fractions';
 
@@ -19,8 +20,9 @@ export function processMalloyWhereOrHaving(item: {
   model: Model;
   queryOperationFilters: Filter[];
   segment0: ASTSegmentViewDefinition;
+  timezone: string;
 }) {
-  let { model, queryOperationFilters, segment0 } = item;
+  let { model, queryOperationFilters, segment0, timezone } = item;
 
   let isError = false;
   let errorMessage: string;
@@ -101,10 +103,7 @@ export function processMalloyWhereOrHaving(item: {
         ].indexOf(fraction.type) < 0
     );
 
-    // console.log('modelField');
-    // console.log(modelField);
-
-    let filterModelField = modelField;
+    let filterModelFields = [modelField];
 
     if (
       modelField.result === FieldResultEnum.Ts &&
@@ -117,97 +116,91 @@ export function processMalloyWhereOrHaving(item: {
           x.result === FieldResultEnum.Ts
       );
 
-      if (isDefined(baseModelField)) {
-        filterModelField = baseModelField;
+      if (isDefined(baseModelField) && timezone === UTC) {
+        filterModelFields = [baseModelField];
+      } else if (isDefined(baseModelField)) {
+        filterModelFields = [baseModelField, modelField];
       }
     }
 
-    // console.log('malloy filter field', {
-    //   inputFieldId: modelField.id,
-    //   inputMalloyFieldName: modelField.malloyFieldName,
-    //   inputMalloyFieldPath: modelField.malloyFieldPath,
-    //   inputTimeframe: modelField.timeframe,
-    //   inputMalloyBaseFieldId: modelField.malloyBaseFieldId,
-    //   outputFieldId: filterModelField.id,
-    //   outputMalloyFieldName: filterModelField.malloyFieldName,
-    //   outputMalloyFieldPath: filterModelField.malloyFieldPath,
-    //   outputTimeframe: filterModelField.timeframe
-    // });
+    filterModelFields.forEach(filterModelField => {
+      let filterFieldName = filterModelField.malloyFieldName;
+      let filterFieldPath: string[] = filterModelField.malloyFieldPath;
 
-    let filterFieldName = filterModelField.malloyFieldName;
-    let filterFieldPath: string[] = filterModelField.malloyFieldPath;
-
-    if (ORs.length > 0) {
-      let fstrORs =
-        filterModelField.result === FieldResultEnum.String
-          ? ORs.map(fraction => fraction.brick.slice(2, -1)).join(', ')
-          : filterModelField.result === FieldResultEnum.Number
-            ? ORs.map(fraction => fraction.brick.slice(2, -1)).join(' or ')
-            : filterModelField.result === FieldResultEnum.Ts
+      if (ORs.length > 0) {
+        let fstrORs =
+          filterModelField.result === FieldResultEnum.String
+            ? ORs.map(fraction => fraction.brick.slice(2, -1)).join(', ')
+            : filterModelField.result === FieldResultEnum.Number
               ? ORs.map(fraction => fraction.brick.slice(2, -1)).join(' or ')
-              : filterModelField.result === FieldResultEnum.Date
+              : filterModelField.result === FieldResultEnum.Ts
                 ? ORs.map(fraction => fraction.brick.slice(2, -1)).join(' or ')
-                : undefined;
+                : filterModelField.result === FieldResultEnum.Date
+                  ? ORs.map(fraction => fraction.brick.slice(2, -1)).join(
+                      ' or '
+                    )
+                  : undefined;
 
-      if (modelField.fieldClass === FieldClassEnum.Dimension) {
-        segment0.addWhere(filterFieldName, filterFieldPath, fstrORs);
-      } else {
-        segment0.addHaving(filterFieldName, filterFieldPath, fstrORs);
+        if (modelField.fieldClass === FieldClassEnum.Dimension) {
+          segment0.addWhere(filterFieldName, filterFieldPath, fstrORs);
+        } else {
+          segment0.addHaving(filterFieldName, filterFieldPath, fstrORs);
+        }
       }
-    }
 
-    if (ANDs.length > 0) {
-      ANDs.map(y => y.brick.slice(2, -1)).forEach(fstr => {
-        if (modelField.fieldClass === FieldClassEnum.Dimension) {
-          segment0.addWhere(filterFieldName, filterFieldPath, fstr);
-        } else {
-          segment0.addHaving(filterFieldName, filterFieldPath, fstr);
-        }
-      });
-    }
+      if (ANDs.length > 0) {
+        ANDs.map(y => y.brick.slice(2, -1)).forEach(fstr => {
+          if (modelField.fieldClass === FieldClassEnum.Dimension) {
+            segment0.addWhere(filterFieldName, filterFieldPath, fstr);
+          } else {
+            segment0.addHaving(filterFieldName, filterFieldPath, fstr);
+          }
+        });
+      }
 
-    // if (ANDs.length > 0) {
-    //   let fstrANDs =
-    //     filterModelField.result === FieldResultEnum.String
-    //       ? ANDs.map(y => y.brick.slice(2, -1)).join(', ')
-    //       : filterModelField.result === FieldResultEnum.Number
-    //         ? ANDs.map(y => y.brick.slice(2, -1)).join(' and ')
-    //         : filterModelField.result === FieldResultEnum.Ts
-    //           ? ANDs.map(y => y.brick.slice(2, -1)).join(' and ')
-    //           : filterModelField.result === FieldResultEnum.Date
-    //             ? ANDs.map(y => y.brick.slice(2, -1)).join(' and ')
-    //             : undefined;
+      // if (ANDs.length > 0) {
+      //   let fstrANDs =
+      //     filterModelField.result === FieldResultEnum.String
+      //       ? ANDs.map(y => y.brick.slice(2, -1)).join(', ')
+      //       : filterModelField.result === FieldResultEnum.Number
+      //         ? ANDs.map(y => y.brick.slice(2, -1)).join(' and ')
+      //         : filterModelField.result === FieldResultEnum.Ts
+      //           ? ANDs.map(y => y.brick.slice(2, -1)).join(' and ')
+      //           : filterModelField.result === FieldResultEnum.Date
+      //             ? ANDs.map(y => y.brick.slice(2, -1)).join(' and ')
+      //             : undefined;
 
-    //   if (modelField.fieldClass === FieldClassEnum.Dimension) {
-    //     segment0.addWhere(filterFieldName, filterFieldPath, fstrANDs);
-    //   } else {
-    //     segment0.addHaving(filterFieldName, filterFieldPath, fstrANDs);
-    //   }
-    // }
+      //   if (modelField.fieldClass === FieldClassEnum.Dimension) {
+      //     segment0.addWhere(filterFieldName, filterFieldPath, fstrANDs);
+      //   } else {
+      //     segment0.addHaving(filterFieldName, filterFieldPath, fstrANDs);
+      //   }
+      // }
 
-    if (booleanValues.length > 0) {
-      booleanValues.forEach(x => {
-        let fstrAny = x.brick.slice(2, -1);
+      if (booleanValues.length > 0) {
+        booleanValues.forEach(x => {
+          let fstrAny = x.brick.slice(2, -1);
 
-        if (modelField.fieldClass === FieldClassEnum.Dimension) {
-          segment0.addWhere(filterFieldName, filterFieldPath, fstrAny);
-        } else {
-          segment0.addHaving(filterFieldName, filterFieldPath, fstrAny);
-        }
-      });
-    }
+          if (modelField.fieldClass === FieldClassEnum.Dimension) {
+            segment0.addWhere(filterFieldName, filterFieldPath, fstrAny);
+          } else {
+            segment0.addHaving(filterFieldName, filterFieldPath, fstrAny);
+          }
+        });
+      }
 
-    if (anyValues.length > 0) {
-      anyValues.forEach(x => {
-        let fstrAny = '';
+      if (anyValues.length > 0) {
+        anyValues.forEach(x => {
+          let fstrAny = '';
 
-        if (modelField.fieldClass === FieldClassEnum.Dimension) {
-          segment0.addWhere(filterFieldName, filterFieldPath, fstrAny);
-        } else {
-          segment0.addHaving(filterFieldName, filterFieldPath, fstrAny);
-        }
-      });
-    }
+          if (modelField.fieldClass === FieldClassEnum.Dimension) {
+            segment0.addWhere(filterFieldName, filterFieldPath, fstrAny);
+          } else {
+            segment0.addHaving(filterFieldName, filterFieldPath, fstrAny);
+          }
+        });
+      }
+    });
   });
 
   let { filtersFractions, parsedFilters } = getMalloyFiltersFractions({
@@ -215,8 +208,27 @@ export function processMalloyWhereOrHaving(item: {
     apiModel: model
   });
 
+  let mconfigFiltersFractions: {
+    [s: string]: Fraction[];
+  } = {};
+
+  queryOperationFilters.forEach(filter => {
+    let filterFieldIdIsDefined = isDefined(filter.fieldId);
+
+    if (filterFieldIdIsDefined) {
+      let modelField = model.fields.find(x => x.id === filter.fieldId);
+
+      let shouldUseOriginalFractions =
+        isDefined(modelField) && modelField.result === FieldResultEnum.Ts;
+
+      mconfigFiltersFractions[filter.fieldId] = shouldUseOriginalFractions
+        ? filter.fractions
+        : filtersFractions[filter.fieldId];
+    }
+  });
+
   return {
-    filtersFractions: filtersFractions,
+    filtersFractions: mconfigFiltersFractions,
     parsedFilters: parsedFilters,
     isError: isError,
     errorMessage: errorMessage

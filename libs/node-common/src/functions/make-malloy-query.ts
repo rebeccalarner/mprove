@@ -228,11 +228,24 @@ export async function makeMalloyQuery(item: {
             .delete();
         }
       }
+    } else if (queryOperation.type === QueryOperationTypeEnum.Get) {
+      let p = processMalloyWhereOrHaving({
+        model: model,
+        segment0: segment0,
+        queryOperationFilters: mconfig.filters,
+        timezone: queryOperation.timezone
+      });
+
+      if (p.isError === true) {
+        isError = p.isError;
+        errorMessage = p.errorMessage;
+      }
     } else if (queryOperation.type === QueryOperationTypeEnum.WhereOrHaving) {
       let p = processMalloyWhereOrHaving({
         model: model,
         segment0: segment0,
-        queryOperationFilters: queryOperation.filters
+        queryOperationFilters: queryOperation.filters,
+        timezone: queryOperation.timezone
       });
 
       if (p.isError === true) {

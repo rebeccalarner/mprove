@@ -3,6 +3,7 @@ import { Moment } from '@malloydata/malloy-filter';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community';
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
+import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { FractionOperatorEnum } from '#common/enums/fraction/fraction-operator.enum';
 import { FractionTsMixUnitEnum } from '#common/enums/fraction/fraction-ts-mix-unit.enum';
@@ -282,12 +283,36 @@ export class DataRendererComponent implements ICellRendererAngularComp {
       let newFilters = [...newMconfig.filters];
 
       if (isStore === false) {
-        let newFraction = timeRangeFraction;
+        // console.log('newMconfig');
+        // console.log(newMconfig);
+        // console.log('newMconfig.filters');
+        // console.log(newMconfig.filters);
+        // console.log('metric');
+        // console.log(metric);
+        // console.log('timeSpec');
+        // console.log(timeSpec);
+        // console.log('timeSpecWord');
+        // console.log(timeSpecWord);
+
+        let dimensionField = newMconfig.fields.find(
+          field => field.fieldClass === FieldClassEnum.Dimension
+        );
+
+        let timeFieldFilter = newMconfig.filters.find(
+          filter => filter.fieldId === dimensionField.id
+        );
 
         let newFilter: Filter = {
           fieldId: `${metric.timeFieldId}_ts`,
-          fractions: [newFraction]
+          fractions: timeFieldFilter.fractions
         };
+
+        // let newFraction = timeRangeFraction;
+
+        // let newFilter: Filter = {
+        //   fieldId: `${metric.timeFieldId}_ts`,
+        //   fractions: [newFraction]
+        // };
 
         newFilters.push(newFilter);
       }
