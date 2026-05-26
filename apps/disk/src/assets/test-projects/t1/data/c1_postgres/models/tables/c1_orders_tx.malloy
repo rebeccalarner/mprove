@@ -31,15 +31,16 @@ source: c1_orders_tx is c1_orders_table extend {
 
   #(mprove) build_metrics field_group="Created at"
   dimension: 
-    created_at_ts is _created_at_ts
-    created_at_day is created_at_ts.day
-    created_at_week is created_at_ts.week
-    created_at_month is created_at_ts.month
-    created_at_quarter is created_at_ts.quarter
-    created_at_year is created_at_ts.year
-    created_at_hour is created_at_ts.hour
-    created_at_minute is created_at_ts.minute
-    created_at_second is created_at_ts.second
+    created_at_t is _created_at_ts
+    created_at_ts is created_at_t
+    created_at_day is created_at_t.day
+    created_at_week is created_at_t.week
+    created_at_month is created_at_t.month
+    created_at_quarter is created_at_t.quarter
+    created_at_year is created_at_t.year
+    created_at_hour is created_at_t.hour
+    created_at_minute is created_at_t.minute
+    created_at_second is created_at_t.second
 
   #(mprove) field_group="Created at - Extra"
   dimension: 
