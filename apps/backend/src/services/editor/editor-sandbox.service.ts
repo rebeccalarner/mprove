@@ -16,6 +16,7 @@ import { PauseReasonEnum } from '#common/enums/pause-reason.enum';
 import { SandboxTypeEnum } from '#common/enums/sandbox-type.enum';
 import { SessionStatusEnum } from '#common/enums/session-status.enum';
 import { SessionTypeEnum } from '#common/enums/session-type.enum';
+import { isDefinedAndNotEmpty } from '#common/functions/is-defined-and-not-empty';
 import { ServerError } from '#common/models/server-error';
 import { ProjectsService } from '../db/projects.service';
 import { SessionsService } from '../db/sessions.service';
@@ -38,6 +39,11 @@ export class EditorSandboxService {
     sandboxId: string;
     e2bApiKey: string;
   }): Promise<SandboxInfo | null> {
+    let isApiKeySet = isDefinedAndNotEmpty(item.e2bApiKey);
+    if (isApiKeySet === false) {
+      return null;
+    }
+
     try {
       return await Sandbox.getInfo(item.sandboxId, {
         apiKey: item.e2bApiKey
@@ -48,6 +54,11 @@ export class EditorSandboxService {
   }
 
   async listSandboxes(item: { e2bApiKey: string }): Promise<SandboxInfo[]> {
+    let isApiKeySet = isDefinedAndNotEmpty(item.e2bApiKey);
+    if (isApiKeySet === false) {
+      return [];
+    }
+
     let all: SandboxInfo[] = [];
     let paginator = Sandbox.list({ apiKey: item.e2bApiKey });
 
@@ -64,6 +75,11 @@ export class EditorSandboxService {
     sandboxId: string;
     e2bApiKey: string;
   }): Promise<void> {
+    let isApiKeySet = isDefinedAndNotEmpty(item.e2bApiKey);
+    if (isApiKeySet === false) {
+      return;
+    }
+
     switch (item.sandboxType) {
       case SandboxTypeEnum.E2B:
         await Sandbox.kill(item.sandboxId, { apiKey: item.e2bApiKey });
@@ -81,6 +97,11 @@ export class EditorSandboxService {
     sandboxId: string;
     e2bApiKey: string;
   }): Promise<void> {
+    let isApiKeySet = isDefinedAndNotEmpty(item.e2bApiKey);
+    if (isApiKeySet === false) {
+      return;
+    }
+
     switch (item.sandboxType) {
       case SandboxTypeEnum.E2B:
         await Sandbox.betaPause(item.sandboxId, { apiKey: item.e2bApiKey });
