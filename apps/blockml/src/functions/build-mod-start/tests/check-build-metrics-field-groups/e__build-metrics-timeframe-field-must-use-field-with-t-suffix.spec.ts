@@ -18,7 +18,7 @@ import type { FileMod } from '#common/zod/blockml/internal/file-mod';
 
 let caller = CallerEnum.BuildModStart;
 let func = FuncEnum.CheckBuildMetricsFieldGroups;
-let testId = 'e__build-metrics-field-group-multiple-ts';
+let testId = 'e__build-metrics-timeframe-field-must-use-field-with-t-suffix';
 
 test('1', async t => {
   let errors: BmError[];
@@ -95,6 +95,9 @@ test('1', async t => {
   }
 
   t.is(errors.length > 0, true);
-  t.is(errors[0].title, ErTitleEnum.BUILD_METRICS_FIELD_GROUP_MUST_HAVE_ONE_TS);
+  t.is(
+    errors[0].title,
+    ErTitleEnum.BUILD_METRICS_TIMEFRAME_FIELD_MUST_USE_FIELD_WITH_T_SUFFIX
+  );
   t.is(entMods.length, 0);
 });

@@ -1,0 +1,12 @@
+##! experimental{sql_functions}
+
+#(mprove) model
+source: orders is c1_postgres.table('ecommerce.orders') extend {
+  rename: _created_at_ts is created_at_ts
+
+  #(mprove) build_metrics field_group="Created At"
+  dimension:
+    created_at_ts is _created_at_ts
+
+  measure: orders_count is count()
+}

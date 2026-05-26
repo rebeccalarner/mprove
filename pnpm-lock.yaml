@@ -115,41 +115,41 @@ catalogs:
       specifier: 1.2.3
       version: 1.2.3
     '@malloydata/db-bigquery':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/db-databricks':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/db-duckdb':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/db-mysql':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/db-postgres':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/db-snowflake':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/db-trino':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/malloy':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/malloy-filter':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/malloy-interfaces':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/malloy-query-builder':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@malloydata/malloy-tag':
-      specifier: 0.0.395
-      version: 0.0.395
+      specifier: 0.0.400
+      version: 0.0.400
     '@modelcontextprotocol/sdk':
       specifier: 1.27.1
       version: 1.27.1
@@ -727,40 +727,40 @@ importers:
         version: 1.2.3
       '@malloydata/db-bigquery':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-databricks':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-duckdb':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-mysql':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-postgres':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-snowflake':
         specifier: 'catalog:'
-        version: 0.0.395(asn1.js@5.4.1)(encoding@0.1.13)
+        version: 0.0.400(asn1.js@5.4.1)(encoding@0.1.13)
       '@malloydata/db-trino':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/malloy':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-filter':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-interfaces':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-query-builder':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-tag':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
         version: 1.27.1(zod@4.3.6)
@@ -778,7 +778,7 @@ importers:
         version: 11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/config':
         specifier: 'catalog:'
-        version: 3.0.1(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
+        version: 3.0.1(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
       '@nestjs/core':
         specifier: 'catalog:'
         version: 11.1.0(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -904,7 +904,7 @@ importers:
         version: 3.0.1
       nest-winston:
         specifier: 'catalog:'
-        version: 1.9.4(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
+        version: 1.9.4(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
       nestjs-zod:
         specifier: 'catalog:'
         version: 5.3.0(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/swagger@11.2.7(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.1.0)(class-validator@0.14.2)(reflect-metadata@0.2.2))(rxjs@7.8.1)(zod@4.3.6)
@@ -1064,40 +1064,40 @@ importers:
         version: 1.2.3
       '@malloydata/db-bigquery':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-databricks':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-duckdb':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-mysql':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-postgres':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-snowflake':
         specifier: 'catalog:'
-        version: 0.0.395(asn1.js@5.4.1)(encoding@0.1.13)
+        version: 0.0.400(asn1.js@5.4.1)(encoding@0.1.13)
       '@malloydata/db-trino':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/malloy':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-filter':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-interfaces':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-query-builder':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-tag':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@mprove/common':
         specifier: workspace:*
         version: link:../../libs/common
@@ -1109,7 +1109,7 @@ importers:
         version: 11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/config':
         specifier: 'catalog:'
-        version: 3.0.1(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
+        version: 3.0.1(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
       '@nestjs/core':
         specifier: 'catalog:'
         version: 11.1.0(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -1184,7 +1184,7 @@ importers:
         version: 3.0.1
       nest-winston:
         specifier: 'catalog:'
-        version: 1.9.4(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
+        version: 1.9.4(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
       p-iteration:
         specifier: 'catalog:'
         version: 1.1.8
@@ -1272,40 +1272,40 @@ importers:
         version: 1.2.3
       '@malloydata/db-bigquery':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-databricks':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-duckdb':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-mysql':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-postgres':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/db-snowflake':
         specifier: 'catalog:'
-        version: 0.0.395(asn1.js@5.4.1)(encoding@0.1.13)
+        version: 0.0.400(asn1.js@5.4.1)(encoding@0.1.13)
       '@malloydata/db-trino':
         specifier: 'catalog:'
-        version: 0.0.395(encoding@0.1.13)
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/malloy':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-filter':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-interfaces':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-query-builder':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@malloydata/malloy-tag':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@mprove/common':
         specifier: workspace:*
         version: link:../../libs/common
@@ -1317,7 +1317,7 @@ importers:
         version: 11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/config':
         specifier: 'catalog:'
-        version: 3.0.1(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
+        version: 3.0.1(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)
       '@nestjs/core':
         specifier: 'catalog:'
         version: 11.1.0(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -1389,7 +1389,7 @@ importers:
         version: 3.0.1
       nest-winston:
         specifier: 'catalog:'
-        version: 1.9.4(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
+        version: 1.9.4(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
       p-iteration:
         specifier: 'catalog:'
         version: 1.1.8
@@ -1516,7 +1516,7 @@ importers:
         version: 1.2.3
       '@malloydata/malloy-filter':
         specifier: 'catalog:'
-        version: 0.0.395
+        version: 0.0.400
       '@mprove/common':
         specifier: workspace:*
         version: link:../../libs/common
@@ -1750,17 +1750,17 @@ importers:
         specifier: 1.2.3
         version: 1.2.3
       '@malloydata/malloy':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/malloy-filter':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/malloy-interfaces':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/malloy-tag':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@nestjs/throttler':
         specifier: 6.4.0
         version: 6.4.0(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.0)(reflect-metadata@0.2.2)
@@ -1802,38 +1802,38 @@ importers:
   libs/node-common:
     dependencies:
       '@malloydata/db-bigquery':
-        specifier: 0.0.395
-        version: 0.0.395(encoding@0.1.13)
+        specifier: 0.0.400
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-databricks':
-        specifier: 0.0.395
-        version: 0.0.395(encoding@0.1.13)
+        specifier: 0.0.400
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/db-duckdb':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/db-mysql':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/db-postgres':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/db-snowflake':
-        specifier: 0.0.395
-        version: 0.0.395(asn1.js@5.4.1)(encoding@0.1.13)
+        specifier: 0.0.400
+        version: 0.0.400(asn1.js@5.4.1)(encoding@0.1.13)
       '@malloydata/db-trino':
-        specifier: 0.0.395
-        version: 0.0.395(encoding@0.1.13)
+        specifier: 0.0.400
+        version: 0.0.400(encoding@0.1.13)
       '@malloydata/malloy':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/malloy-filter':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/malloy-interfaces':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@malloydata/malloy-query-builder':
-        specifier: 0.0.395
-        version: 0.0.395
+        specifier: 0.0.400
+        version: 0.0.400
       '@mprove/common':
         specifier: file:../common
         version: file:libs/common(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.1.0)
@@ -1884,7 +1884,7 @@ importers:
         version: 3.0.1
       nest-winston:
         specifier: 1.9.4
-        version: 1.9.4(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
+        version: 1.9.4(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2)
       p-iteration:
         specifier: 1.1.8
         version: 1.1.8
@@ -4608,52 +4608,52 @@ packages:
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
 
-  '@malloydata/db-bigquery@0.0.395':
-    resolution: {integrity: sha512-WVpDjh0XME6eKQYMG7+/Ay/wQ1986Hoqc8pQomNqSLQWFn989d2SPFjVkIvvpIA32NkeKqY8gTe9hAlCDFj2vw==}
+  '@malloydata/db-bigquery@0.0.400':
+    resolution: {integrity: sha512-Ziy1nJGzD5MFI8qce4HeP86EYsPpUN4XDSW0h9mSekiShfW92kXYbEEkrTZNvGwtmROPCYm0hEwzlOskelM5iA==}
     engines: {node: '>=20'}
 
-  '@malloydata/db-databricks@0.0.395':
-    resolution: {integrity: sha512-eXjiHYa8fTdPsoFVnN5NVEBdUF7PhjLdAiIJVChXGILJ6oeoVr6c1hvK6P71irLPH4JOqDBRynh+FjwPzYT85w==}
+  '@malloydata/db-databricks@0.0.400':
+    resolution: {integrity: sha512-qC8q5dUwOq3IdP4lsVGrjQEh5pNL95v+2prFXDI1QGeyy8cOuGojkZBpLW2Cu2y/HfqhCaQ+zIbTHfgvlqKpwQ==}
     engines: {node: '>=20'}
 
-  '@malloydata/db-duckdb@0.0.395':
-    resolution: {integrity: sha512-VHyFPrVNk8M1anmLUs+6OC8HfxpHZ2uu0a1rga5rIN9KvmjvH9wJp/r0GPiuslGQOP0i+ARjUNhq6uuY/l6dhg==}
+  '@malloydata/db-duckdb@0.0.400':
+    resolution: {integrity: sha512-pjdgj7djRHM4KmLp/YB+lp/7NNxoTtQLXs/PnQ1L4pe3inpDErnNGK06sKiJJL+jS7A1pjsJ/JTqpfX/oe/QeA==}
     engines: {node: '>=20'}
 
-  '@malloydata/db-mysql@0.0.395':
-    resolution: {integrity: sha512-3U+G6f7Hi0IS43TH8kqGeB7EkDl5mTcbhRKKP6vi2otd28DPgMzX4iY/o11o4k1dB8EEb19riOfQJaJfg7wl+w==}
+  '@malloydata/db-mysql@0.0.400':
+    resolution: {integrity: sha512-UC+52Aa4y6uAytwsOHHUUyz61PlC7jOFJ0H0K9HxGJB/o3szWlbMWG+yYSgoJnh23baox5Xn4qy00tDZ23qcEw==}
     engines: {node: '>=20'}
 
-  '@malloydata/db-postgres@0.0.395':
-    resolution: {integrity: sha512-7Wfcv09x27bVbVOrUzpEmXspW+PUu78ZM5d3HyFFNwvn/+t4PCbltQPONr6tgTlvWzAJ9AoAlrfI9C2+jLa0QA==}
+  '@malloydata/db-postgres@0.0.400':
+    resolution: {integrity: sha512-C7puDlnLFkaHGYvQ7ZMUPJ7TSmAaA8zNlA/NHcgDb9XKv9Ww2V9GMvyjtlh2Il/F1mJpJjqiuc/ceSe3POuuSg==}
     engines: {node: '>=20'}
 
-  '@malloydata/db-snowflake@0.0.395':
-    resolution: {integrity: sha512-rv2bb0KAjMnK8S8ZksGVyCIiY/rTxIudmSddJgDAL4Cmncfq2bLfzMpfkqqiq4XkIfUwsR9vNr1a3kO3R44mGA==}
+  '@malloydata/db-snowflake@0.0.400':
+    resolution: {integrity: sha512-drEebiH2JrGmDr2DCoxlDtgGld+h/ZHwzZPppVB6pTGpvH7JPT5Uut/s/LCzOleDlrTRrTbV71ISQ+I7rWT6Vg==}
     engines: {node: '>=20'}
 
-  '@malloydata/db-trino@0.0.395':
-    resolution: {integrity: sha512-Hv6dhtYOSPGClM1mfJY9WdQL2mx5rcP3RtSyXgfPQckgF2pXYlY36DTeN4rXJYTowtaUL7gSMo8PMLExmwW9FQ==}
+  '@malloydata/db-trino@0.0.400':
+    resolution: {integrity: sha512-+HAtoJ7o5J4BHzx9Olv1JpdFVfzfAK0Ys+EkRLOyIMp7A4UFRIkzozyL3ogNi8TGbhQY46xG1xBaguPaYjv9PQ==}
     engines: {node: '>=20'}
 
-  '@malloydata/malloy-filter@0.0.395':
-    resolution: {integrity: sha512-fVmbFuBZuRMv7VoUe7nCYmETch3V8/MZHivjiWV+yawoqBYIeApdESYS5jwIBVXHyuSaXG6ysO3GL7/OCs/U+Q==}
+  '@malloydata/malloy-filter@0.0.400':
+    resolution: {integrity: sha512-g5L8nelkTHXCXYDGCOLlF8KaFU6XF6rofhCuXXM1jM+iCL7TIQU3QkP7KgT6HQYPtPVwC7J/KrUxkJ3f+p5EdQ==}
     engines: {node: '>=20'}
 
-  '@malloydata/malloy-interfaces@0.0.395':
-    resolution: {integrity: sha512-9mZEOaf/Na6JsKUheG00WgpLeNjrtvnZU+62mPHxiUmSFwKKExBC1YC1XxcEM8xNRER4+AlhQ4cuUYZoUGhEnQ==}
+  '@malloydata/malloy-interfaces@0.0.400':
+    resolution: {integrity: sha512-vkf7H+ujvIBkeMb1FsNqZFoll0yLz5KySWcSva/boutycDgnsxTeIwg+Sj62FCXvfbQ+IqGsv/LrQUKvUvfI7A==}
     engines: {node: '>=20'}
 
-  '@malloydata/malloy-query-builder@0.0.395':
-    resolution: {integrity: sha512-2Il0LzpdvhWE2ZI/mvnMdb/loF3QjMlE+XW5eNzrnWIRy8o8ef6uuxyuvhcBtIlNLRDO3oTNCiBuj4W3wK5WdA==}
+  '@malloydata/malloy-query-builder@0.0.400':
+    resolution: {integrity: sha512-d51z86iYoJ6J0N58Pt0gw5aR7b9StoWYE1E28/farNs4I+UjNuzDq1E8nDH8RMD5km2LKZsWmn/0fzzn1S7icg==}
     engines: {node: '>=20'}
 
-  '@malloydata/malloy-tag@0.0.395':
-    resolution: {integrity: sha512-c7yYP0gjepOgYQmNItC7XADo9MeKMtRqutMP+5DVETlLQEdfMlSnlPTeoA0RTXLT/Old6nECE+Rmx1rWJNm9Gw==}
+  '@malloydata/malloy-tag@0.0.400':
+    resolution: {integrity: sha512-qMs59NCw3QTG5borZMnpqBEdWpAqIUDajnGBP/VqbC6Zd5/MhIagvYJ7G/h1JvIRC4EQRfAOQDkFKNmq8pf9KQ==}
     engines: {node: '>=20'}
 
-  '@malloydata/malloy@0.0.395':
-    resolution: {integrity: sha512-bnp04jWJ6ECcH7n3V8v8dnIuJJx9NWRbmcJJ+op7++GhS961LsZ7OdGvfMUw6q9u1kceKUw+zDoQ4Y5sg2Z3FQ==}
+  '@malloydata/malloy@0.0.400':
+    resolution: {integrity: sha512-Ep9TSZax8TzhaluF5LzKW3py71Hve7sT06SMU0VqjDbn5VLUW2mDvj4rEnNm63MelqxucE8HZZCJ4cn67u8P5A==}
     engines: {node: '>=20'}
 
   '@malloydata/motly-ts-parser@0.8.1':
@@ -16809,21 +16809,21 @@ snapshots:
 
   '@lukeed/csprng@1.1.0': {}
 
-  '@malloydata/db-bigquery@0.0.395(encoding@0.1.13)':
+  '@malloydata/db-bigquery@0.0.400(encoding@0.1.13)':
     dependencies:
       '@google-cloud/bigquery': 7.9.4(encoding@0.1.13)
       '@google-cloud/common': 5.0.2(encoding@0.1.13)
       '@google-cloud/paginator': 5.0.2
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       gaxios: 4.3.3(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
       - supports-color
 
-  '@malloydata/db-databricks@0.0.395(encoding@0.1.13)':
+  '@malloydata/db-databricks@0.0.400(encoding@0.1.13)':
     dependencies:
       '@databricks/sql': 1.13.0(encoding@0.1.13)
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       '@types/node': 22.7.5
     transitivePeerDependencies:
       - '@75lb/nature'
@@ -16832,35 +16832,35 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@malloydata/db-duckdb@0.0.395':
+  '@malloydata/db-duckdb@0.0.400':
     dependencies:
       '@duckdb/duckdb-wasm': 1.33.1-dev13.0
       '@duckdb/node-api': 1.4.4-r.1
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       '@motherduck/wasm-client': 0.6.6(apache-arrow@17.0.0)
       apache-arrow: 17.0.0
       web-worker: 1.5.0
 
-  '@malloydata/db-mysql@0.0.395':
+  '@malloydata/db-mysql@0.0.400':
     dependencies:
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       '@types/node': 22.7.5
       fastestsmallesttextencoderdecoder: 1.0.22
       luxon: 3.7.2
       mysql2: 3.11.3
 
-  '@malloydata/db-postgres@0.0.395':
+  '@malloydata/db-postgres@0.0.400':
     dependencies:
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       '@types/pg': 8.15.6
       pg: 8.13.0
       pg-query-stream: 4.2.3(pg@8.13.0)
     transitivePeerDependencies:
       - pg-native
 
-  '@malloydata/db-snowflake@0.0.395(asn1.js@5.4.1)(encoding@0.1.13)':
+  '@malloydata/db-snowflake@0.0.400(asn1.js@5.4.1)(encoding@0.1.13)':
     dependencies:
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       generic-pool: 3.9.0
       snowflake-sdk: 2.3.1(asn1.js@5.4.1)(encoding@0.1.13)
       toml: 3.0.0
@@ -16871,9 +16871,9 @@ snapshots:
       - encoding
       - supports-color
 
-  '@malloydata/db-trino@0.0.395(encoding@0.1.13)':
+  '@malloydata/db-trino@0.0.400(encoding@0.1.13)':
     dependencies:
-      '@malloydata/malloy': 0.0.395
+      '@malloydata/malloy': 0.0.400
       '@prestodb/presto-js-client': 1.1.0
       gaxios: 4.3.3(encoding@0.1.13)
       luxon: 3.7.2
@@ -16883,31 +16883,31 @@ snapshots:
       - encoding
       - supports-color
 
-  '@malloydata/malloy-filter@0.0.395':
+  '@malloydata/malloy-filter@0.0.400':
     dependencies:
       jest-diff: 29.7.0
       luxon: 3.7.2
 
-  '@malloydata/malloy-interfaces@0.0.395':
+  '@malloydata/malloy-interfaces@0.0.400':
     dependencies:
       '@creditkarma/thrift-server-core': 1.0.4
 
-  '@malloydata/malloy-query-builder@0.0.395':
+  '@malloydata/malloy-query-builder@0.0.400':
     dependencies:
-      '@malloydata/malloy-filter': 0.0.395
-      '@malloydata/malloy-interfaces': 0.0.395
-      '@malloydata/malloy-tag': 0.0.395
+      '@malloydata/malloy-filter': 0.0.400
+      '@malloydata/malloy-interfaces': 0.0.400
+      '@malloydata/malloy-tag': 0.0.400
 
-  '@malloydata/malloy-tag@0.0.395':
+  '@malloydata/malloy-tag@0.0.400':
     dependencies:
       '@malloydata/motly-ts-parser': 0.8.1
       assert: 2.1.0
 
-  '@malloydata/malloy@0.0.395':
+  '@malloydata/malloy@0.0.400':
     dependencies:
-      '@malloydata/malloy-filter': 0.0.395
-      '@malloydata/malloy-interfaces': 0.0.395
-      '@malloydata/malloy-tag': 0.0.395
+      '@malloydata/malloy-filter': 0.0.400
+      '@malloydata/malloy-interfaces': 0.0.400
+      '@malloydata/malloy-tag': 0.0.400
       '@noble/hashes': 1.8.0
       antlr4ts: 0.5.0-alpha.4
       assert: 2.1.0
@@ -17036,10 +17036,10 @@ snapshots:
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.36.7
       '@lezer/highlight': 1.2.3
-      '@malloydata/malloy': 0.0.395
-      '@malloydata/malloy-filter': 0.0.395
-      '@malloydata/malloy-interfaces': 0.0.395
-      '@malloydata/malloy-tag': 0.0.395
+      '@malloydata/malloy': 0.0.400
+      '@malloydata/malloy-filter': 0.0.400
+      '@malloydata/malloy-interfaces': 0.0.400
+      '@malloydata/malloy-tag': 0.0.400
       '@nestjs/throttler': 6.4.0(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.1.0)(reflect-metadata@0.2.2)
       '@opencode-ai/sdk': 1.3.13
       '@replit/codemirror-indentation-markers': 6.5.3(@codemirror/language@6.11.3)(@codemirror/state@6.5.2)(@codemirror/view@6.36.7)
@@ -17198,7 +17198,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nestjs/config@3.0.1(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)':
+  '@nestjs/config@3.0.1(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2)':
     dependencies:
       '@nestjs/common': 11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       dotenv: 16.3.1
@@ -23836,7 +23836,7 @@ snapshots:
 
   neoip@3.0.1: {}
 
-  nest-winston@1.9.4(@nestjs/common@11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2):
+  nest-winston@1.9.4(@nestjs/common@11.1.0(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1))(winston@3.14.2):
     dependencies:
       '@nestjs/common': 11.1.0(class-transformer@0.3.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       fast-safe-stringify: 2.1.1

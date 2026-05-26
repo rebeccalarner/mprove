@@ -110,20 +110,145 @@ function checkModBuildMetricsFieldGroups(item: {
   });
 
   groups.forEach(group => {
-    let tsFieldItems = group.fieldItems.filter(fieldItem =>
-      fieldItem.field.name.endsWith('_ts')
-    );
+    checkGroupSuffix({
+      sourceDef: item.sourceDef,
+      fieldItems: group.fieldItems,
+      groupName: group.groupName,
+      suffix: '_ts',
+      title: ErTitleEnum.BUILD_METRICS_FIELD_GROUP_MISSING_FIELD_WITH_TS_SUFFIX,
+      fileName: item.fileName,
+      filePath: item.filePath,
+      errors: item.errors
+    });
 
-    if (tsFieldItems.length === 1) {
+    checkGroupSuffix({
+      sourceDef: item.sourceDef,
+      fieldItems: group.fieldItems,
+      groupName: group.groupName,
+      suffix: '_t',
+      title: ErTitleEnum.BUILD_METRICS_FIELD_GROUP_MISSING_FIELD_WITH_T_SUFFIX,
+      fileName: item.fileName,
+      filePath: item.filePath,
+      errors: item.errors
+    });
+
+    checkGroupTimeframes({
+      sourceDef: item.sourceDef,
+      fieldItems: group.fieldItems,
+      groupName: group.groupName,
+      fileName: item.fileName,
+      filePath: item.filePath,
+      errors: item.errors
+    });
+  });
+}
+
+function checkGroupSuffix(item: {
+  sourceDef: MalloySourceDef;
+  fieldItems: FieldItem[];
+  groupName: string;
+  suffix: string;
+  title: ErTitleEnum;
+  fileName: string;
+  filePath: string;
+  errors: BmError[];
+}) {
+  let suffixFieldItems = item.fieldItems.filter(fieldItem =>
+    fieldItem.field.name.endsWith(item.suffix)
+  );
+
+  if (suffixFieldItems.length === 1) {
+    return;
+  }
+
+  let firstFieldItem = item.fieldItems[0];
+
+  let sourceField = findSourceField({
+    sourceDef: item.sourceDef,
+    fieldItem: firstFieldItem
+  });
+
+  let sourceFieldLine = sourceField?.location?.range?.start?.line;
+
+  let line = isDefined(sourceFieldLine) ? sourceFieldLine + 1 : 0;
+
+  item.errors.push(
+    new BmError({
+      title: item.title,
+      message: `"${ParameterEnum.BuildMetrics}" "${MPROVE_TAG_FIELD_GROUP}" group "${item.groupName}" must have exactly one field with "${item.suffix}" suffix`,
+      lines: [
+        {
+          line: line,
+          name: item.fileName,
+          path: item.filePath
+        }
+      ]
+    })
+  );
+}
+
+type FieldWithTimeframe = FieldItem['field'] & {
+  type: {
+    timeframe?: string;
+  };
+};
+
+type MalloySourceExpression = {
+  node: string;
+  units?: string;
+  e?: {
+    node: string;
+    path?: string[];
+  };
+};
+
+type MalloySourceField = {
+  e?: MalloySourceExpression;
+  location?: {
+    range?: {
+      start?: {
+        line?: number;
+      };
+    };
+  };
+};
+
+function checkGroupTimeframes(item: {
+  sourceDef: MalloySourceDef;
+  fieldItems: FieldItem[];
+  groupName: string;
+  fileName: string;
+  filePath: string;
+  errors: BmError[];
+}) {
+  item.fieldItems.forEach(fieldItem => {
+    let field = fieldItem.field as FieldWithTimeframe;
+    let timeframe = field.type.timeframe;
+
+    if (isUndefined(timeframe)) {
       return;
     }
 
-    let firstFieldItem = group.fieldItems[0];
-
     let sourceField = findSourceField({
       sourceDef: item.sourceDef,
-      fieldItem: firstFieldItem
-    });
+      fieldItem: fieldItem
+    }) as MalloySourceField;
+
+    let sourceExpression = sourceField?.e;
+
+    let sourceExpressionFieldPath =
+      sourceExpression?.node === 'trunc' &&
+      sourceExpression.units === timeframe &&
+      sourceExpression.e?.node === 'field'
+        ? sourceExpression.e.path
+        : undefined;
+
+    let baseFieldName = sourceExpressionFieldPath?.at(-1);
+    let baseFieldNameEndsWithT = baseFieldName?.endsWith('_t') === true;
+
+    if (baseFieldNameEndsWithT) {
+      return;
+    }
 
     let sourceFieldLine = sourceField?.location?.range?.start?.line;
 
@@ -131,8 +256,9 @@ function checkModBuildMetricsFieldGroups(item: {
 
     item.errors.push(
       new BmError({
-        title: ErTitleEnum.BUILD_METRICS_FIELD_GROUP_MUST_HAVE_ONE_TS,
-        message: `"${ParameterEnum.BuildMetrics}" "${MPROVE_TAG_FIELD_GROUP}" group "${group.groupName}" must have exactly one field with "_ts" suffix`,
+        title:
+          ErTitleEnum.BUILD_METRICS_TIMEFRAME_FIELD_MUST_USE_FIELD_WITH_T_SUFFIX,
+        message: `"${ParameterEnum.BuildMetrics}" "${MPROVE_TAG_FIELD_GROUP}" group "${item.groupName}" timeframe field "${fieldItem.field.name}" must be based on a field with "_t" suffix`,
         lines: [
           {
             line: line,

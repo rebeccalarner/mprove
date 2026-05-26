@@ -4,7 +4,7 @@ import {
   ASTViewOperation,
   ASTWhereViewOperation
 } from '@malloydata/malloy-query-builder';
-import { MALLOY_FILTER_ANY, UTC } from '#common/constants/top';
+import { MALLOY_FILTER_ANY } from '#common/constants/top';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { FractionOperatorEnum } from '#common/enums/fraction/fraction-operator.enum';
@@ -116,11 +116,11 @@ export function processMalloyWhereOrHaving(item: {
           x.result === FieldResultEnum.Ts
       );
 
-      if (isDefined(baseModelField) && timezone === UTC) {
-        filterModelFields = [baseModelField];
-      } else if (isDefined(baseModelField)) {
-        filterModelFields = [baseModelField, modelField];
-      }
+      // if (isDefined(baseModelField) && timezone === UTC) {
+      filterModelFields = [baseModelField];
+      // } else if (isDefined(baseModelField)) {
+      // filterModelFields = [baseModelField, modelField];
+      // }
     }
 
     filterModelFields.forEach(filterModelField => {
