@@ -1,0 +1,10 @@
+report: r1
+title: t
+rows:
+- row_id: A
+  type: metric
+  metric: orders.orders_count.by.created_at
+  parameters:
+  - apply_to: created_at_t
+    conditions:
+    - f``

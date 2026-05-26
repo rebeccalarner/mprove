@@ -1,0 +1,11 @@
+dashboard: d1
+tiles:
+- title: t1
+  model: orders
+  select:
+  - orders_count
+  parameters:
+  - apply_to: created_at_t
+    conditions:
+    - f``
+  type: table

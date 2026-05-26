@@ -481,6 +481,23 @@ export function checkTileParameters<T extends dcType>(
                 return;
               }
 
+              if (modelField.isFieldGroupTimeframeBase === true) {
+                item.errors.push(
+                  new BmError({
+                    title: ErTitleEnum.FIELD_GROUP_T_FIELD_CANNOT_BE_FILTERED,
+                    message: `field "${p.apply_to}" cannot be filtered. Use _ts field instead`,
+                    lines: [
+                      {
+                        line: p.apply_to_line_num,
+                        name: x.fileName,
+                        path: x.filePath
+                      }
+                    ]
+                  })
+                );
+                return;
+              }
+
               if (isDefined(p.listen) && isDefined(p.conditions)) {
                 item.errors.push(
                   new BmError({

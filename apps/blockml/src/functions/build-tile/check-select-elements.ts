@@ -57,6 +57,23 @@ export function checkSelectElements<T extends dcType>(
             );
             return;
           }
+
+          if (modelField.isFieldGroupTimeframeBase === true) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.FIELD_GROUP_T_FIELD_CANNOT_BE_SELECTED,
+                message: `field "${element}" cannot be selected. Use _ts field instead`,
+                lines: [
+                  {
+                    line: tile.select_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
         });
       });
 
