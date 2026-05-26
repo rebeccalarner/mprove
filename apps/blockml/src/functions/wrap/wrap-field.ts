@@ -30,6 +30,7 @@ export function wrapField(item: {
     formatNumber: field.format_number,
     currencyPrefix: field.currency_prefix,
     currencySuffix: field.currency_suffix,
+    isFieldGroupTimeframeBase: false,
     sqlName: isStoreModel === true ? `${field.name}` : `${alias}_${field.name}`,
     topId: topNode.id,
     topLabel: topNode.label,

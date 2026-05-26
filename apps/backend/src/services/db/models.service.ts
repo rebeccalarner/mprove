@@ -31,6 +31,28 @@ export class ModelsService {
   tabToApi(item: { model: ModelTab; hasAccess: boolean }): ModelX {
     let { model, hasAccess } = item;
 
+    let fieldGroupTimeframeBaseFieldIds = model.fields
+      .filter(field => field.isFieldGroupTimeframeBase === true)
+      .map(field => field.id);
+
+    let fields = model.fields.filter(
+      field => field.isFieldGroupTimeframeBase === false
+    );
+
+    let nodes = model.nodes.map(node => {
+      let children = node.children?.filter(child => {
+        let isFieldGroupTimeframeBaseField =
+          child.isField === true &&
+          fieldGroupTimeframeBaseFieldIds.indexOf(child.id) > -1;
+
+        return isFieldGroupTimeframeBaseField === false;
+      });
+
+      return Object.assign({}, node, {
+        children: children
+      });
+    });
+
     let apiModel: ModelX = {
       structId: model.structId,
       modelId: model.modelId,
@@ -46,8 +68,8 @@ export class ModelsService {
       dateRangeIncludesRightSide: model.dateRangeIncludesRightSide,
       accessRoles: model.accessRoles,
       label: model.label,
-      fields: model.fields,
-      nodes: model.nodes,
+      fields: fields,
+      nodes: nodes,
       serverTs: model.serverTs
     };
 

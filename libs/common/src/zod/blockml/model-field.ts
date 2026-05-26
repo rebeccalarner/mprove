@@ -32,6 +32,7 @@ export let zModelField = z
     currencyPrefix: z.string().nullish(),
     currencySuffix: z.string().nullish(),
     buildMetrics: z.boolean().nullish(),
+    isFieldGroupTimeframeBase: z.boolean(),
     timeframe: z.string().nullish(),
     detail: z.enum(DetailUnitEnum).nullish()
   })

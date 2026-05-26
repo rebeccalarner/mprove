@@ -154,6 +154,7 @@ export const EMPTY_MCONFIG_FIELD: MconfigField = {
   formatNumber: undefined,
   currencyPrefix: undefined,
   currencySuffix: undefined,
+  isFieldGroupTimeframeBase: undefined,
   sorting: undefined,
   sortingNumber: undefined
 };

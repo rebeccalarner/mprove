@@ -165,6 +165,11 @@ export function wrapMalloyFieldItem(item: {
     tag => tag.key === ParameterEnum.BuildMetrics
   );
 
+  let isFieldGroupTimeframeBase =
+    isDefined(buildMetricsTag) &&
+    isDefined(fieldGroupTag) &&
+    fieldItem.field.name.endsWith('_t');
+
   let sourceField = fieldItem.sourceField as MalloySourceField;
 
   let sourceExpression = sourceField.e;
@@ -197,6 +202,7 @@ export function wrapMalloyFieldItem(item: {
     currencyPrefix: currencyPrefixTag?.value,
     currencySuffix: currencySuffixTag?.value,
     buildMetrics: isDefined(buildMetricsTag),
+    isFieldGroupTimeframeBase: isFieldGroupTimeframeBase,
     timeframe: fieldType.timeframe,
     sqlName: fieldSqlName,
     topId: topNode.id,
