@@ -40,17 +40,20 @@ export class ModelsService {
     );
 
     let nodes = model.nodes.map(node => {
-      let children = node.children?.filter(child => {
-        let isFieldGroupTimeframeBaseField =
-          child.isField === true &&
-          fieldGroupTimeframeBaseFieldIds.indexOf(child.id) > -1;
+      node.children?.map(midNode => {
+        if (midNode.children) {
+          midNode.children = midNode.children?.filter(child => {
+            return (
+              child.isField === false ||
+              fieldGroupTimeframeBaseFieldIds.indexOf(child.id) < 0
+            );
+          });
+        }
 
-        return isFieldGroupTimeframeBaseField === false;
+        return midNode;
       });
 
-      return Object.assign({}, node, {
-        children: children
-      });
+      return node;
     });
 
     let apiModel: ModelX = {
