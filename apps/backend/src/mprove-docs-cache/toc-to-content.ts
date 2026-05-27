@@ -1287,15 +1287,10 @@ import './tables/c1_distribution_centers_tx.malloy';
 #(mprove) top_label="Order Items"
 source: c1_order_items is c1_order_items_tx extend {
   join_one: orders is c1_orders_tx on order_id = orders.order_id
-  
   join_one: users is c1_users_tx on orders.user_id = users.user_id
-
   join_one: user_order_facts is c1_user_order_facts_tx on users.user_id = user_order_facts.user_id
-  
   join_one: inventory_items is c1_inventory_items_tx on inventory_item_id = inventory_items.inventory_item_id
-  
   join_one: products is c1_products_tx on inventory_items.product_id = products.product_id
-  
   join_one: distribution_centers is c1_distribution_centers_tx on inventory_items.distribution_center_id = distribution_centers.distribution_center_id
 
   measure:
@@ -1308,24 +1303,44 @@ Example of building Metrics that can be used in [Reports](/content/docs/referenc
 
 \`\`\`malloy title="tables/c1_orders_tx.malloy"
 ##! experimental{sql_functions}
-source: c1_orders_table is c1_postgres.table('ecommerce.orders') extend {}
+##! experimental.access_modifiers
+##! experimental { sql_functions virtual_source }
 
-source: c1_orders_tx is c1_orders_table extend {
+type: c1_orders_type is {
+  order_id :: string,
+  user_id :: string,
+  created_at :: number,
+  created_at_ts :: timestamptz,
+  status :: string
+}
+
+source: c1_orders_table is c1_postgres.table('ecommerce.orders')::c1_orders_type extend {
+  rename: created_at_timestamp is created_at_ts
+}
+
+source: c1_orders_tx is c1_orders_table include {
+  internal:
+    created_at_timestamp
+    created_at
+  public: *
+} extend {
   primary_key: order_id
+
+  measure:
+    orders_count is count()
 
   #(mprove) build_metrics field_group="Created At"
   dimension:
-    created_at_ts is sql_timestamp(""" TIMESTAMP 'epoch' + \${created_at} * INTERVAL '1 second' """)
-    created_at_day is created_at_ts.day
-    created_at_week is created_at_ts.week
-    created_at_month is created_at_ts.month
-    created_at_quarter is created_at_ts.quarter
-    created_at_year is created_at_ts.year
-    created_at_hour is created_at_ts.hour
-    created_at_minute is created_at_ts.minute
-    created_at_second is created_at_ts.second
-
-  measure: orders_count is count()
+    created_at_t is created_at_timestamp
+    created_at_ts is created_at_t
+    created_at_day is created_at_t.day
+    created_at_week is created_at_t.week
+    created_at_month is created_at_t.month
+    created_at_quarter is created_at_t.quarter
+    created_at_year is created_at_t.year
+    created_at_hour is created_at_t.hour
+    created_at_minute is created_at_t.minute
+    created_at_second is created_at_t.second
 }
 \`\`\`
 
@@ -1342,10 +1357,10 @@ source: c1_orders_tx is c1_orders_table extend {
 
 ### Dimension #(mprove) Tags
 
-| Name          | Type | Default | Description                                                                                                                |
-| ------------- | ---- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| build_metrics | tag  | -       | Mprove creates a metric for each pair of tagged time based dimensions and measure (for all measures of the malloy source). |
-| field_group   | tag  | -       | Mprove adds the tagged fields to a subgroup in the web interface (model fields tree).                                      |
+| Name          | Type | Default | Description                                                                                                                                                                                                                                                         |
+| ------------- | ---- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build_metrics | tag  | -       | Mprove creates a metric for each pair of measure and tagged time based dimension (for all measures of the malloy source). \`build_metrics\` \`field_group\` must have fields with "\\_t" and "\\_ts" suffixes. Timeframes can only be based on a field with "\\_t" suffix. |
+| field_group   | tag  | -       | Mprove adds the tagged fields to a subgroup in the web interface (model fields tree).                                                                                                                                                                               |
 ` },
   { pageId: 'reference/model-store', content: `# Model - Store
 
