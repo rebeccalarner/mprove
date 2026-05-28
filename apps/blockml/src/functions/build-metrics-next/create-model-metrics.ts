@@ -134,15 +134,17 @@ export function createModelMetrics(
 
       apiModel.fields
         .filter(
-          x =>
-            x.buildMetrics === true &&
-            (x.result === FieldResultEnum.Ts ||
-              x.result === FieldResultEnum.Date)
+          x => x.buildMetrics === true && x.id.endsWith('_ts')
+          // &&
+          // (x.result === FieldResultEnum.Ts ||
+          //   x.result === FieldResultEnum.Date)
         )
         .forEach(x => {
-          let timeId = isDefined(x.timeframe)
-            ? x.id.slice(0, -(x.timeframe.length + 1))
-            : x.id.slice(0, -('ts'.length + 1));
+          let timeId =
+            // isDefined(x.timeframe)
+            //   ? x.id.slice(0, -(x.timeframe.length + 1))
+            //   :
+            x.id.slice(0, -('ts'.length + 1));
 
           let fieldGroupTag = x.mproveTags.find(
             x => x.key === MPROVE_TAG_FIELD_GROUP

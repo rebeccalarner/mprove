@@ -43,6 +43,8 @@ export enum FuncEnum {
 
   BuildMalloyModel = 'build-mod-start/build-malloy-model',
   BuildMods = 'build-mod-start/build-mods',
+  BuildFlatMalloyFieldItems = 'build-mod-start/build-flat-malloy-field-items',
+  CheckTimeframes = 'build-mod-start/check-timeframes',
   CheckBuildMetricsFieldGroups = 'build-mod-start/check-build-metrics-field-groups',
 
   CheckReport = 'build-report/check-report',

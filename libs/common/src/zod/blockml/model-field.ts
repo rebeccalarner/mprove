@@ -18,7 +18,10 @@ export let zModelField = z
     maxFractions: z.number().nullish(),
     label: z.string(),
     fieldClass: z.enum(FieldClassEnum),
+    fieldFileName: z.string().nullish(),
+    fieldFilePath: z.string().nullish(),
     result: z.enum(FieldResultEnum).nullish(),
+    fieldLineNum: z.number().int().nullish(),
     suggestModelDimension: z.string().nullish(),
     sqlName: z.string(),
     topId: z.string(),
@@ -32,7 +35,7 @@ export let zModelField = z
     currencyPrefix: z.string().nullish(),
     currencySuffix: z.string().nullish(),
     buildMetrics: z.boolean().nullish(),
-    isFieldGroupTimeframeBase: z.boolean(),
+    isTimeframeBase: z.boolean(),
     timeframe: z.string().nullish(),
     detail: z.enum(DetailUnitEnum).nullish()
   })

@@ -32,7 +32,7 @@ source: c1_order_items is c1_order_items_tx extend {
   view: view_min_first_order_created_ts_by_users_state is {
     top: 10
     group_by: users.state
-    aggregate: min_first_order_created_at_ts is min(user_order_facts.first_order_created_at_ts)
+    aggregate: min_first_order_created_at_timestamp is min(user_order_facts.first_order_created_at_timestamp)
   }
 
   -- where: users.state ~ f`VA`

@@ -10,45 +10,28 @@ import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { capitalizeFirstLetter } from '#common/functions/capitalize-first-letter';
 import { isDefined } from '#common/functions/is-defined';
 import { parseTags } from '#common/functions/parse-tags';
+import type { FlatMalloyFieldItem } from '#common/zod/blockml/internal/flat-malloy-field-item';
 import type { ModelField } from '#common/zod/blockml/model-field';
 import type { ModelNode } from '#common/zod/blockml/model-node';
-import { FieldItem } from '../extra/get-field-items';
 
-type MalloySourceExpression = {
-  node: string;
-  units?: string;
-  e?: {
-    node: string;
-    path?: string[];
-  };
-};
-
-type MalloySourceField = {
-  e?: MalloySourceExpression;
-};
-
-type FieldItemFieldWithAtomicType = FieldItem['field'] & {
+type FieldItemFieldWithAtomicType = FlatMalloyFieldItem['field'] & {
   type: AtomicType & { timeframe?: string };
 };
 
-export interface FieldItemX extends FieldItem {
-  filePath: string;
-  lineNum: number;
-  sourceField: unknown;
-}
-
-export function wrapMalloyFieldItem(item: {
+export function wrapFlatMalloyFieldItem(item: {
   topNode: ModelNode;
-  fieldItem: FieldItemX;
+  flatMalloyFieldItem: FlatMalloyFieldItem;
   alias: string;
   fileName: string;
-  filePath: string;
 }) {
-  let { fieldItem, alias, fileName, filePath, topNode } = item;
+  let { flatMalloyFieldItem, alias, fileName, topNode } = item;
 
-  let fieldId = [...fieldItem.path, fieldItem.field.name].join('.');
+  let fieldId = [
+    ...flatMalloyFieldItem.path,
+    flatMalloyFieldItem.field.name
+  ].join('.');
 
-  let field = fieldItem.field as FieldItemFieldWithAtomicType;
+  let field = flatMalloyFieldItem.field as FieldItemFieldWithAtomicType;
 
   let fieldType = field.type;
 
@@ -76,13 +59,13 @@ export function wrapMalloyFieldItem(item: {
                       : undefined;
 
   let fieldClass =
-    fieldItem.field.kind === 'dimension'
+    flatMalloyFieldItem.field.kind === 'dimension'
       ? FieldClassEnum.Dimension
-      : fieldItem.field.kind === 'measure'
+      : flatMalloyFieldItem.field.kind === 'measure'
         ? FieldClassEnum.Measure
         : undefined;
 
-  let fieldLabel = fieldItem.field.name
+  let fieldLabel = flatMalloyFieldItem.field.name
     .split('_')
     .map(k =>
       NO_CAPITALIZE_LIST.indexOf(k) < 0 ? capitalizeFirstLetter(k) : k
@@ -90,14 +73,14 @@ export function wrapMalloyFieldItem(item: {
     .join(' ');
 
   let fieldSqlName =
-    fieldItem.path.length > 0
-      ? fieldItem.path.join(DOUBLE_UNDERSCORE) +
+    flatMalloyFieldItem.path.length > 0
+      ? flatMalloyFieldItem.path.join(DOUBLE_UNDERSCORE) +
         DOUBLE_UNDERSCORE +
-        fieldItem.field.name
-      : fieldItem.field.name;
+        flatMalloyFieldItem.field.name
+      : flatMalloyFieldItem.field.name;
 
   let { malloyTags, mproveTags } = parseTags({
-    inputs: fieldItem.field.annotations?.map(x => x.value) || []
+    inputs: flatMalloyFieldItem.field.annotations?.map(x => x.value) || []
   });
 
   let fieldNode: ModelNode = {
@@ -109,9 +92,9 @@ export function wrapMalloyFieldItem(item: {
     isField: true,
     children: [],
     fieldFileName: fileName,
-    fieldFilePath: fieldItem.filePath,
+    fieldFilePath: flatMalloyFieldItem.filePath,
     fieldResult: result,
-    fieldLineNum: fieldItem.lineNum,
+    fieldLineNum: flatMalloyFieldItem.lineNum,
     nodeClass: fieldClass
   };
 
@@ -165,14 +148,11 @@ export function wrapMalloyFieldItem(item: {
     tag => tag.key === ParameterEnum.BuildMetrics
   );
 
-  let isFieldGroupTimeframeBase =
-    isDefined(buildMetricsTag) &&
-    isDefined(fieldGroupTag) &&
-    fieldItem.field.name.endsWith('_t');
+  let isTimeframeBase =
+    flatMalloyFieldItem.field.name.endsWith('_t') &&
+    [FieldResultEnum.Ts, FieldResultEnum.Date].indexOf(result) > -1;
 
-  let sourceField = fieldItem.sourceField as MalloySourceField;
-
-  let sourceExpression = sourceField.e;
+  let sourceExpression = flatMalloyFieldItem.sourceExpression;
 
   let sourceExpressionFieldPath =
     sourceExpression?.node === 'trunc' &&
@@ -182,13 +162,13 @@ export function wrapMalloyFieldItem(item: {
       : undefined;
 
   let malloyBaseFieldId = isDefined(sourceExpressionFieldPath)
-    ? [...fieldItem.path, ...sourceExpressionFieldPath].join('.')
+    ? [...flatMalloyFieldItem.path, ...sourceExpressionFieldPath].join('.')
     : undefined;
 
   let modelField: ModelField = {
     id: fieldId,
-    malloyFieldName: fieldItem.field.name,
-    malloyFieldPath: fieldItem.path,
+    malloyFieldName: flatMalloyFieldItem.field.name,
+    malloyFieldPath: flatMalloyFieldItem.path,
     malloyBaseFieldId: malloyBaseFieldId,
     malloyTags: malloyTags,
     mproveTags: mproveTags,
@@ -197,12 +177,15 @@ export function wrapMalloyFieldItem(item: {
     maxFractions: undefined,
     label: fieldLabel,
     fieldClass: fieldClass,
+    fieldFileName: fileName,
+    fieldFilePath: flatMalloyFieldItem.filePath,
     result: result,
+    fieldLineNum: flatMalloyFieldItem.lineNum,
     formatNumber: formatNumberTag?.value,
     currencyPrefix: currencyPrefixTag?.value,
     currencySuffix: currencySuffixTag?.value,
     buildMetrics: isDefined(buildMetricsTag),
-    isFieldGroupTimeframeBase: isFieldGroupTimeframeBase,
+    isTimeframeBase: isTimeframeBase,
     timeframe: fieldType.timeframe,
     sqlName: fieldSqlName,
     topId: topNode.id,

@@ -1,8 +1,5 @@
-import {
-  ModelDef as MalloyModelDef,
-  SourceDef as MalloySourceDef
-} from '@malloydata/malloy';
-import { ModelEntryValueWithSource } from '@malloydata/malloy-interfaces';
+import type { ModelDef as MalloyModelDef } from '@malloydata/malloy';
+import type { ModelEntryValueWithSource } from '@malloydata/malloy-interfaces';
 import { MF } from '#common/constants/top';
 import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
@@ -23,9 +20,8 @@ import type { KeyValuePair } from '#common/zod/blockml/key-value-pair';
 import type { Model } from '#common/zod/blockml/model';
 import type { ModelField } from '#common/zod/blockml/model-field';
 import type { ModelNode } from '#common/zod/blockml/model-node';
-import { getFieldItems } from '../extra/get-field-items';
 import { wrapField } from './wrap-field';
-import { FieldItemX, wrapMalloyFieldItem } from './wrap-malloy-field-item';
+import { wrapFlatMalloyFieldItem } from './wrap-malloy-field-item';
 // import fse from 'fs-extra';
 
 export function wrapModels(item: {
@@ -81,55 +77,18 @@ export function wrapModels(item: {
           tag => tag.key === ParameterEnum.TopLabel
         );
 
-        let fieldItems = getFieldItems(malloySourceInfo);
+        let flatMalloyFieldItems = (x as FileMod).flatMalloyFieldItems;
 
-        let fieldItemXs: FieldItemX[] = [];
+        if (isUndefined(flatMalloyFieldItems)) {
+          return;
+        }
 
-        let sourceDef: MalloySourceDef = malloyModelDef.contents[
-          (x as FileMod).source
-        ] as MalloySourceDef;
-
-        fieldItems.forEach(fieldItem => {
-          let fields = sourceDef.fields;
-
-          fieldItem.path.forEach(path => {
-            let parent = fields.find(
-              pField =>
-                (pField.as === path || pField.name === path) &&
-                isDefined((pField as any)?.fields)
-            );
-
-            if (isDefined(parent)) {
-              fields = (parent as any).fields;
-            }
-          });
-
-          let field = fields.find(
-            pField =>
-              pField.as === fieldItem.field.name ||
-              pField.name === fieldItem.field.name
-          );
-
-          // TODO: check "field.location?" for field type array and record
-          let filePathStartIndex = field.location?.url.indexOf(`${projectId}/`);
-
-          let fieldItemX: FieldItemX = {
-            path: fieldItem.path,
-            field: fieldItem.field,
-            filePath: field.location?.url.slice(filePathStartIndex),
-            lineNum: field.location?.range.start.line + 1,
-            sourceField: field
-          };
-
-          fieldItemXs.push(fieldItemX);
-        });
-
-        let filteredFieldItemXs = fieldItemXs.filter(
-          fieldItemX =>
-            ['dimension', 'measure'].indexOf(fieldItemX.field.kind) > -1
+        let filteredFlatFieldItems = flatMalloyFieldItems.filter(
+          fieldItem =>
+            ['dimension', 'measure'].indexOf(fieldItem.field.kind) > -1
         );
 
-        let topIds = filteredFieldItemXs.map(y => {
+        let topIds = filteredFlatFieldItems.map(y => {
           return y.path.length === 0 ? MF : y.path.join('.');
         });
 
@@ -159,7 +118,7 @@ export function wrapModels(item: {
             nodeClass: FieldClassEnum.Join
           };
 
-          let nodeFieldItems = filteredFieldItemXs.filter(y => {
+          let nodeFlatMalloyFieldItems = filteredFlatFieldItems.filter(y => {
             if (topId === MF) {
               return y.path.length === 0;
             } else {
@@ -167,11 +126,10 @@ export function wrapModels(item: {
             }
           });
 
-          nodeFieldItems.forEach(fieldItemX => {
-            let apiField: ModelField = wrapMalloyFieldItem({
-              fieldItem: fieldItemX,
+          nodeFlatMalloyFieldItems.forEach(flatMalloyFieldItem => {
+            let apiField: ModelField = wrapFlatMalloyFieldItem({
+              flatMalloyFieldItem: flatMalloyFieldItem,
               alias: topId,
-              filePath: x.filePath,
               fileName: x.fileName,
               topNode: topNode
             });

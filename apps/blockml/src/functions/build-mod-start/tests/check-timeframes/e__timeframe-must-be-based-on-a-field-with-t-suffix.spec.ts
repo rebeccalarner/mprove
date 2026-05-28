@@ -17,8 +17,8 @@ import type { ProjectConnection } from '#common/zod/backend/project-connection';
 import type { FileMod } from '#common/zod/blockml/internal/file-mod';
 
 let caller = CallerEnum.BuildModStart;
-let func = FuncEnum.CheckBuildMetricsFieldGroups;
-let testId = 'e__build-metrics-timeframe-field-must-use-field-with-t-suffix';
+let func = FuncEnum.CheckTimeframes;
+let testId = 'e__timeframe-must-be-based-on-a-field-with-t-suffix';
 
 test('1', async t => {
   let errors: BmError[];
@@ -97,7 +97,13 @@ test('1', async t => {
   t.is(errors.length > 0, true);
   t.is(
     errors[0].title,
-    ErTitleEnum.BUILD_METRICS_TIMEFRAME_FIELD_MUST_USE_FIELD_WITH_T_SUFFIX
+    ErTitleEnum.TIMEFRAME_MUST_BE_BASED_ON_A_FIELD_WITH_T_SUFFIX
+  );
+  t.is(errors[0].lines[0].line, 8);
+  t.true(
+    errors[0].lines[0].path.endsWith(
+      'c1_postgres/models/tables/orders_base.malloy'
+    )
   );
   t.is(entMods.length, 0);
 });

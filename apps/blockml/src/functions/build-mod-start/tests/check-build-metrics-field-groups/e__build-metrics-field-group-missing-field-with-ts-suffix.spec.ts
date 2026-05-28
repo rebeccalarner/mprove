@@ -99,5 +99,11 @@ test('1', async t => {
     errors[0].title,
     ErTitleEnum.BUILD_METRICS_FIELD_GROUP_MISSING_FIELD_WITH_TS_SUFFIX
   );
+  t.is(errors[0].lines[0].line, 8);
+  t.true(
+    errors[0].lines[0].path.endsWith(
+      'c1_postgres/models/tables/orders_base.malloy'
+    )
+  );
   t.is(entMods.length, 0);
 });

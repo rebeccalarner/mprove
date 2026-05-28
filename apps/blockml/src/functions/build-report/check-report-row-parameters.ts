@@ -463,7 +463,7 @@ export function checkReportRowParameters(
 
                 p.notStoreApplyToResult = modelField.result;
 
-                if (modelField.isFieldGroupTimeframeBase === true) {
+                if (modelField.isTimeframeBase === true) {
                   item.errors.push(
                     new BmError({
                       title: ErTitleEnum.FIELD_GROUP_T_FIELD_CANNOT_BE_FILTERED,

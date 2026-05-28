@@ -3,6 +3,7 @@ import type { ModelEntryValueWithSource } from '@malloydata/malloy-interfaces';
 import { z } from 'zod';
 import { ConnectionTypeEnum } from '#common/enums/connection-type.enum';
 import { zFileBasic } from '#common/zod/blockml/internal/file-basic';
+import type { FlatMalloyFieldItem } from '#common/zod/blockml/internal/flat-malloy-field-item';
 
 export let zFileMod = zFileBasic
   .extend({
@@ -14,7 +15,8 @@ export let zFileMod = zFileBasic
     connectionId: z.string().nullish(),
     connectionType: z.enum(ConnectionTypeEnum).nullish(),
     malloyModel: z.custom<MalloyModel>().nullish(),
-    valueWithSourceInfo: z.custom<ModelEntryValueWithSource>().nullish()
+    valueWithSourceInfo: z.custom<ModelEntryValueWithSource>().nullish(),
+    flatMalloyFieldItems: z.custom<FlatMalloyFieldItem[]>().nullish()
   })
   .meta({ id: 'FileMod' });
 

@@ -1,10 +1,6 @@
-##! experimental{sql_functions}
+import './tables/orders_base.malloy';
 
 #(mprove) model
-source: orders is c1_postgres.table('ecommerce.orders') extend {
-  #(mprove) build_metrics field_group="Created At"
-  dimension:
-    created_at_day is created_at_ts.day
-
+source: orders is orders_base extend {
   measure: orders_count is count()
 }

@@ -1,0 +1,9 @@
+##! experimental{sql_functions}
+
+source: orders_base is c1_postgres.table('ecommerce.orders') extend {
+  rename: created_at_timestamp is created_at_ts
+
+  #(mprove) build_metrics field_group="Created At"
+  dimension:
+    created_at_t is created_at_timestamp
+}

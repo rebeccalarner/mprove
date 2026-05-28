@@ -31,13 +31,11 @@ export class ModelsService {
   tabToApi(item: { model: ModelTab; hasAccess: boolean }): ModelX {
     let { model, hasAccess } = item;
 
-    let fieldGroupTimeframeBaseFieldIds = model.fields
-      .filter(field => field.isFieldGroupTimeframeBase === true)
+    let timeframeBaseFieldIds = model.fields
+      .filter(field => field.isTimeframeBase === true)
       .map(field => field.id);
 
-    let fields = model.fields.filter(
-      field => field.isFieldGroupTimeframeBase === false
-    );
+    let fields = model.fields.filter(field => field.isTimeframeBase === false);
 
     let nodes = model.nodes.map(node => {
       node.children?.map(midNode => {
@@ -45,7 +43,7 @@ export class ModelsService {
           midNode.children = midNode.children?.filter(child => {
             return (
               child.isField === false ||
-              fieldGroupTimeframeBaseFieldIds.indexOf(child.id) < 0
+              timeframeBaseFieldIds.indexOf(child.id) < 0
             );
           });
         }
