@@ -19,6 +19,8 @@ import type {
   DconfigSt,
   EnvLt,
   EnvSt,
+  GivenLt,
+  GivenSt,
   KitLt,
   KitSt,
   MconfigLt,
@@ -64,6 +66,7 @@ import { ConnectionEnt } from './connections';
 import { DashboardEnt } from './dashboards';
 import { DconfigEnt } from './dconfigs';
 import { EnvEnt } from './envs';
+import { GivenEnt } from './givens';
 import { KitEnt } from './kits';
 import { MconfigEnt } from './mconfigs';
 import { MemberEnt } from './members';
@@ -124,6 +127,11 @@ export interface DashboardTab
     DashboardLt {}
 
 export interface EnvTab extends Omit<EnvEnt, 'st' | 'lt'>, EnvSt, EnvLt {}
+
+export interface GivenTab
+  extends Omit<GivenEnt, 'st' | 'lt'>,
+    GivenSt,
+    GivenLt {}
 
 export interface DconfigTab
   extends Omit<DconfigEnt, 'st' | 'lt'>,

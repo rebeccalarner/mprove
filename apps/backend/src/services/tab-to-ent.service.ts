@@ -12,6 +12,7 @@ import type {
   DashboardTab,
   DconfigTab,
   EnvTab,
+  GivenTab,
   KitTab,
   MconfigTab,
   MemberTab,
@@ -41,6 +42,7 @@ import { ConnectionEnt } from '#backend/drizzle/postgres/schema/connections';
 import { DashboardEnt } from '#backend/drizzle/postgres/schema/dashboards';
 import { DconfigEnt } from '#backend/drizzle/postgres/schema/dconfigs';
 import { EnvEnt } from '#backend/drizzle/postgres/schema/envs';
+import { GivenEnt } from '#backend/drizzle/postgres/schema/givens';
 import { KitEnt } from '#backend/drizzle/postgres/schema/kits';
 import { MconfigEnt } from '#backend/drizzle/postgres/schema/mconfigs';
 import { MemberEnt } from '#backend/drizzle/postgres/schema/members';
@@ -83,6 +85,8 @@ import type {
   DconfigSt,
   EnvLt,
   EnvSt,
+  GivenLt,
+  GivenSt,
   KitLt,
   KitSt,
   MconfigLt,
@@ -200,6 +204,11 @@ export class TabToEntService {
         tabsPack.envs
           ?.filter(x => isDefined(x))
           .map(x => this.envTabToEnt({ tab: x, hashSecret: hashSecret })) ?? [],
+      givens:
+        tabsPack.givens
+          ?.filter(x => isDefined(x))
+          .map(x => this.givenTabToEnt({ tab: x, hashSecret: hashSecret })) ??
+        [],
       kits:
         tabsPack.kits
           ?.filter(x => isDefined(x))
@@ -646,6 +655,31 @@ export class TabToEntService {
     };
 
     return uconfigEnt;
+  }
+
+  givenTabToEnt(item: { tab: GivenTab; hashSecret: string }): GivenEnt {
+    let { tab, hashSecret } = item;
+
+    let givenSt: GivenSt = { values: tab.values };
+    let givenLt: GivenLt = {};
+
+    let givenEnt: GivenEnt = {
+      givenFullId: this.hashService.makeGivenFullId({
+        projectId: tab.projectId,
+        givenId: tab.givenId
+      }),
+      projectId: tab.projectId,
+      givenId: tab.givenId,
+      type: tab.type,
+      ...this.getEntProps({
+        dataSt: givenSt,
+        dataLt: givenLt,
+        isMetadata: false
+      }),
+      serverTs: tab.serverTs
+    };
+
+    return givenEnt;
   }
 
   envTabToEnt(item: { tab: EnvTab; hashSecret: string }): EnvEnt {

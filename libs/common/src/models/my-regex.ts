@@ -185,6 +185,9 @@ export class MyRegex {
   static CAPTURE_NOT_ALLOWED_ENV_VAR_CHARS_G(): RegExp {
     return cloneRegexp(/([^A-Z0-9_])/g);
   }
+  static GIVEN_ID(): RegExp {
+    return cloneRegexp(/^[A-Z_][A-Z0-9_]*$/);
+  }
   static CAPTURE_NOT_ALLOWED_CONNECTION_NAME_CHARS_G(): RegExp {
     return cloneRegexp(/([^a-z0-9_])/g);
   }

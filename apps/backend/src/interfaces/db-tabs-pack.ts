@@ -9,6 +9,7 @@ import type {
   DashboardTab,
   DconfigTab,
   EnvTab,
+  GivenTab,
   KitTab,
   MconfigTab,
   MemberTab,
@@ -39,6 +40,7 @@ export class DbTabsPack {
   dashboards?: DashboardTab[];
   dconfigs?: DconfigTab[];
   envs?: EnvTab[];
+  givens?: GivenTab[];
   ocEvents?: OcEventTab[];
   kits?: KitTab[];
   mconfigs?: MconfigTab[];

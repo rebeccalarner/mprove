@@ -29,6 +29,7 @@ import { chartsTable } from '#backend/drizzle/postgres/schema/charts';
 import { connectionsTable } from '#backend/drizzle/postgres/schema/connections';
 import { dashboardsTable } from '#backend/drizzle/postgres/schema/dashboards';
 import { envsTable } from '#backend/drizzle/postgres/schema/envs';
+import { givensTable } from '#backend/drizzle/postgres/schema/givens';
 import { kitsTable } from '#backend/drizzle/postgres/schema/kits';
 import { mconfigsTable } from '#backend/drizzle/postgres/schema/mconfigs';
 import { membersTable } from '#backend/drizzle/postgres/schema/members';
@@ -225,6 +226,10 @@ export class DeleteRecordsController {
             await tx
               .delete(envsTable)
               .where(inArray(envsTable.projectId, projectIds));
+
+            await tx
+              .delete(givensTable)
+              .where(inArray(givensTable.projectId, projectIds));
 
             await tx
               .delete(queriesTable)

@@ -54,6 +54,10 @@ import { SaveFileController } from './controllers/files/save-file/save-file.cont
 import { ValidateFilesController } from './controllers/files/validate-files/validate-files.controller';
 import { CreateFolderController } from './controllers/folders/create-folder/create-folder.controller';
 import { DeleteFolderController } from './controllers/folders/delete-folder/delete-folder.controller';
+import { CreateGivenController } from './controllers/givens/create-given/create-given.controller';
+import { DeleteGivenController } from './controllers/givens/delete-given/delete-given.controller';
+import { EditGivenController } from './controllers/givens/edit-given/edit-given.controller';
+import { GetGivensController } from './controllers/givens/get-givens/get-givens.controller';
 import { DuplicateMconfigAndQueryController } from './controllers/mconfigs/duplicate-mconfig-and-query/duplicate-mconfig-and-query.controller';
 import { GroupMetricByDimensionController } from './controllers/mconfigs/group-metric-by-dimension/group-metric-by-dimension.controller';
 import { SuggestDimensionValuesController } from './controllers/mconfigs/suggest-dimension-values/suggest-dimension-values.controller';
@@ -247,6 +251,11 @@ export const appControllers = [
   GetEnvsController,
   GetEnvsListController,
   EditEnvFallbacksController,
+
+  CreateGivenController,
+  DeleteGivenController,
+  EditGivenController,
+  GetGivensController,
 
   CancelQueriesController,
   GetQueriesController,

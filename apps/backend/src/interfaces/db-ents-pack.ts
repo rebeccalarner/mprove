@@ -8,6 +8,7 @@ import { ConnectionEnt } from '#backend/drizzle/postgres/schema/connections';
 import { DashboardEnt } from '#backend/drizzle/postgres/schema/dashboards';
 import { DconfigEnt } from '#backend/drizzle/postgres/schema/dconfigs';
 import { EnvEnt } from '#backend/drizzle/postgres/schema/envs';
+import { GivenEnt } from '#backend/drizzle/postgres/schema/givens';
 import { KitEnt } from '#backend/drizzle/postgres/schema/kits';
 import { MconfigEnt } from '#backend/drizzle/postgres/schema/mconfigs';
 import { MemberEnt } from '#backend/drizzle/postgres/schema/members';
@@ -37,6 +38,7 @@ export class DbEntsPack {
   dashboards?: DashboardEnt[];
   dconfigs?: DconfigEnt[];
   envs?: EnvEnt[];
+  givens?: GivenEnt[];
   ocEvents?: OcEventEnt[];
   kits?: KitEnt[];
   mconfigs?: MconfigEnt[];

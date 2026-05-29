@@ -8,6 +8,7 @@ import * as connections from '#backend/drizzle/postgres/schema/connections';
 import * as dashboards from '#backend/drizzle/postgres/schema/dashboards';
 import * as dconfigs from '#backend/drizzle/postgres/schema/dconfigs';
 import * as envs from '#backend/drizzle/postgres/schema/envs';
+import * as givens from '#backend/drizzle/postgres/schema/givens';
 import * as kits from '#backend/drizzle/postgres/schema/kits';
 import * as mconfigs from '#backend/drizzle/postgres/schema/mconfigs';
 import * as members from '#backend/drizzle/postgres/schema/members';
@@ -38,6 +39,7 @@ export const schemaPostgres = {
   ...dashboards,
   ...dconfigs,
   ...envs,
+  ...givens,
   ...kits,
   ...mconfigs,
   ...members,

@@ -29,6 +29,7 @@ import { connectionsTable } from './schema/connections';
 import { dashboardsTable } from './schema/dashboards';
 import { dconfigsTable } from './schema/dconfigs';
 import { envsTable } from './schema/envs';
+import { givensTable } from './schema/givens';
 import { kitsTable } from './schema/kits';
 import { mconfigsTable } from './schema/mconfigs';
 import { membersTable } from './schema/members';
@@ -215,6 +216,10 @@ export class DrizzlePacker {
 
       if (insertEnts.envs.length > 0) {
         await tx.insert(envsTable).values(insertEnts.envs);
+      }
+
+      if (insertEnts.givens.length > 0) {
+        await tx.insert(givensTable).values(insertEnts.givens);
       }
 
       if (insertEnts.kits.length > 0) {
@@ -436,6 +441,20 @@ export class DrizzlePacker {
             .update(envsTable)
             .set(x)
             .where(eq(envsTable.envFullId, x.envFullId));
+        });
+      }
+
+      if (updateEnts.givens.length > 0) {
+        updateEnts.givens = setUndefinedToNull({
+          ents: updateEnts.givens,
+          table: givensTable
+        });
+
+        await forEachSeries(updateEnts.givens, async x => {
+          await tx
+            .update(givensTable)
+            .set(x)
+            .where(eq(givensTable.givenFullId, x.givenFullId));
         });
       }
 
@@ -904,6 +923,29 @@ export class DrizzlePacker {
           .onConflictDoUpdate({
             target: envsTable.envFullId,
             set: drizzleSetAllColumnsFull({ table: envsTable })
+          });
+      }
+
+      if (insOrUpdEnts.givens.length > 0) {
+        let uniqueGivenFullIds = [
+          ...new Set(insOrUpdEnts.givens.map(x => x.givenFullId))
+        ];
+
+        insOrUpdEnts.givens = uniqueGivenFullIds.map(id =>
+          insOrUpdEnts.givens.find(x => x.givenFullId === id)
+        );
+
+        insOrUpdEnts.givens = setUndefinedToNull({
+          ents: insOrUpdEnts.givens,
+          table: givensTable
+        });
+
+        await tx
+          .insert(givensTable)
+          .values(insOrUpdEnts.givens)
+          .onConflictDoUpdate({
+            target: givensTable.givenFullId,
+            set: drizzleSetAllColumnsFull({ table: givensTable })
           });
       }
 
