@@ -164,6 +164,14 @@ export class HashService {
     return hash;
   }
 
+  makeRoleFullId(item: { projectId: string; roleId: string }) {
+    let { projectId, roleId } = item;
+
+    let text = projectId + roleId;
+    let hash = crypto.createHash('sha256').update(text).digest('hex');
+    return hash;
+  }
+
   makeEvFullId(item: { projectId: string; envId: string; evId: string }) {
     let { projectId, envId, evId } = item;
 

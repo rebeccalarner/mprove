@@ -4,25 +4,24 @@ import test from 'ava';
 import { logToConsoleBackend } from '#backend/functions/log-to-console-backend';
 import { prepareTestAndSeed } from '#backend/functions/prepare-test';
 import { sendToBackend } from '#backend/functions/send-to-backend';
-import { Prep } from '#backend/interfaces/prep';
+import type { Prep } from '#backend/interfaces/prep';
 import { BRANCH_MAIN } from '#common/constants/top';
 import { BACKEND_E2E_RETRY_OPTIONS } from '#common/constants/top-backend';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { LogLevelEnum } from '#common/enums/log-level.enum';
 import { ProjectRemoteTypeEnum } from '#common/enums/project-remote-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { makeId } from '#common/functions/make-id';
 import type {
-  ToBackendCreateGivenRequest,
-  ToBackendCreateGivenResponse
-} from '#common/zod/to-backend/givens/to-backend-create-given';
+  ToBackendCreateRoleRequest,
+  ToBackendCreateRoleResponse
+} from '#common/zod/to-backend/roles/to-backend-create-role';
 import type {
-  ToBackendEditGivenRequest,
-  ToBackendEditGivenResponse
-} from '#common/zod/to-backend/givens/to-backend-edit-given';
+  ToBackendDeleteRoleRequest,
+  ToBackendDeleteRoleResponse
+} from '#common/zod/to-backend/roles/to-backend-delete-role';
 
-let testId = 'backend-edit-given__ok';
+let testId = 'backend-delete-role__ok';
 
 let traceId = testId;
 
@@ -36,14 +35,12 @@ let orgName = testId;
 let projectId = makeId();
 let projectName = testId;
 
-let givenId = 'GIVEN_ONE';
-
 test('1', async t => {
   let isPass: boolean;
   let prep: Prep;
 
   await retry(async (bail: any) => {
-    let resp: ToBackendEditGivenResponse;
+    let resp: ToBackendDeleteRoleResponse;
 
     try {
       prep = await prepareTestAndSeed({
@@ -92,43 +89,58 @@ test('1', async t => {
         },
         loginUserPayload: { email: email, password: password }
       });
-      let createReq: ToBackendCreateGivenRequest = {
+
+      let createRoleOneReq: ToBackendCreateRoleRequest = {
         info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendCreateGiven,
+          name: ToBackendRequestInfoNameEnum.ToBackendCreateRole,
           traceId: traceId,
           idempotencyKey: makeId()
         },
         payload: {
           projectId: projectId,
-          givenId: givenId,
-          type: GivenTypeEnum.Array,
-          values: ['a', 'b']
+          roleId: 'role_one'
         }
       };
 
-      let createResp = await sendToBackend<ToBackendCreateGivenResponse>({
+      await sendToBackend<ToBackendCreateRoleResponse>({
+        checkIsOk: true,
         httpServer: prep.httpServer,
         loginToken: prep.loginToken,
-        req: createReq
+        req: createRoleOneReq
       });
 
-      assert.equal(createResp.info.error, undefined);
-      assert.equal(createResp.info.status, ResponseInfoStatusEnum.Ok);
-
-      let req: ToBackendEditGivenRequest = {
+      let createRoleTwoReq: ToBackendCreateRoleRequest = {
         info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendEditGiven,
+          name: ToBackendRequestInfoNameEnum.ToBackendCreateRole,
           traceId: traceId,
           idempotencyKey: makeId()
         },
         payload: {
           projectId: projectId,
-          givenId: givenId,
-          values: ['edited']
+          roleId: 'role_two'
         }
       };
 
-      resp = await sendToBackend<ToBackendEditGivenResponse>({
+      await sendToBackend<ToBackendCreateRoleResponse>({
+        checkIsOk: true,
+        httpServer: prep.httpServer,
+        loginToken: prep.loginToken,
+        req: createRoleTwoReq
+      });
+
+      let req: ToBackendDeleteRoleRequest = {
+        info: {
+          name: ToBackendRequestInfoNameEnum.ToBackendDeleteRole,
+          traceId: traceId,
+          idempotencyKey: makeId()
+        },
+        payload: {
+          projectId: projectId,
+          roleId: 'role_one'
+        }
+      };
+
+      resp = await sendToBackend<ToBackendDeleteRoleResponse>({
         httpServer: prep.httpServer,
         loginToken: prep.loginToken,
         req: req
@@ -149,9 +161,10 @@ test('1', async t => {
 
     assert.equal(resp.info.error, undefined);
     assert.equal(resp.info.status, ResponseInfoStatusEnum.Ok);
-    assert.equal(resp.payload.givens.length, 1);
-    assert.equal(resp.payload.givens[0].type, GivenTypeEnum.Array);
-    assert.deepEqual(resp.payload.givens[0].values, ['edited']);
+    assert.deepEqual(
+      resp.payload.roles.map(x => x.roleId),
+      ['role_two']
+    );
 
     isPass = true;
   }, BACKEND_E2E_RETRY_OPTIONS).catch((er: any) => {

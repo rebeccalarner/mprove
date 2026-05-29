@@ -26,6 +26,7 @@ import { ThrottlerUserIdGuard } from '#backend/guards/throttler-user-id.guard';
 import { GivensService } from '#backend/services/db/givens.service';
 import { MembersService } from '#backend/services/db/members.service';
 import { ProjectsService } from '#backend/services/db/projects.service';
+import { RolesService } from '#backend/services/db/roles.service';
 import { THROTTLE_CUSTOM } from '#common/constants/top-backend';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import type { ToBackendDeleteGivenResponsePayload } from '#common/zod/to-backend/givens/to-backend-delete-given';
@@ -39,6 +40,7 @@ export class DeleteGivenController {
     private projectsService: ProjectsService,
     private membersService: MembersService,
     private givensService: GivensService,
+    private rolesService: RolesService,
     private cs: ConfigService<BackendConfig>,
     private logger: Logger,
     @Inject(DRIZZLE) private db: Db
@@ -72,6 +74,18 @@ export class DeleteGivenController {
       givenId: givenId
     });
 
+    let roles = await this.rolesService.getRoles({
+      projectId: projectId
+    });
+
+    let rolesToUpdate = roles.filter(role =>
+      role.gvs.some(x => x.givenId === givenId)
+    );
+
+    rolesToUpdate.forEach(role => {
+      role.gvs = role.gvs.filter(x => x.givenId !== givenId);
+    });
+
     await retry(
       async () =>
         await this.db.drizzle.transaction(async tx => {
@@ -83,6 +97,13 @@ export class DeleteGivenController {
                 eq(givensTable.givenId, givenId)
               )
             );
+
+          await this.db.packer.write({
+            tx: tx,
+            insertOrUpdate: {
+              roles: rolesToUpdate
+            }
+          });
         }),
       getRetryOption(this.cs, this.logger)
     );

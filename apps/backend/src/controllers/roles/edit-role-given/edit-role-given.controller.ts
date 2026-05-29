@@ -12,9 +12,9 @@ import { Throttle } from '@nestjs/throttler';
 import retry from 'async-retry';
 import { BackendConfig } from '#backend/config/backend-config';
 import {
-  ToBackendEditGivenRequestDto,
-  ToBackendEditGivenResponseDto
-} from '#backend/controllers/givens/edit-given/edit-given.dto';
+  ToBackendEditRoleGivenRequestDto,
+  ToBackendEditRoleGivenResponseDto
+} from '#backend/controllers/roles/edit-role-given/edit-role-given.dto';
 import { AttachUser } from '#backend/decorators/attach-user.decorator';
 import type { Db } from '#backend/drizzle/drizzle.module';
 import { DRIZZLE } from '#backend/drizzle/drizzle.module';
@@ -24,37 +24,39 @@ import { ThrottlerUserIdGuard } from '#backend/guards/throttler-user-id.guard';
 import { GivensService } from '#backend/services/db/givens.service';
 import { MembersService } from '#backend/services/db/members.service';
 import { ProjectsService } from '#backend/services/db/projects.service';
+import { RolesService } from '#backend/services/db/roles.service';
 import { THROTTLE_CUSTOM } from '#common/constants/top-backend';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
-import type { ToBackendEditGivenResponsePayload } from '#common/zod/to-backend/givens/to-backend-edit-given';
+import type { ToBackendEditRoleGivenResponsePayload } from '#common/zod/to-backend/roles/to-backend-edit-role-given';
 
-@ApiTags('Givens')
+@ApiTags('Roles')
 @UseGuards(ThrottlerUserIdGuard)
 @Throttle(THROTTLE_CUSTOM)
 @Controller()
-export class EditGivenController {
+export class EditRoleGivenController {
   constructor(
     private projectsService: ProjectsService,
     private membersService: MembersService,
     private givensService: GivensService,
+    private rolesService: RolesService,
     private cs: ConfigService<BackendConfig>,
     private logger: Logger,
     @Inject(DRIZZLE) private db: Db
   ) {}
 
-  @Post(ToBackendRequestInfoNameEnum.ToBackendEditGiven)
+  @Post(ToBackendRequestInfoNameEnum.ToBackendEditRoleGiven)
   @ApiOperation({
-    summary: 'EditGiven',
-    description: 'Edit a project given'
+    summary: 'EditRoleGiven',
+    description: 'Edit a project role given'
   })
   @ApiOkResponse({
-    type: ToBackendEditGivenResponseDto
+    type: ToBackendEditRoleGivenResponseDto
   })
-  async editGiven(
+  async editRoleGiven(
     @AttachUser() user: UserTab,
-    @Body() body: ToBackendEditGivenRequestDto
+    @Body() body: ToBackendEditRoleGivenRequestDto
   ) {
-    let { projectId, givenId, values } = body.payload;
+    let { projectId, roleId, givenId, values } = body.payload;
 
     await this.projectsService.getProjectCheckExists({
       projectId: projectId
@@ -65,12 +67,17 @@ export class EditGivenController {
       projectId: projectId
     });
 
-    let given = await this.givensService.getGivenCheckExists({
+    let role = await this.rolesService.getRoleCheckExists({
       projectId: projectId,
+      roleId: roleId
+    });
+
+    let roleGiven = this.rolesService.getRoleGivenCheckExists({
+      role: role,
       givenId: givenId
     });
 
-    given.values = values;
+    roleGiven.values = values;
 
     await retry(
       async () =>
@@ -79,20 +86,20 @@ export class EditGivenController {
             await this.db.packer.write({
               tx: tx,
               insertOrUpdate: {
-                givens: [given]
+                roles: [role]
               }
             })
         ),
       getRetryOption(this.cs, this.logger)
     );
 
-    let apiGivens = await this.givensService.getApiGivens({
+    let apiRoles = await this.rolesService.getApiRoles({
       projectId: projectId
     });
 
-    let payload: ToBackendEditGivenResponsePayload = {
+    let payload: ToBackendEditRoleGivenResponsePayload = {
       userMember: this.membersService.tabToApi({ member: userMember }),
-      givens: apiGivens
+      roles: apiRoles
     };
 
     return payload;

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { MyRegex } from '#common/models/my-regex';
 import { zGiven } from '#common/zod/backend/given';
@@ -16,7 +15,6 @@ export let zToBackendEditGivenRequestPayload = z
       message:
         'givenId must start with an uppercase letter or underscore and contain only uppercase letters, digits and underscores'
     }),
-    type: z.enum(GivenTypeEnum),
     values: z.array(z.string())
   })
   .meta({ id: 'ToBackendEditGivenRequestPayload' });

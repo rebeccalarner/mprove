@@ -23,6 +23,7 @@ import { OrgEnt } from '#backend/drizzle/postgres/schema/orgs';
 import { ProjectEnt } from '#backend/drizzle/postgres/schema/projects';
 import { QueryEnt } from '#backend/drizzle/postgres/schema/queries';
 import { ReportEnt } from '#backend/drizzle/postgres/schema/reports';
+import { RoleEnt } from '#backend/drizzle/postgres/schema/roles';
 import { SessionEnt } from '#backend/drizzle/postgres/schema/sessions';
 import { StructEnt } from '#backend/drizzle/postgres/schema/structs';
 import { UconfigEnt } from '#backend/drizzle/postgres/schema/uconfigs';
@@ -53,6 +54,7 @@ export class DbEntsPack {
   projects?: ProjectEnt[];
   queries?: QueryEnt[];
   reports?: ReportEnt[];
+  roles?: RoleEnt[];
   sessions?: SessionEnt[];
   structs?: StructEnt[];
   uconfigs?: UconfigEnt[];

@@ -24,6 +24,7 @@ import type {
   ProjectTab,
   QueryTab,
   ReportTab,
+  RoleTab,
   SessionTab,
   StructTab,
   UconfigTab,
@@ -55,6 +56,7 @@ export class DbTabsPack {
   projects?: ProjectTab[];
   queries?: QueryTab[];
   reports?: ReportTab[];
+  roles?: RoleTab[];
   sessions?: SessionTab[];
   structs?: StructTab[];
   uconfigs?: UconfigTab[];

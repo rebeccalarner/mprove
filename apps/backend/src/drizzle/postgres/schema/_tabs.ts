@@ -47,6 +47,8 @@ import type {
   QuerySt,
   ReportLt,
   ReportSt,
+  RoleLt,
+  RoleSt,
   SessionLt,
   SessionSt,
   StructLt,
@@ -81,6 +83,7 @@ import { OrgEnt } from './orgs';
 import { ProjectEnt } from './projects';
 import { QueryEnt } from './queries';
 import { ReportEnt } from './reports';
+import { RoleEnt } from './roles';
 import { SessionEnt } from './sessions';
 import { StructEnt } from './structs';
 import { UconfigEnt } from './uconfigs';
@@ -176,6 +179,8 @@ export interface ReportTab
   extends Omit<ReportEnt, 'st' | 'lt'>,
     ReportSt,
     ReportLt {}
+
+export interface RoleTab extends Omit<RoleEnt, 'st' | 'lt'>, RoleSt, RoleLt {}
 
 export interface StructTab
   extends Omit<StructEnt, 'st' | 'lt'>,

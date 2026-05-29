@@ -27,6 +27,7 @@ import type {
   ProjectTab,
   QueryTab,
   ReportTab,
+  RoleTab,
   SessionTab,
   StructTab,
   UconfigTab,
@@ -57,6 +58,7 @@ import { OrgEnt } from '#backend/drizzle/postgres/schema/orgs';
 import { ProjectEnt } from '#backend/drizzle/postgres/schema/projects';
 import { QueryEnt } from '#backend/drizzle/postgres/schema/queries';
 import { ReportEnt } from '#backend/drizzle/postgres/schema/reports';
+import { RoleEnt } from '#backend/drizzle/postgres/schema/roles';
 import { SessionEnt } from '#backend/drizzle/postgres/schema/sessions';
 import { StructEnt } from '#backend/drizzle/postgres/schema/structs';
 import { UconfigEnt } from '#backend/drizzle/postgres/schema/uconfigs';
@@ -113,6 +115,8 @@ import type {
   QuerySt,
   ReportLt,
   ReportSt,
+  RoleLt,
+  RoleSt,
   SessionLt,
   SessionSt,
   StructLt,
@@ -208,6 +212,11 @@ export class TabToEntService {
         tabsPack.givens
           ?.filter(x => isDefined(x))
           .map(x => this.givenTabToEnt({ tab: x, hashSecret: hashSecret })) ??
+        [],
+      roles:
+        tabsPack.roles
+          ?.filter(x => isDefined(x))
+          .map(x => this.roleTabToEnt({ tab: x, hashSecret: hashSecret })) ??
         [],
       kits:
         tabsPack.kits
@@ -680,6 +689,30 @@ export class TabToEntService {
     };
 
     return givenEnt;
+  }
+
+  roleTabToEnt(item: { tab: RoleTab; hashSecret: string }): RoleEnt {
+    let { tab, hashSecret } = item;
+
+    let roleSt: RoleSt = { gvs: tab.gvs };
+    let roleLt: RoleLt = {};
+
+    let roleEnt: RoleEnt = {
+      roleFullId: this.hashService.makeRoleFullId({
+        projectId: tab.projectId,
+        roleId: tab.roleId
+      }),
+      projectId: tab.projectId,
+      roleId: tab.roleId,
+      ...this.getEntProps({
+        dataSt: roleSt,
+        dataLt: roleLt,
+        isMetadata: false
+      }),
+      serverTs: tab.serverTs
+    };
+
+    return roleEnt;
   }
 
   envTabToEnt(item: { tab: EnvTab; hashSecret: string }): EnvEnt {

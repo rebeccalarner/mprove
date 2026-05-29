@@ -18,10 +18,6 @@ import type {
   ToBackendCreateGivenResponse
 } from '#common/zod/to-backend/givens/to-backend-create-given';
 import type {
-  ToBackendDeleteGivenRequest,
-  ToBackendDeleteGivenResponse
-} from '#common/zod/to-backend/givens/to-backend-delete-given';
-import type {
   ToBackendCreateRoleRequest,
   ToBackendCreateRoleResponse
 } from '#common/zod/to-backend/roles/to-backend-create-role';
@@ -29,12 +25,8 @@ import type {
   ToBackendCreateRoleGivenRequest,
   ToBackendCreateRoleGivenResponse
 } from '#common/zod/to-backend/roles/to-backend-create-role-given';
-import type {
-  ToBackendGetRolesRequest,
-  ToBackendGetRolesResponse
-} from '#common/zod/to-backend/roles/to-backend-get-roles';
 
-let testId = 'backend-delete-given__ok';
+let testId = 'backend-create-role-given__ok';
 
 let traceId = testId;
 
@@ -48,17 +40,15 @@ let orgName = testId;
 let projectId = makeId();
 let projectName = testId;
 
-let givenId = 'GIVEN_ONE';
-let givenId2 = 'GIVEN_TWO';
 let roleId = 'role_one';
+let givenId = 'GIVEN_ONE';
 
 test('1', async t => {
   let isPass: boolean;
   let prep: Prep;
 
   await retry(async (bail: any) => {
-    let resp: ToBackendDeleteGivenResponse;
-    let getRolesResp: ToBackendGetRolesResponse;
+    let resp: ToBackendCreateRoleGivenResponse;
 
     try {
       prep = await prepareTestAndSeed({
@@ -108,7 +98,7 @@ test('1', async t => {
         loginUserPayload: { email: email, password: password }
       });
 
-      let createReq: ToBackendCreateGivenRequest = {
+      let createGivenReq: ToBackendCreateGivenRequest = {
         info: {
           name: ToBackendRequestInfoNameEnum.ToBackendCreateGiven,
           traceId: traceId,
@@ -118,30 +108,7 @@ test('1', async t => {
           projectId: projectId,
           givenId: givenId,
           type: GivenTypeEnum.Array,
-          values: ['a', 'b']
-        }
-      };
-
-      let createResp = await sendToBackend<ToBackendCreateGivenResponse>({
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: createReq
-      });
-
-      assert.equal(createResp.info.error, undefined);
-      assert.equal(createResp.info.status, ResponseInfoStatusEnum.Ok);
-
-      let createReq2: ToBackendCreateGivenRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendCreateGiven,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId,
-          givenId: givenId2,
-          type: GivenTypeEnum.Array,
-          values: ['c', 'd']
+          values: ['a', 'b', 'c']
         }
       };
 
@@ -149,7 +116,7 @@ test('1', async t => {
         checkIsOk: true,
         httpServer: prep.httpServer,
         loginToken: prep.loginToken,
-        req: createReq2
+        req: createGivenReq
       });
 
       let createRoleReq: ToBackendCreateRoleRequest = {
@@ -160,7 +127,7 @@ test('1', async t => {
         },
         payload: {
           projectId: projectId,
-          roleId: roleId
+          roleId: 'role_one'
         }
       };
 
@@ -171,7 +138,7 @@ test('1', async t => {
         req: createRoleReq
       });
 
-      let createRoleGivenReq: ToBackendCreateRoleGivenRequest = {
+      let req: ToBackendCreateRoleGivenRequest = {
         info: {
           name: ToBackendRequestInfoNameEnum.ToBackendCreateRoleGiven,
           traceId: traceId,
@@ -181,71 +148,14 @@ test('1', async t => {
           projectId: projectId,
           roleId: roleId,
           givenId: givenId,
-          values: ['a']
+          values: ['a', 'b']
         }
       };
 
-      await sendToBackend<ToBackendCreateRoleGivenResponse>({
-        checkIsOk: true,
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: createRoleGivenReq
-      });
-
-      let createRoleGivenReq2: ToBackendCreateRoleGivenRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendCreateRoleGiven,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId,
-          roleId: roleId,
-          givenId: givenId2,
-          values: ['c']
-        }
-      };
-
-      await sendToBackend<ToBackendCreateRoleGivenResponse>({
-        checkIsOk: true,
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: createRoleGivenReq2
-      });
-
-      let req: ToBackendDeleteGivenRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendDeleteGiven,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId,
-          givenId: givenId
-        }
-      };
-
-      resp = await sendToBackend<ToBackendDeleteGivenResponse>({
+      resp = await sendToBackend<ToBackendCreateRoleGivenResponse>({
         httpServer: prep.httpServer,
         loginToken: prep.loginToken,
         req: req
-      });
-
-      let getRolesReq: ToBackendGetRolesRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId
-        }
-      };
-
-      getRolesResp = await sendToBackend<ToBackendGetRolesResponse>({
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: getRolesReq
       });
 
       await prep.app.close();
@@ -263,16 +173,12 @@ test('1', async t => {
 
     assert.equal(resp.info.error, undefined);
     assert.equal(resp.info.status, ResponseInfoStatusEnum.Ok);
-    assert.equal(resp.payload.givens.length, 1);
-    assert.equal(resp.payload.givens[0].givenId, givenId2);
-    assert.equal(getRolesResp.info.error, undefined);
-    assert.equal(getRolesResp.info.status, ResponseInfoStatusEnum.Ok);
-    assert.equal(getRolesResp.payload.roles.length, 1);
-    assert.equal(getRolesResp.payload.roles[0].roleId, roleId);
-    assert.deepEqual(getRolesResp.payload.roles[0].gvs, [
+    assert.equal(resp.payload.roles.length, 1);
+    assert.equal(resp.payload.roles[0].roleId, roleId);
+    assert.deepEqual(resp.payload.roles[0].gvs, [
       {
-        givenId: givenId2,
-        values: ['c']
+        givenId: givenId,
+        values: ['a', 'b']
       }
     ]);
 

@@ -44,6 +44,7 @@ import { orgsTable } from './schema/orgs';
 import { projectsTable } from './schema/projects';
 import { queriesTable } from './schema/queries';
 import { reportsTable } from './schema/reports';
+import { rolesTable } from './schema/roles';
 import { sessionsTable } from './schema/sessions';
 import { structsTable } from './schema/structs';
 import { uconfigsTable } from './schema/uconfigs';
@@ -220,6 +221,10 @@ export class DrizzlePacker {
 
       if (insertEnts.givens.length > 0) {
         await tx.insert(givensTable).values(insertEnts.givens);
+      }
+
+      if (insertEnts.roles.length > 0) {
+        await tx.insert(rolesTable).values(insertEnts.roles);
       }
 
       if (insertEnts.kits.length > 0) {
@@ -455,6 +460,20 @@ export class DrizzlePacker {
             .update(givensTable)
             .set(x)
             .where(eq(givensTable.givenFullId, x.givenFullId));
+        });
+      }
+
+      if (updateEnts.roles.length > 0) {
+        updateEnts.roles = setUndefinedToNull({
+          ents: updateEnts.roles,
+          table: rolesTable
+        });
+
+        await forEachSeries(updateEnts.roles, async x => {
+          await tx
+            .update(rolesTable)
+            .set(x)
+            .where(eq(rolesTable.roleFullId, x.roleFullId));
         });
       }
 
@@ -946,6 +965,29 @@ export class DrizzlePacker {
           .onConflictDoUpdate({
             target: givensTable.givenFullId,
             set: drizzleSetAllColumnsFull({ table: givensTable })
+          });
+      }
+
+      if (insOrUpdEnts.roles.length > 0) {
+        let uniqueRoleFullIds = [
+          ...new Set(insOrUpdEnts.roles.map(x => x.roleFullId))
+        ];
+
+        insOrUpdEnts.roles = uniqueRoleFullIds.map(id =>
+          insOrUpdEnts.roles.find(x => x.roleFullId === id)
+        );
+
+        insOrUpdEnts.roles = setUndefinedToNull({
+          ents: insOrUpdEnts.roles,
+          table: rolesTable
+        });
+
+        await tx
+          .insert(rolesTable)
+          .values(insOrUpdEnts.roles)
+          .onConflictDoUpdate({
+            target: rolesTable.roleFullId,
+            set: drizzleSetAllColumnsFull({ table: rolesTable })
           });
       }
 

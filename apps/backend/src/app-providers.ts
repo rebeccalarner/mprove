@@ -54,6 +54,7 @@ import { OrgsService } from './services/db/orgs.service';
 import { ProjectsService } from './services/db/projects.service';
 import { QueriesService } from './services/db/queries.service';
 import { ReportsService } from './services/db/reports.service';
+import { RolesService } from './services/db/roles.service';
 import { SessionsService } from './services/db/sessions.service';
 import { StructsService } from './services/db/structs.service';
 import { UsersService } from './services/db/users.service';
@@ -138,6 +139,7 @@ export const appProviders = [
   ProjectsService,
   QueriesService,
   ReportsService,
+  RolesService,
   StructsService,
   UsersService,
   //

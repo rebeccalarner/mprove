@@ -108,6 +108,12 @@ import { PushRepoController } from './controllers/repos/push-repo/push-repo.cont
 import { RevertRepoToLastCommitController } from './controllers/repos/revert-repo-to-last-commit/revert-repo-to-last-commit.controller';
 import { RevertRepoToRemoteController } from './controllers/repos/revert-repo-to-remote/revert-repo-to-remote.controller';
 import { SyncRepoController } from './controllers/repos/sync-repo/sync-repo.controller';
+import { CreateRoleController } from './controllers/roles/create-role/create-role.controller';
+import { CreateRoleGivenController } from './controllers/roles/create-role-given/create-role-given.controller';
+import { DeleteRoleController } from './controllers/roles/delete-role/delete-role.controller';
+import { DeleteRoleGivenController } from './controllers/roles/delete-role-given/delete-role-given.controller';
+import { EditRoleGivenController } from './controllers/roles/edit-role-given/edit-role-given.controller';
+import { GetRolesController } from './controllers/roles/get-roles/get-roles.controller';
 import { RunController } from './controllers/run/run/run.controller';
 import { ArchiveSessionController } from './controllers/sessions/archive-session/archive-session.controller';
 import { CloseExplorerSessionTabController } from './controllers/sessions/close-explorer-session-tab/close-explorer-session-tab.controller';
@@ -256,6 +262,13 @@ export const appControllers = [
   DeleteGivenController,
   EditGivenController,
   GetGivensController,
+
+  CreateRoleController,
+  CreateRoleGivenController,
+  EditRoleGivenController,
+  DeleteRoleGivenController,
+  DeleteRoleController,
+  GetRolesController,
 
   CancelQueriesController,
   GetQueriesController,

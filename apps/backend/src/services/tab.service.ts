@@ -27,6 +27,7 @@ import type {
   ProjectTab,
   QueryTab,
   ReportTab,
+  RoleTab,
   SessionTab,
   StructTab,
   UconfigTab,
@@ -56,6 +57,7 @@ import { OrgEnt } from '#backend/drizzle/postgres/schema/orgs';
 import { ProjectEnt } from '#backend/drizzle/postgres/schema/projects';
 import { QueryEnt } from '#backend/drizzle/postgres/schema/queries';
 import { ReportEnt } from '#backend/drizzle/postgres/schema/reports';
+import { RoleEnt } from '#backend/drizzle/postgres/schema/roles';
 import { SessionEnt } from '#backend/drizzle/postgres/schema/sessions';
 import { StructEnt } from '#backend/drizzle/postgres/schema/structs';
 import { UconfigEnt } from '#backend/drizzle/postgres/schema/uconfigs';
@@ -412,6 +414,19 @@ export class TabService {
     };
 
     return given;
+  }
+
+  roleEntToTab(roleEnt: RoleEnt): RoleTab {
+    if (isUndefined(roleEnt)) {
+      return;
+    }
+
+    let role: RoleTab = {
+      ...roleEnt,
+      ...this.getTabProps({ ent: roleEnt })
+    };
+
+    return role;
   }
 
   envEntToTab(envEnt: EnvEnt): EnvTab {

@@ -23,6 +23,7 @@ import * as orgs from '#backend/drizzle/postgres/schema/orgs';
 import * as projects from '#backend/drizzle/postgres/schema/projects';
 import * as queries from '#backend/drizzle/postgres/schema/queries';
 import * as reports from '#backend/drizzle/postgres/schema/reports';
+import * as roles from '#backend/drizzle/postgres/schema/roles';
 import * as sessions from '#backend/drizzle/postgres/schema/sessions';
 import * as structs from '#backend/drizzle/postgres/schema/structs';
 import * as uconfigs from '#backend/drizzle/postgres/schema/uconfigs';
@@ -54,6 +55,7 @@ export const schemaPostgres = {
   ...projects,
   ...queries,
   ...reports,
+  ...roles,
   ...sessions,
   ...structs,
   ...uconfigs,
