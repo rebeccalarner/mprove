@@ -31,6 +31,7 @@ import { zRow } from '#common/zod/blockml/row';
 import { zSorting } from '#common/zod/blockml/sorting';
 import { zStorePart } from '#common/zod/blockml/store-part';
 import { zTile } from '#common/zod/blockml/tile';
+import { zGv } from './backend/gv';
 
 export let zAvatarSt = z
   .object({ avatarSmall: z.string() })
@@ -130,6 +131,16 @@ export let zEnvLt = z
   .object({ emptyData: z.number().nullish() })
   .meta({ id: 'EnvLt' });
 export type EnvLt = z.infer<typeof zEnvLt>;
+
+export let zGivenSt = z
+  .object({ values: z.array(z.string()) })
+  .meta({ id: 'GivenSt' });
+export type GivenSt = z.infer<typeof zGivenSt>;
+
+export let zGivenLt = z
+  .object({ emptyData: z.number().nullish() })
+  .meta({ id: 'GivenLt' });
+export type GivenLt = z.infer<typeof zGivenLt>;
 
 export let zDconfigSt = z
   .object({
@@ -305,6 +316,14 @@ export let zReportLt = z
   .object({ rows: z.array(zRow) })
   .meta({ id: 'ReportLt' });
 export type ReportLt = z.infer<typeof zReportLt>;
+
+export let zRoleSt = z.object({ gvs: z.array(zGv) }).meta({ id: 'RoleSt' });
+export type RoleSt = z.infer<typeof zRoleSt>;
+
+export let zRoleLt = z
+  .object({ emptyData: z.number().nullish() })
+  .meta({ id: 'RoleLt' });
+export type RoleLt = z.infer<typeof zRoleLt>;
 
 export let zStructSt = z
   .object({ emptyData: z.number().nullish() })
