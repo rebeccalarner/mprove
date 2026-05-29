@@ -7,25 +7,18 @@ import { sendToBackend } from '#backend/functions/send-to-backend';
 import type { Prep } from '#backend/interfaces/prep';
 import { BRANCH_MAIN } from '#common/constants/top';
 import { BACKEND_E2E_RETRY_OPTIONS } from '#common/constants/top-backend';
+import { ErEnum } from '#common/enums/er.enum';
 import { LogLevelEnum } from '#common/enums/log-level.enum';
 import { ProjectRemoteTypeEnum } from '#common/enums/project-remote-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { makeId } from '#common/functions/make-id';
 import type {
-  ToBackendGetMembersRequest,
-  ToBackendGetMembersResponse
-} from '#common/zod/to-backend/members/to-backend-get-members';
-import type {
-  ToBackendCreateRoleRequest,
-  ToBackendCreateRoleResponse
-} from '#common/zod/to-backend/roles/to-backend-create-role';
-import type {
-  ToBackendDeleteRoleRequest,
-  ToBackendDeleteRoleResponse
-} from '#common/zod/to-backend/roles/to-backend-delete-role';
+  ToBackendEditMemberRequest,
+  ToBackendEditMemberResponse
+} from '#common/zod/to-backend/members/to-backend-edit-member';
 
-let testId = 'backend-delete-role__ok';
+let testId = 'backend-edit-member__roles-do-not-exist';
 
 let traceId = testId;
 
@@ -40,14 +33,14 @@ let projectId = makeId();
 let projectName = testId;
 
 let memberUserId = makeId();
-let memberUserEmail = `2nd-${testId}@example.com`;
+let memberUserEmail = `2${testId}@example.com`;
 
 test('1', async t => {
   let isPass: boolean;
   let prep: Prep;
 
   await retry(async (bail: any) => {
-    let resp: ToBackendDeleteRoleResponse;
+    let resp: ToBackendEditMemberResponse;
 
     try {
       prep = await prepareTestAndSeed({
@@ -96,8 +89,7 @@ test('1', async t => {
               projectId: projectId,
               isAdmin: true,
               isEditor: true,
-              isExplorer: true,
-              roles: ['role_one', 'role_two']
+              isExplorer: true
             },
             {
               memberId: memberUserId,
@@ -105,102 +97,34 @@ test('1', async t => {
               projectId: projectId,
               isAdmin: false,
               isEditor: true,
-              isExplorer: true,
-              roles: ['role_one']
+              isExplorer: true
             }
           ]
         },
         loginUserPayload: { email: email, password: password }
       });
 
-      let createRoleOneReq: ToBackendCreateRoleRequest = {
+      let req: ToBackendEditMemberRequest = {
         info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendCreateRole,
+          name: ToBackendRequestInfoNameEnum.ToBackendEditMember,
           traceId: traceId,
           idempotencyKey: makeId()
         },
         payload: {
           projectId: projectId,
-          roleId: 'role_one'
+          memberId: memberUserId,
+          isAdmin: false,
+          isEditor: true,
+          isExplorer: true,
+          roles: ['a', 'b', 'c']
         }
       };
 
-      await sendToBackend<ToBackendCreateRoleResponse>({
-        checkIsOk: true,
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: createRoleOneReq
-      });
-
-      let createRoleTwoReq: ToBackendCreateRoleRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendCreateRole,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId,
-          roleId: 'role_two'
-        }
-      };
-
-      await sendToBackend<ToBackendCreateRoleResponse>({
-        checkIsOk: true,
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: createRoleTwoReq
-      });
-
-      let req: ToBackendDeleteRoleRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendDeleteRole,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId,
-          roleId: 'role_one'
-        }
-      };
-
-      resp = await sendToBackend<ToBackendDeleteRoleResponse>({
+      resp = await sendToBackend<ToBackendEditMemberResponse>({
         httpServer: prep.httpServer,
         loginToken: prep.loginToken,
         req: req
       });
-
-      let getMembersReq: ToBackendGetMembersRequest = {
-        info: {
-          name: ToBackendRequestInfoNameEnum.ToBackendGetMembers,
-          traceId: traceId,
-          idempotencyKey: makeId()
-        },
-        payload: {
-          projectId: projectId,
-          pageNum: 1,
-          perPage: 10
-        }
-      };
-
-      let getMembersResp = await sendToBackend<ToBackendGetMembersResponse>({
-        httpServer: prep.httpServer,
-        loginToken: prep.loginToken,
-        req: getMembersReq
-      });
-
-      assert.equal(getMembersResp.info.error, undefined);
-
-      let adminMember = getMembersResp.payload.members.find(
-        member => member.memberId === userId
-      );
-      let projectMember = getMembersResp.payload.members.find(
-        member => member.memberId === memberUserId
-      );
-
-      assert.ok(adminMember);
-      assert.ok(projectMember);
-      assert.deepEqual(adminMember.roles, ['role_two']);
-      assert.deepEqual(projectMember.roles, []);
 
       await prep.app.close();
     } catch (e) {
@@ -215,13 +139,9 @@ test('1', async t => {
       }
     }
 
-    assert.equal(resp.info.error, undefined);
-    assert.equal(resp.info.status, ResponseInfoStatusEnum.Ok);
-    assert.deepEqual(resp.payload.userMember.roles, ['role_two']);
-    assert.deepEqual(
-      resp.payload.roles.map(x => x.roleId),
-      ['role_two']
-    );
+    assert.equal(resp.info.status, ResponseInfoStatusEnum.Error);
+    assert.equal(resp.info.error.message, ErEnum.BACKEND_ROLES_DO_NOT_EXIST);
+    assert.deepEqual(resp.info.error.displayData.roles, ['a', 'b', 'c']);
 
     isPass = true;
   }, BACKEND_E2E_RETRY_OPTIONS).catch((er: any) => {

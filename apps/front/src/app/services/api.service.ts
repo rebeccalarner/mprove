@@ -401,6 +401,20 @@ export class ApiService {
       } else if (infoErrorMessage === ErEnum.BACKEND_RESTRICTED_PROJECT) {
         errorData.description = `Some actions of Demo project are restricted. Switch organization project to remove restrictions.`;
         this.myDialogService.showError({ errorData, isThrow: false });
+      } else if (infoErrorMessage === ErEnum.BACKEND_ROLES_DO_NOT_EXIST) {
+        let missingRoles =
+          errorData.response.body.info.error.displayData?.roles;
+
+        let missingRolesText = Array.isArray(missingRoles)
+          ? missingRoles.join(', ')
+          : '';
+
+        errorData.message =
+          missingRolesText.length > 0
+            ? `Roles do not exist: ${missingRolesText}`
+            : 'Roles do not exist';
+
+        this.myDialogService.showError({ errorData, isThrow: false });
       } else if (
         [
           ErEnum.BACKEND_CREATE_DASHBOARD_FAIL,

@@ -28,6 +28,7 @@ import { getRetryOption } from '#backend/functions/get-retry-option';
 import { ThrottlerUserIdGuard } from '#backend/guards/throttler-user-id.guard';
 import { MembersService } from '#backend/services/db/members.service';
 import { ProjectsService } from '#backend/services/db/projects.service';
+import { RolesService } from '#backend/services/db/roles.service';
 import { TabService } from '#backend/services/tab.service';
 import { THROTTLE_CUSTOM } from '#common/constants/top-backend';
 import { ErEnum } from '#common/enums/er.enum';
@@ -45,6 +46,7 @@ export class EditMemberController {
     private tabService: TabService,
     private projectsService: ProjectsService,
     private membersService: MembersService,
+    private rolesService: RolesService,
     private cs: ConfigService<BackendConfig>,
     private logger: Logger,
     @Inject(DRIZZLE) private db: Db
@@ -79,6 +81,11 @@ export class EditMemberController {
         message: ErEnum.BACKEND_ADMIN_CANNOT_CHANGE_HIS_ADMIN_STATUS
       });
     }
+
+    await this.rolesService.checkRolesExist({
+      projectId: projectId,
+      roleIds: roles
+    });
 
     let member = await this.membersService.getMemberCheckExists({
       memberId: memberId,

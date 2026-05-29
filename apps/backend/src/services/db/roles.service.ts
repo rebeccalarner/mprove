@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { Db } from '#backend/drizzle/drizzle.module';
 import { DRIZZLE } from '#backend/drizzle/drizzle.module';
 import type { RoleTab } from '#backend/drizzle/postgres/schema/_tabs';
@@ -89,6 +89,44 @@ export class RolesService {
     }
 
     return role;
+  }
+
+  async checkRolesExist(item: { projectId: string; roleIds: string[] }) {
+    let { projectId, roleIds } = item;
+
+    let uniqueRoleIds: string[] = [];
+
+    roleIds.forEach(roleId => {
+      if (uniqueRoleIds.indexOf(roleId) < 0) {
+        uniqueRoleIds.push(roleId);
+      }
+    });
+
+    if (uniqueRoleIds.length === 0) {
+      return;
+    }
+
+    let roles = await this.db.drizzle.query.rolesTable.findMany({
+      where: and(
+        eq(rolesTable.projectId, projectId),
+        inArray(rolesTable.roleId, uniqueRoleIds)
+      )
+    });
+
+    let existingRoleIds = roles.map(role => role.roleId);
+
+    let missingRoleIds = uniqueRoleIds
+      .filter(roleId => existingRoleIds.indexOf(roleId) < 0)
+      .sort((a, b) => (a > b ? 1 : b > a ? -1 : 0));
+
+    if (missingRoleIds.length > 0) {
+      throw new ServerError({
+        message: ErEnum.BACKEND_ROLES_DO_NOT_EXIST,
+        displayData: {
+          roles: missingRoleIds
+        }
+      });
+    }
   }
 
   checkRoleGivenDoesNotExist(item: { role: RoleTab; givenId: string }) {
