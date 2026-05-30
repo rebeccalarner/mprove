@@ -47,6 +47,7 @@
                 <th class="select-none text-center">Explorer</th>
                 <th class="select-none"></th>
                 <th class="select-none text-left">Access Roles</th>
+                <th class="select-none text-center">Givens</th>
                 <th class="select-none"></th>
               </tr>
             </thead>
@@ -314,6 +315,18 @@
                         </div>
                       </div>
                     </div>
+                  </div>
+                </td>
+
+                <td class="w-32">
+                  <div class="flex justify-center">
+                    <button
+                      data-cy="projectTeamShowGivensButton"
+                      class="border-s400 text-s500 hover:bg-s100 w-[73px] select-none rounded border px-3 py-2 text-base leading-3 shadow-sm focus:outline-none"
+                      type="button"
+                      (click)="getMemberGivens(member)"
+                      >Show</button
+                    >
                   </div>
                 </td>
 

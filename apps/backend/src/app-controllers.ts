@@ -65,6 +65,7 @@ import { FullMcpJsonController } from './controllers/mcp-tools-full-json/full-mc
 import { CreateMemberController } from './controllers/members/create-member/create-member.controller';
 import { DeleteMemberController } from './controllers/members/delete-member/delete-member.controller';
 import { EditMemberController } from './controllers/members/edit-member/edit-member.controller';
+import { GetMemberGivensController } from './controllers/members/get-member-givens/get-member-givens.controller';
 import { GetMembersController } from './controllers/members/get-members/get-members.controller';
 import { GetMembersListController } from './controllers/members/get-members-list/get-members-list.controller';
 import { GetModelController } from './controllers/models/get-model/get-model.controller';
@@ -218,6 +219,7 @@ export const appControllers = [
   DeleteMemberController,
   EditMemberController,
   GetMembersController,
+  GetMemberGivensController,
   GetMembersListController,
 
   GetSuggestFieldsController,

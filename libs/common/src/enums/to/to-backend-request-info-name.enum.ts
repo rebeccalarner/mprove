@@ -77,6 +77,7 @@ export enum ToBackendRequestInfoNameEnum {
   ToBackendDeleteRole = 'api/ToBackendDeleteRole',
   //
   ToBackendGetMembers = 'api/ToBackendGetMembers',
+  ToBackendGetMemberGivens = 'api/ToBackendGetMemberGivens',
   ToBackendGetMembersList = 'api/ToBackendGetMembersList',
   ToBackendCreateMember = 'api/ToBackendCreateMember',
   ToBackendEditMember = 'api/ToBackendEditMember',

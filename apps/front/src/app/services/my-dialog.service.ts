@@ -232,6 +232,10 @@ import {
   AddRoleDialogData
 } from '../modules/project/project-team/add-role-dialog/add-role-dialog.component';
 import {
+  GetMemberGivensDialogComponent,
+  type GetMemberGivensDialogData
+} from '../modules/project/project-team/get-member-givens-dialog/get-member-givens-dialog.component';
+import {
   InviteMemberDialogComponent,
   InviteMemberDialogData
 } from '../modules/project/project-team/invite-member-dialog/invite-member-dialog.component';
@@ -723,6 +727,15 @@ export class MyDialogService {
       enableClose: false,
       closeButton: false,
       data: item
+    });
+  }
+
+  showGetMemberGivens(item: GetMemberGivensDialogData): void {
+    this.dialogService.open(GetMemberGivensDialogComponent, {
+      enableClose: true,
+      closeButton: true,
+      data: item,
+      width: '90vw'
     });
   }
 

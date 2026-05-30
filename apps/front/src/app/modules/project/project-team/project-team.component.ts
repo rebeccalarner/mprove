@@ -240,6 +240,15 @@ export class ProjectTeamComponent implements OnInit {
     });
   }
 
+  getMemberGivens(member: Member) {
+    this.myDialogService.showGetMemberGivens({
+      apiService: this.apiService,
+      projectId: member.projectId,
+      memberId: member.memberId,
+      email: member.email
+    });
+  }
+
   removeRole(member: Member, i: number, n: number) {
     let newRoles = [...member.roles];
     newRoles.splice(n, 1);
