@@ -19,6 +19,7 @@ export const ORGANIZATION_USERS_PAGE_TITLE = 'Organization - Users';
 export const SERVER_USERS_PAGE_TITLE = 'Server - Users';
 
 export const PROJECT_ENVIRONMENTS_PAGE_TITLE = 'Project - Environments';
+export const PROJECT_GIVENS_PAGE_TITLE = 'Project - Givens';
 export const PROJECT_CONNECTIONS_PAGE_TITLE = 'Project - Connections';
 export const PROJECT_INFO_PAGE_TITLE = 'Project - Info';
 export const PROJECT_TEAM_PAGE_TITLE = 'Project - Team';

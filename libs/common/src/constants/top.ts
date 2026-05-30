@@ -208,6 +208,7 @@ export const PATH_ENV = 'env';
 export const PATH_INFO = 'info';
 export const PATH_CONNECTIONS = 'connections';
 export const PATH_ENVIRONMENTS = 'environments';
+export const PATH_GIVENS = 'givens';
 export const PATH_TEAM = 'team';
 export const PATH_API_KEYS = 'api-keys';
 

@@ -41,7 +41,7 @@ export class GetGivensController {
       projectId: projectId
     });
 
-    let userMember = await this.membersService.getMemberCheckIsAdmin({
+    let userMember = await this.membersService.getMemberCheckIsEditorOrAdmin({
       projectId: projectId,
       memberId: user.userId
     });

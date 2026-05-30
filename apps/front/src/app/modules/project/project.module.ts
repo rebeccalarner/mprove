@@ -9,6 +9,7 @@ import { SharedModule } from '../shared/shared.module';
 import { ProjectApiKeysComponent } from './project-api-keys/project-api-keys.component';
 import { ProjectConnectionsComponent } from './project-connections/project-connections.component';
 import { ProjectEnvironmentsComponent } from './project-environments/project-environments.component';
+import { ProjectGivensComponent } from './project-givens/project-givens.component';
 import { ProjectInfoComponent } from './project-info/project-info.component';
 import { ProjectTeamComponent } from './project-team/project-team.component';
 
@@ -18,6 +19,7 @@ import { ProjectTeamComponent } from './project-team/project-team.component';
     ProjectTeamComponent,
     ProjectConnectionsComponent,
     ProjectEnvironmentsComponent,
+    ProjectGivensComponent,
     ProjectApiKeysComponent
   ],
   imports: [

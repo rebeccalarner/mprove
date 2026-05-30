@@ -6,6 +6,7 @@ import {
   PATH_API_KEYS,
   PATH_CONNECTIONS,
   PATH_ENVIRONMENTS,
+  PATH_GIVENS,
   PATH_INFO,
   PATH_ORG,
   PATH_PROJECT,
@@ -32,6 +33,7 @@ export class ProjectMenuComponent implements OnInit {
   pathApiKeys = PATH_API_KEYS;
   pathConnections = PATH_CONNECTIONS;
   pathEnvironments = PATH_ENVIRONMENTS;
+  pathGivens = PATH_GIVENS;
   pathTeam = PATH_TEAM;
 
   lastUrl: string;
@@ -120,6 +122,16 @@ export class ProjectMenuComponent implements OnInit {
       PATH_PROJECT,
       this.nav.projectId,
       PATH_ENVIRONMENTS
+    ]);
+  }
+
+  navigateGivens() {
+    this.router.navigate([
+      PATH_ORG,
+      this.nav.orgId,
+      PATH_PROJECT,
+      this.nav.projectId,
+      PATH_GIVENS
     ]);
   }
 

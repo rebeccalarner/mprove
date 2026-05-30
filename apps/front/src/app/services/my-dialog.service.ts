@@ -192,6 +192,18 @@ import {
   EditEvDialogData
 } from '../modules/project/project-environments/edit-ev-dialog/edit-ev-dialog.component';
 import {
+  AddGivenDialogComponent,
+  AddGivenDialogData
+} from '../modules/project/project-givens/add-given-dialog/add-given-dialog.component';
+import {
+  DeleteGivenDialogComponent,
+  DeleteGivenDialogData
+} from '../modules/project/project-givens/delete-given-dialog/delete-given-dialog.component';
+import {
+  EditGivenDialogComponent,
+  EditGivenDialogData
+} from '../modules/project/project-givens/edit-given-dialog/edit-given-dialog.component';
+import {
   DeleteProjectDialogComponent,
   DeleteProjectDialogData
 } from '../modules/project/project-info/delete-project-dialog/delete-project-dialog.component';
@@ -787,6 +799,32 @@ export class MyDialogService {
 
   showDeleteEnvironment(item: DeleteEnvironmentDialogData): void {
     this.dialogService.open(DeleteEnvironmentDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item
+    });
+  }
+
+  showAddGiven(item: AddGivenDialogData): void {
+    this.dialogService.open(AddGivenDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item,
+      width: 800
+    });
+  }
+
+  showEditGiven(item: EditGivenDialogData): void {
+    this.dialogService.open(EditGivenDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item,
+      width: 800
+    });
+  }
+
+  showDeleteGiven(item: DeleteGivenDialogData): void {
+    this.dialogService.open(DeleteGivenDialogComponent, {
       enableClose: false,
       closeButton: false,
       data: item

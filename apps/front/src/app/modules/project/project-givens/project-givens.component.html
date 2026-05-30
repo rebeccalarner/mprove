@@ -1,0 +1,123 @@
+<div class="bg-m1 flex h-full cursor-default flex-col">
+  <div class="mx-6 mb-6 mt-8 flex h-2 flex-grow flex-col">
+    <div class="flex h-11 flex-row items-center justify-start">
+      <div
+        data-cy="projectGivensTitle"
+        class="text-s1 flex select-none text-2xl font-semibold"
+        >{{ pageTitle }}
+      </div>
+
+      <div
+        class="ml-10"
+        tp="Admin role required"
+        [tpIsEnabled]="isAdmin === false"
+      >
+        <button
+          data-cy="projectGivensAddGivenButton"
+          class="text-m0 h-11 flex-shrink-0 select-none rounded px-5 py-2 text-base font-medium focus:outline-none"
+          type="button"
+          [ngClass]="{
+            'bg-m600': isAdmin === true,
+            'bg-s400 cursor-default': isAdmin === false
+          }"
+          (click)="addGiven()"
+          [disabled]="isAdmin === false"
+          >Add Given</button
+        >
+      </div>
+    </div>
+
+    <div class="bg-m0 mt-6 flex-grow overflow-auto rounded shadow">
+      <ng-scrollbar
+        [orientation]="'auto'"
+        [visibility]="'hover'"
+        [appearance]="'compact'"
+        *ngIf="givens?.length > 0"
+      >
+        <div class="text-s1 mx-5 mt-8">
+          <table class="divide-s500 min-w-full divide-y">
+            <thead>
+              <tr class="h-12 text-sm">
+                <th class="select-none text-left"></th>
+                <th class="select-none text-left"></th>
+                <th class="w-[360px] select-none text-left">Given Name</th>
+                <th class="select-none text-left">Type</th>
+                <th class="select-none text-left">Values</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-s300 divide-y text-base">
+              <tr *ngFor="let given of givens" class="h-16">
+                <td class="w-[100px]">
+                  <div
+                    class="w-fit"
+                    tp="Admin role required"
+                    [tpIsEnabled]="isAdmin === false"
+                  >
+                    <button
+                      data-cy="projectGivensDeleteButton"
+                      class="ml-5 h-9 w-9 rounded focus:outline-none"
+                      [ngClass]="{
+                        'text-s1 hover:bg-m200': isAdmin === true,
+                        'text-s400 cursor-default': isAdmin === false
+                      }"
+                      [disabled]="isAdmin === false"
+                      (click)="deleteGiven(given)"
+                    >
+                      <div class="flex justify-center">
+                        <m-trash-icon></m-trash-icon>
+                      </div>
+                    </button>
+                  </div>
+                </td>
+
+                <td class="w-24">
+                  <div
+                    class="w-fit"
+                    tp="Admin role required"
+                    [tpIsEnabled]="isAdmin === false"
+                  >
+                    <button
+                      data-cy="projectGivensEditButton"
+                      (click)="editGiven(given)"
+                      class="h-9 select-none rounded border px-3 text-base leading-3 shadow-sm focus:outline-none"
+                      [ngClass]="{
+                        'border-s400 text-s500 hover:bg-s100': isAdmin === true,
+                        'border-s300 text-s400 cursor-default':
+                          isAdmin === false
+                      }"
+                      [disabled]="isAdmin === false"
+                      >Edit</button
+                    >
+                  </div>
+                </td>
+
+                <td class="w-[360px] whitespace-nowrap pr-5">{{
+                  given.givenId
+                }}</td>
+                <td class="w-48">{{ given.type }}</td>
+                <td class="min-w-[360px] py-4 pr-5">
+                  <div class="flex flex-col gap-1">
+                    <div *ngFor="let value of given.values" class="break-all">
+                      {{ value }}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-scrollbar>
+
+      <div
+        *ngIf="givens?.length === 0"
+        class="text-s1 flex h-full w-full select-none items-center justify-center text-xl"
+        >No givens</div
+      >
+    </div>
+  </div>
+</div>
+
+<div *ngIf="nav$ | async"></div>
+<div *ngIf="isAdmin$ | async"></div>
+<div *ngIf="givens$ | async"></div>

@@ -30,6 +30,7 @@ import {
   PATH_EXPLORER,
   PATH_FILE,
   PATH_FORGOT_PASSWORD,
+  PATH_GIVENS,
   PATH_INFO,
   PATH_LOGIN,
   PATH_LOGIN_SUCCESS,
@@ -97,6 +98,7 @@ import { ProfileComponent } from './modules/profile/profile.component';
 import { ProjectApiKeysComponent } from './modules/project/project-api-keys/project-api-keys.component';
 import { ProjectConnectionsComponent } from './modules/project/project-connections/project-connections.component';
 import { ProjectEnvironmentsComponent } from './modules/project/project-environments/project-environments.component';
+import { ProjectGivensComponent } from './modules/project/project-givens/project-givens.component';
 import { ProjectInfoComponent } from './modules/project/project-info/project-info.component';
 import { ProjectTeamComponent } from './modules/project/project-team/project-team.component';
 import { ReportComponent } from './modules/reports/report/report.component';
@@ -117,6 +119,7 @@ import { ProfileResolver } from './resolvers/part/profile.resolver';
 import { ProjectResolver } from './resolvers/project.resolver';
 import { ProjectConnectionsResolver } from './resolvers/project-connections.resolver';
 import { ProjectEnvironmentsResolver } from './resolvers/project-environments.resolver';
+import { ProjectGivensResolver } from './resolvers/project-givens.resolver';
 import { ProjectInfoResolver } from './resolvers/project-info.resolver';
 import { ProjectTeamResolver } from './resolvers/project-team.resolver';
 import { RepoIdResolver } from './resolvers/repo-id.resolver';
@@ -256,6 +259,11 @@ export const appRoutes: Routes = [
                 component: ProjectEnvironmentsComponent,
                 path: PATH_ENVIRONMENTS,
                 resolve: [ProjectEnvironmentsResolver]
+              },
+              {
+                component: ProjectGivensComponent,
+                path: PATH_GIVENS,
+                resolve: [ProjectGivensResolver]
               },
               {
                 component: ProjectTeamComponent,
