@@ -34,6 +34,7 @@ export class ErrorDialogComponent implements OnInit {
   rightButtonText: string;
   path: string;
   traceId: string;
+  displayData: string;
 
   constructor(
     public ref: DialogRef<ErrorData>,
@@ -61,6 +62,11 @@ export class ErrorDialogComponent implements OnInit {
       this.ref.data?.response?.body?.info?.error?.message ||
       this.ref.data?.message ||
       this.ref.data;
+
+    let displayData = this.ref.data?.response?.body?.info?.error?.displayData;
+    if (isDefined(displayData)) {
+      this.displayData = JSON.stringify(displayData, undefined, 2);
+    }
 
     this.originalErrorMessage =
       this.ref.data?.response?.body?.info?.error?.originalError?.message;

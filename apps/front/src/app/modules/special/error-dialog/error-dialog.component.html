@@ -1,13 +1,19 @@
-<div class="bg-m0 flex h-[460px] flex-col items-center p-9">
+<div
+  class="bg-m0 flex max-h-[90vh] flex-col items-center p-9"
+  [ngClass]="{
+    'h-[640px]': displayData,
+    'h-[460px]': !displayData
+  }"
+>
   <div class="text-s2 mb-8 text-2xl font-semibold">Error</div>
-  <div class="flex-grow overflow-auto">
+  <div class="min-h-0 flex-grow">
     <div class="text-s1 grid grid-cols-4 gap-4 text-base">
-      <div>Message</div>
+      <div class="font-semibold">Message</div>
       <div data-cy="errorDialogMessage" class="col-span-3 break-words">{{
         message
       }}</div>
 
-      <div *ngIf="description">Description</div>
+      <div *ngIf="description" class="font-semibold">Description</div>
       <div
         *ngIf="description"
         data-cy="errorDialogDescription"
@@ -15,16 +21,23 @@
         >{{ description }}</div
       >
 
-      <div *ngIf="originalErrorMessage">Info</div>
+      <div *ngIf="originalErrorMessage" class="font-semibold">Info</div>
       <div class="col-span-3 break-words" *ngIf="originalErrorMessage">
         {{ originalErrorMessage }}
       </div>
 
-      <div *ngIf="path">Path</div>
+      <div *ngIf="path" class="font-semibold">Path</div>
       <div class="col-span-3 break-words">{{ path }}</div>
 
-      <div *ngIf="traceId">TraceId</div>
+      <div *ngIf="traceId" class="font-semibold">TraceId</div>
       <div class="col-span-3 break-words">{{ traceId }}</div>
+
+      <div
+        *ngIf="displayData"
+        data-cy="errorDialogDisplayData"
+        class="bg-m1 border-s300 col-span-4 max-h-[260px] overflow-auto whitespace-pre-wrap break-words rounded border p-3"
+        >{{ displayData }}</div
+      >
     </div>
   </div>
 
