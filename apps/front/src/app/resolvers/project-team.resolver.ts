@@ -17,6 +17,7 @@ import type {
 import { checkNavOrgProject } from '../functions/check-nav-org-project';
 import { MemberQuery } from '../queries/member.query';
 import { NavQuery, NavState } from '../queries/nav.query';
+import { RolesQuery } from '../queries/roles.query';
 import { TeamQuery } from '../queries/team.query';
 import { ApiService } from '../services/api.service';
 
@@ -27,7 +28,8 @@ export class ProjectTeamResolver implements Resolve<Observable<boolean>> {
     private router: Router,
     private apiService: ApiService,
     private memberQuery: MemberQuery,
-    private teamQuery: TeamQuery
+    private teamQuery: TeamQuery,
+    private rolesQuery: RolesQuery
   ) {}
 
   resolve(
@@ -74,6 +76,11 @@ export class ProjectTeamResolver implements Resolve<Observable<boolean>> {
             this.memberQuery.update(resp.payload.userMember);
 
             this.teamQuery.update(resp.payload);
+
+            this.rolesQuery.update({
+              roles: resp.payload.roles
+            });
+
             return true;
           } else {
             return false;

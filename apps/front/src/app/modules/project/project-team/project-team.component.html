@@ -246,18 +246,40 @@
                 <td class="w-64">
                   <div class="flex flex-row items-center">
                     <div
-                      tp="Admin role required"
-                      [tpIsEnabled]="isAdmin === false"
+                      [tp]="templateAddRole"
+                      [tpIsEnabled]="
+                        isAdmin === false || member.roles.length >= roles.length
+                      "
                     >
+                      <ng-template #templateAddRole>
+                        <div *ngIf="isAdmin === false">Admin role required</div>
+
+                        <div
+                          *ngIf="
+                            isAdmin === true &&
+                            member.roles.length >= roles.length
+                          "
+                          >All project roles are already selected for the
+                          current member (or the Project has no roles)</div
+                        >
+                      </ng-template>
+
                       <button
                         data-cy="projectTeamAddRoleButton"
                         class="flex h-8 w-8 items-center justify-center rounded focus:outline-none"
                         [ngClass]="{
-                          'text-s400 cursor-default': isAdmin === false,
-                          'text-m600 hover:bg-m200': isAdmin === true
+                          'text-s400 cursor-default':
+                            isAdmin === false ||
+                            member.roles.length >= roles.length,
+                          'text-m600 hover:bg-m200':
+                            isAdmin === true &&
+                            member.roles.length < roles.length
                         }"
                         (click)="addRole(member, i)"
-                        [disabled]="isAdmin === false"
+                        [disabled]="
+                          isAdmin === false ||
+                          member.roles.length >= roles.length
+                        "
                       >
                         <div>
                           <m-add-icon></m-add-icon>
@@ -316,3 +338,4 @@
 <div *ngIf="isAdmin$ | async"></div>
 <div *ngIf="members$ | async"></div>
 <div *ngIf="total$ | async"></div>
+<div *ngIf="roles$ | async"></div>

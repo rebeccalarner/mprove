@@ -53,13 +53,6 @@
         <m-validation
           [control]="addRoleGivenForm.controls['givenId']"
         ></m-validation>
-        <div
-          *ngIf="availableGivens.length === 0"
-          class="text-s400 mt-2 text-sm"
-        >
-          All project Givens are already selected for the current Role (or the
-          Project has no Givens)
-        </div>
       </div>
     </div>
 

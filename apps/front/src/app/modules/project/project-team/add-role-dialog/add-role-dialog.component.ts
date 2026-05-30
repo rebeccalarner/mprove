@@ -2,10 +2,8 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
-  ElementRef,
   HostListener,
-  OnInit,
-  ViewChild
+  OnInit
 } from '@angular/core';
 import {
   FormBuilder,
@@ -13,16 +11,19 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
 import { take, tap } from 'rxjs/operators';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import type { Member } from '#common/zod/backend/member';
+import type { Role } from '#common/zod/backend/role';
 import type {
   ToBackendEditMemberRequestPayload,
   ToBackendEditMemberResponse
 } from '#common/zod/to-backend/members/to-backend-edit-member';
 import { SharedModule } from '#front/app/modules/shared/shared.module';
+import { RolesQuery } from '#front/app/queries/roles.query';
 import { TeamQuery } from '#front/app/queries/team.query';
 import { ApiService } from '#front/app/services/api.service';
 
@@ -37,33 +38,38 @@ export interface AddRoleDialogData {
   templateUrl: './add-role-dialog.component.html',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule]
+  imports: [CommonModule, ReactiveFormsModule, SharedModule, NgSelectModule]
 })
 export class AddRoleDialogComponent implements OnInit {
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
     this.ref.close();
   }
-
-  @ViewChild('role') roleElement: ElementRef;
-
   addRoleForm: FormGroup;
 
   projectId: string;
 
+  availableRoles: Role[] = [];
+
   constructor(
     public ref: DialogRef<AddRoleDialogData>,
     private fb: FormBuilder,
-    private teamQuery: TeamQuery
+    private teamQuery: TeamQuery,
+    private rolesQuery: RolesQuery
   ) {}
 
   ngOnInit() {
+    let rolesState = this.rolesQuery.getValue();
+    this.availableRoles = rolesState.roles.filter(
+      role => this.ref.data.member.roles.indexOf(role.roleId) < 0
+    );
+
     this.addRoleForm = this.fb.group({
-      role: ['', [Validators.required, Validators.maxLength(255)]]
+      role: [undefined, [Validators.required]]
     });
 
     setTimeout(() => {
-      this.roleElement.nativeElement.focus();
+      (document.activeElement as HTMLElement).blur();
     }, 0);
   }
 

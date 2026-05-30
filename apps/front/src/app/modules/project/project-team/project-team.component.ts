@@ -6,6 +6,7 @@ import { MEMBERS_PER_PAGE } from '#common/constants/top-front';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import type { Member } from '#common/zod/backend/member';
+import type { Role } from '#common/zod/backend/role';
 import type { MemberExtended } from '#common/zod/front/member-extended';
 import type {
   ToBackendEditMemberRequestPayload,
@@ -18,6 +19,7 @@ import type {
 import { makeInitials } from '#front/app/functions/make-initials';
 import { MemberQuery } from '#front/app/queries/member.query';
 import { NavQuery } from '#front/app/queries/nav.query';
+import { RolesQuery } from '#front/app/queries/roles.query';
 import { TeamQuery } from '#front/app/queries/team.query';
 import { UserQuery } from '#front/app/queries/user.query';
 import { ApiService } from '#front/app/services/api.service';
@@ -82,10 +84,19 @@ export class ProjectTeamComponent implements OnInit {
     })
   );
 
+  roles: Role[] = [];
+  roles$ = this.rolesQuery.roles$.pipe(
+    tap(x => {
+      this.roles = x;
+      this.cd.detectChanges();
+    })
+  );
+
   constructor(
     private teamQuery: TeamQuery,
     private memberQuery: MemberQuery,
     private navQuery: NavQuery,
+    private rolesQuery: RolesQuery,
     private userQuery: UserQuery,
     private apiService: ApiService,
     private myDialogService: MyDialogService,
@@ -113,6 +124,9 @@ export class ProjectTeamComponent implements OnInit {
         tap((resp: ToBackendGetMembersResponse) => {
           if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
             this.teamQuery.update(resp.payload);
+            this.rolesQuery.update({
+              roles: resp.payload.roles
+            });
             this.currentPage = pageNum;
           }
         }),

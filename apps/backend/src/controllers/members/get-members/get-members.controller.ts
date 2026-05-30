@@ -20,6 +20,7 @@ import { membersTable } from '#backend/drizzle/postgres/schema/members';
 import { ThrottlerUserIdGuard } from '#backend/guards/throttler-user-id.guard';
 import { MembersService } from '#backend/services/db/members.service';
 import { ProjectsService } from '#backend/services/db/projects.service';
+import { RolesService } from '#backend/services/db/roles.service';
 import { TabService } from '#backend/services/tab.service';
 import { THROTTLE_CUSTOM } from '#common/constants/top-backend';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
@@ -35,6 +36,7 @@ export class GetMembersController {
     private tabService: TabService,
     private projectsService: ProjectsService,
     private membersService: MembersService,
+    private rolesService: RolesService,
     private cs: ConfigService<BackendConfig>,
     @Inject(DRIZZLE) private db: Db
   ) {}
@@ -105,6 +107,10 @@ export class GetMembersController {
       this.membersService.tabToApi({ member: x })
     );
 
+    let apiRoles = await this.rolesService.getApiRoles({
+      projectId: projectId
+    });
+
     apiMembers.forEach(x => {
       let avatar = avatars.find(a => a.userId === x.memberId);
 
@@ -116,6 +122,7 @@ export class GetMembersController {
     let payload: ToBackendGetMembersResponsePayload = {
       userMember: apiUserMember,
       members: apiMembers,
+      roles: apiRoles,
       total: sortedMembers.length
     };
 

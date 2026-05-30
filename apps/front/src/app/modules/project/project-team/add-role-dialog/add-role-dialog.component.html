@@ -6,20 +6,33 @@
   >
 
   <form class="flex w-80 flex-col" [formGroup]="addRoleForm" (ngSubmit)="add()">
-    <input
-      autocomplete="off"
-      #role
-      spellcheck="false"
+    <ng-select
+      #addRoleDialogRoleSelect
+      [fixNgSelectBottom]="addRoleDialogRoleSelect"
       data-cy="addRoleDialogRoleInput"
-      class="form-input border-s3 focus:border-m600 mt-9 rounded"
-      [ngClass]="{
-        'border-r600':
-          addRoleForm.controls['role'].invalid &&
-          addRoleForm.controls['role'].touched
-      }"
+      class="mt-9 w-80 text-base"
+      [items]="availableRoles"
+      bindLabel="roleId"
+      bindValue="roleId"
+      [clearable]="false"
+      [searchable]="true"
+      (keyup.esc)="
+        $event.stopImmediatePropagation(); addRoleDialogRoleSelect.blur()
+      "
+      (keyup.enter)="
+        $event.stopImmediatePropagation(); addRoleDialogRoleSelect.blur()
+      "
+      appendTo="body"
       formControlName="role"
-      placeholder="Role"
-    />
+    >
+      <ng-template ng-label-tmp let-item="item">
+        <div class="ml-1 truncate">{{ item.roleId }}</div>
+      </ng-template>
+
+      <ng-template ng-option-tmp let-item="item">
+        <div class="ml-1 truncate">{{ item.roleId }}</div>
+      </ng-template>
+    </ng-select>
     <m-validation [control]="addRoleForm.controls['role']"></m-validation>
 
     <div class="mt-6">
@@ -27,6 +40,10 @@
         data-cy="addRoleDialogAddButton"
         class="bg-m600 text-m0 w-28 rounded py-3 text-base font-medium focus:outline-none"
         type="submit"
+        [disabled]="availableRoles.length === 0"
+        [ngClass]="{
+          'bg-s400 cursor-default': availableRoles.length === 0
+        }"
         >Add</button
       >
 
