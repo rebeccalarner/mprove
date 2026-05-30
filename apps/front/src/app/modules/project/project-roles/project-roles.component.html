@@ -73,9 +73,10 @@
                   {{ role.roleId }}
                 </td>
 
-                <td class="min-w-[520px] py-4 pr-5">
+                <td class="min-w-[660px] py-4 pr-5">
                   <div class="flex flex-row items-start">
                     <div
+                      class="mt-1"
                       [tp]="templateAddRoleGiven"
                       [tpIsEnabled]="
                         isAdmin === false || role.gvs.length >= givens.length
@@ -114,16 +115,16 @@
                       </button>
                     </div>
 
-                    <div class="ml-5 flex flex-col gap-4">
+                    <div class="ml-3 flex flex-col gap-2">
                       <div *ngIf="role.gvs.length === 0" class="text-s400 py-1">
                         No givens
                       </div>
 
                       <div
                         *ngFor="let gv of role.gvs"
-                        class="group flex flex-row items-start"
+                        class="hover:bg-m50 group -mx-2 flex flex-row items-start rounded px-2 py-2"
                       >
-                        <div class="w-[220px] break-all font-medium">
+                        <div class="w-[360px] break-all font-medium">
                           {{ gv.givenId }}
                         </div>
 

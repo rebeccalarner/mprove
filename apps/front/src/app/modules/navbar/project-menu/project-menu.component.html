@@ -48,29 +48,6 @@
       >
 
       <div
-        tp="Project is restricted for demo purposes. Only admin can access."
-        placement="left"
-        [tpIsEnabled]="nav.orgName === demoOrgName && isAdmin === false"
-      >
-        <button
-          class="text-s1 hover:bg-m50 block w-full px-4 py-2 text-left text-base focus:outline-none"
-          [ngClass]="{
-            'font-semibold': lastUrl === pathTeam,
-            'text-s400': nav.orgName === demoOrgName && isAdmin === false,
-            'border-s3 cursor-pointer': !(
-              nav.orgName === demoOrgName && isAdmin === false
-            )
-          }"
-          [disabled]="
-            lastUrl === pathTeam ||
-            (nav.orgName === demoOrgName && isAdmin === false)
-          "
-          (click)="t1.hide(); navigateTeam()"
-          >Team</button
-        >
-      </div>
-
-      <div
         tp="Admin or Editor role required"
         placement="left"
         [tpIsEnabled]="isAdmin === false && isEditor === false"
@@ -113,22 +90,25 @@
       </div>
 
       <div
-        tp="Admin or Editor role required"
+        tp="Project is restricted for demo purposes. Only admin can access."
         placement="left"
-        [tpIsEnabled]="isAdmin === false && isEditor === false"
+        [tpIsEnabled]="nav.orgName === demoOrgName && isAdmin === false"
       >
         <button
           class="text-s1 hover:bg-m50 block w-full px-4 py-2 text-left text-base focus:outline-none"
           [ngClass]="{
-            'font-semibold': lastUrl === pathGivens,
-            'text-s400': isAdmin === false && isEditor === false,
-            'border-s3 cursor-pointer': isAdmin === true || isEditor === true
+            'font-semibold': lastUrl === pathTeam,
+            'text-s400': nav.orgName === demoOrgName && isAdmin === false,
+            'border-s3 cursor-pointer': !(
+              nav.orgName === demoOrgName && isAdmin === false
+            )
           }"
           [disabled]="
-            lastUrl === pathGivens || (isAdmin === false && isEditor === false)
+            lastUrl === pathTeam ||
+            (nav.orgName === demoOrgName && isAdmin === false)
           "
-          (click)="t1.hide(); navigateGivens()"
-          >Givens</button
+          (click)="t1.hide(); navigateTeam()"
+          >Team</button
         >
       </div>
 
@@ -149,6 +129,26 @@
           "
           (click)="t1.hide(); navigateRoles()"
           >Roles</button
+        >
+      </div>
+
+      <div
+        tp="Admin or Editor role required"
+        placement="left"
+        [tpIsEnabled]="isAdmin === false && isEditor === false"
+      >
+        <button
+          class="text-s1 hover:bg-m50 block w-full px-4 py-2 text-left text-base focus:outline-none"
+          [ngClass]="{
+            'font-semibold': lastUrl === pathGivens,
+            'text-s400': isAdmin === false && isEditor === false,
+            'border-s3 cursor-pointer': isAdmin === true || isEditor === true
+          }"
+          [disabled]="
+            lastUrl === pathGivens || (isAdmin === false && isEditor === false)
+          "
+          (click)="t1.hide(); navigateGivens()"
+          >Givens</button
         >
       </div>
     </div>
