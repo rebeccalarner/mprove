@@ -10,6 +10,7 @@ import {
   PATH_INFO,
   PATH_ORG,
   PATH_PROJECT,
+  PATH_ROLES,
   PATH_TEAM,
   RESTRICTED_USER_ALIAS
 } from '#common/constants/top';
@@ -34,6 +35,7 @@ export class ProjectMenuComponent implements OnInit {
   pathConnections = PATH_CONNECTIONS;
   pathEnvironments = PATH_ENVIRONMENTS;
   pathGivens = PATH_GIVENS;
+  pathRoles = PATH_ROLES;
   pathTeam = PATH_TEAM;
 
   lastUrl: string;
@@ -132,6 +134,16 @@ export class ProjectMenuComponent implements OnInit {
       PATH_PROJECT,
       this.nav.projectId,
       PATH_GIVENS
+    ]);
+  }
+
+  navigateRoles() {
+    this.router.navigate([
+      PATH_ORG,
+      this.nav.orgId,
+      PATH_PROJECT,
+      this.nav.projectId,
+      PATH_ROLES
     ]);
   }
 

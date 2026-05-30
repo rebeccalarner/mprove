@@ -52,6 +52,7 @@ import {
   PATH_REPORT,
   PATH_REPORTS,
   PATH_REPORTS_LIST,
+  PATH_ROLES,
   PATH_SELECT_FILE,
   PATH_SERVER_USERS,
   PATH_SESSION,
@@ -100,6 +101,7 @@ import { ProjectConnectionsComponent } from './modules/project/project-connectio
 import { ProjectEnvironmentsComponent } from './modules/project/project-environments/project-environments.component';
 import { ProjectGivensComponent } from './modules/project/project-givens/project-givens.component';
 import { ProjectInfoComponent } from './modules/project/project-info/project-info.component';
+import { ProjectRolesComponent } from './modules/project/project-roles/project-roles.component';
 import { ProjectTeamComponent } from './modules/project/project-team/project-team.component';
 import { ReportComponent } from './modules/reports/report/report.component';
 import { ReportsComponent } from './modules/reports/reports.component';
@@ -121,6 +123,7 @@ import { ProjectConnectionsResolver } from './resolvers/project-connections.reso
 import { ProjectEnvironmentsResolver } from './resolvers/project-environments.resolver';
 import { ProjectGivensResolver } from './resolvers/project-givens.resolver';
 import { ProjectInfoResolver } from './resolvers/project-info.resolver';
+import { ProjectRolesResolver } from './resolvers/project-roles.resolver';
 import { ProjectTeamResolver } from './resolvers/project-team.resolver';
 import { RepoIdResolver } from './resolvers/repo-id.resolver';
 import { RepoStructResolver } from './resolvers/repo-struct.resolver';
@@ -264,6 +267,11 @@ export const appRoutes: Routes = [
                 component: ProjectGivensComponent,
                 path: PATH_GIVENS,
                 resolve: [ProjectGivensResolver]
+              },
+              {
+                component: ProjectRolesComponent,
+                path: PATH_ROLES,
+                resolve: [ProjectRolesResolver]
               },
               {
                 component: ProjectTeamComponent,

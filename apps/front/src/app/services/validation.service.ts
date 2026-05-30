@@ -41,6 +41,7 @@ export class ValidationService {
       ['fileNameWrongChars', 'Use only "a-z0-9_" chars'],
       ['envVariableNameWrongChars', 'Use only "A-Z0-9_" chars'],
       ['givenIdWrongChars', 'Start with A-Z or _ and use only A-Z, 0-9, _'],
+      ['roleIdWrongChars', 'Start with a-z or _ and use only a-z, 0-9, _'],
       [
         'labelIsNotUnique',
         'Filter label must be unique for filter labels and Ids'
@@ -268,6 +269,20 @@ export class ValidationService {
       return null;
     } else {
       return { givenIdWrongChars: true };
+    }
+  }
+
+  static roleIdWrongChars(control: FormControl) {
+    if (isUndefined(control.value) || control.value === '') {
+      return null;
+    }
+
+    let isMatch = control.value.toString().match(MyRegex.ROLE_ID());
+
+    if (isMatch) {
+      return null;
+    } else {
+      return { roleIdWrongChars: true };
     }
   }
 

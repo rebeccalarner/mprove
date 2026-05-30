@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
+import { zGiven } from '#common/zod/backend/given';
 import { zMember } from '#common/zod/backend/member';
 import { zRole } from '#common/zod/backend/role';
 import { zMyResponse } from '#common/zod/to/my-response';
@@ -29,7 +30,8 @@ export let zToBackendGetRolesRequest = zToBackendRequest
 export let zToBackendGetRolesResponsePayload = z
   .object({
     userMember: zMember,
-    roles: z.array(zRole)
+    roles: z.array(zRole),
+    givens: z.array(zGiven)
   })
   .meta({ id: 'ToBackendGetRolesResponsePayload' });
 

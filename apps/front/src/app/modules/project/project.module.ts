@@ -11,6 +11,7 @@ import { ProjectConnectionsComponent } from './project-connections/project-conne
 import { ProjectEnvironmentsComponent } from './project-environments/project-environments.component';
 import { ProjectGivensComponent } from './project-givens/project-givens.component';
 import { ProjectInfoComponent } from './project-info/project-info.component';
+import { ProjectRolesComponent } from './project-roles/project-roles.component';
 import { ProjectTeamComponent } from './project-team/project-team.component';
 
 @NgModule({
@@ -20,6 +21,7 @@ import { ProjectTeamComponent } from './project-team/project-team.component';
     ProjectConnectionsComponent,
     ProjectEnvironmentsComponent,
     ProjectGivensComponent,
+    ProjectRolesComponent,
     ProjectApiKeysComponent
   ],
   imports: [

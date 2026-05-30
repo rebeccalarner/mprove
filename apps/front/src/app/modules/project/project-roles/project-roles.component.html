@@ -1,0 +1,204 @@
+<div class="bg-m1 flex h-full cursor-default flex-col">
+  <div class="mx-6 mb-6 mt-8 flex h-2 flex-grow flex-col">
+    <div class="flex h-11 flex-row items-center justify-start">
+      <div
+        data-cy="projectRolesTitle"
+        class="text-s1 flex select-none text-2xl font-semibold"
+        >{{ pageTitle }}
+      </div>
+
+      <div
+        class="ml-10"
+        tp="Admin role required"
+        [tpIsEnabled]="isAdmin === false"
+      >
+        <button
+          data-cy="projectRolesAddRoleButton"
+          class="text-m0 h-11 flex-shrink-0 select-none rounded px-5 py-2 text-base font-medium focus:outline-none"
+          type="button"
+          [ngClass]="{
+            'bg-m600': isAdmin === true,
+            'bg-s400 cursor-default': isAdmin === false
+          }"
+          (click)="addRole()"
+          [disabled]="isAdmin === false"
+          >Add Role</button
+        >
+      </div>
+    </div>
+
+    <div class="bg-m0 mt-6 flex-grow overflow-auto rounded shadow">
+      <ng-scrollbar
+        [orientation]="'auto'"
+        [visibility]="'hover'"
+        [appearance]="'compact'"
+        *ngIf="roles?.length > 0"
+      >
+        <div class="text-s1 mx-5 mt-8">
+          <table class="divide-s500 min-w-full divide-y">
+            <thead>
+              <tr class="h-12 text-sm">
+                <th class="select-none text-left"></th>
+                <th class="w-[260px] select-none text-left">Role Name</th>
+                <th class="select-none text-left">Role Givens</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-s300 divide-y text-base">
+              <tr *ngFor="let role of roles" class="h-16 align-top">
+                <td class="w-[100px] py-4">
+                  <div
+                    class="w-fit"
+                    tp="Admin role required"
+                    [tpIsEnabled]="isAdmin === false"
+                  >
+                    <button
+                      data-cy="projectRolesDeleteButton"
+                      class="ml-5 h-9 w-9 rounded focus:outline-none"
+                      [ngClass]="{
+                        'text-s1 hover:bg-m200': isAdmin === true,
+                        'text-s400 cursor-default': isAdmin === false
+                      }"
+                      [disabled]="isAdmin === false"
+                      (click)="deleteRole(role)"
+                    >
+                      <div class="flex justify-center">
+                        <m-trash-icon></m-trash-icon>
+                      </div>
+                    </button>
+                  </div>
+                </td>
+
+                <td class="w-[260px] whitespace-nowrap py-6 pr-5">
+                  {{ role.roleId }}
+                </td>
+
+                <td class="min-w-[520px] py-4 pr-5">
+                  <div class="flex flex-row items-start">
+                    <div
+                      [tp]="templateAddRoleGiven"
+                      [tpIsEnabled]="
+                        isAdmin === false || role.gvs.length >= givens.length
+                      "
+                    >
+                      <ng-template #templateAddRoleGiven>
+                        <div *ngIf="isAdmin === false">Admin role required</div>
+
+                        <div
+                          *ngIf="
+                            isAdmin === true && role.gvs.length >= givens.length
+                          "
+                          >All project Givens are already selected for the
+                          current Role (or the Project has no Givens)</div
+                        >
+                      </ng-template>
+
+                      <button
+                        data-cy="projectRolesAddGivenButton"
+                        class="flex h-8 w-8 items-center justify-center rounded focus:outline-none"
+                        [ngClass]="{
+                          'text-s400 cursor-default':
+                            isAdmin === false ||
+                            role.gvs.length >= givens.length,
+                          'text-m600 hover:bg-m200':
+                            isAdmin === true && role.gvs.length < givens.length
+                        }"
+                        (click)="addRoleGiven(role)"
+                        [disabled]="
+                          isAdmin === false || role.gvs.length >= givens.length
+                        "
+                      >
+                        <div>
+                          <m-add-icon></m-add-icon>
+                        </div>
+                      </button>
+                    </div>
+
+                    <div class="ml-5 flex flex-col gap-4">
+                      <div *ngIf="role.gvs.length === 0" class="text-s400 py-1">
+                        No givens
+                      </div>
+
+                      <div
+                        *ngFor="let gv of role.gvs"
+                        class="group flex flex-row items-start"
+                      >
+                        <div class="w-[220px] break-all font-medium">
+                          {{ gv.givenId }}
+                        </div>
+
+                        <div class="min-w-[240px] max-w-[520px]">
+                          <div class="flex flex-col gap-1">
+                            <div
+                              *ngFor="let value of gv.values"
+                              class="break-all"
+                            >
+                              {{ value }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          tp="Admin role required"
+                          [tpIsEnabled]="isAdmin === false"
+                          class="ml-5"
+                        >
+                          <button
+                            data-cy="projectRolesEditGivenButton"
+                            class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none group-hover:visible"
+                            [ngClass]="{
+                              'text-s400 cursor-default': isAdmin === false,
+                              'text-s1 hover:bg-m200': isAdmin === true
+                            }"
+                            (click)="editRoleGiven(role, gv)"
+                            [disabled]="isAdmin === false"
+                          >
+                            <div>
+                              <m-edit-icon></m-edit-icon>
+                            </div>
+                          </button>
+                        </div>
+
+                        <div
+                          tp="Admin role required"
+                          [tpIsEnabled]="isAdmin === false"
+                          class="ml-2"
+                        >
+                          <button
+                            data-cy="projectRolesRemoveGivenButton"
+                            class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none group-hover:visible"
+                            [ngClass]="{
+                              'text-s400 cursor-default': isAdmin === false,
+                              'text-s1 hover:bg-m200': isAdmin === true
+                            }"
+                            (click)="deleteRoleGiven(role, gv)"
+                            [disabled]="isAdmin === false"
+                          >
+                            <div>
+                              <m-delete-icon></m-delete-icon>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-scrollbar>
+
+      <div
+        *ngIf="roles?.length === 0"
+        class="text-s1 flex h-full w-full select-none items-center justify-center text-xl"
+        >No roles</div
+      >
+    </div>
+  </div>
+</div>
+
+<div *ngIf="nav$ | async"></div>
+<div *ngIf="isAdmin$ | async"></div>
+<div *ngIf="roles$ | async"></div>
+<div *ngIf="givens$ | async"></div>

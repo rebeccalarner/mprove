@@ -1,0 +1,66 @@
+<div class="bg-m0 flex-grow select-none flex-col overflow-y-auto p-9">
+  <div
+    data-cy="editRoleGivenDialogTitle"
+    class="text-s2 mt-5 flex-grow text-left text-2xl font-semibold"
+    >Edit Role Given</div
+  >
+
+  <div class="text-s1 mt-4 flex flex-col gap-1 text-base">
+    <div
+      >Role: <span class="font-semibold">{{ dataItem.role.roleId }}</span></div
+    >
+    <div
+      >Given: <span class="font-semibold">{{ dataItem.gv.givenId }}</span></div
+    >
+  </div>
+
+  <form
+    class="flex w-[700px] flex-col"
+    [formGroup]="editRoleGivenForm"
+    (ngSubmit)="edit()"
+  >
+    <div class="mt-8 flex flex-row items-start">
+      <div class="mt-3 w-[120px] flex-shrink-0 text-base font-semibold">
+        {{ givenType === typeSingle ? 'Value' : 'Values' }}
+      </div>
+
+      <div class="flex w-[400px] flex-col">
+        <textarea
+          autocomplete="off"
+          spellcheck="false"
+          data-cy="editRoleGivenDialogValuesInput"
+          class="form-textarea border-s3 focus:border-m600 h-48 resize-none rounded"
+          [ngClass]="{
+            'border-r600':
+              editRoleGivenForm.controls['values'].invalid &&
+              editRoleGivenForm.controls['values'].touched
+          }"
+          formControlName="values"
+          [placeholder]="
+            givenType === typeSingle ? 'Value' : 'Values, one per line'
+          "
+        ></textarea>
+        <m-validation
+          [control]="editRoleGivenForm.controls['values']"
+        ></m-validation>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <button
+        data-cy="editRoleGivenDialogSaveButton"
+        class="bg-m600 text-m0 w-28 rounded py-3 text-base font-medium focus:outline-none"
+        type="submit"
+        >Save</button
+      >
+
+      <button
+        data-cy="editRoleGivenDialogCancelButton"
+        class="border-m600 text-m600 ml-3 w-28 rounded border py-3 text-base font-medium focus:outline-none"
+        type="button"
+        (click)="cancel()"
+        >Cancel</button
+      >
+    </div>
+  </form>
+</div>

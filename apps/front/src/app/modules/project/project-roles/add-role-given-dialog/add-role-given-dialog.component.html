@@ -1,0 +1,113 @@
+<div class="bg-m0 flex-grow select-none flex-col overflow-y-auto p-9">
+  <div
+    data-cy="addRoleGivenDialogTitle"
+    class="text-s2 mt-5 flex-grow text-left text-2xl font-semibold"
+    >Add Role Given</div
+  >
+
+  <div class="text-s1 mt-4 text-base">
+    Role: <span class="font-semibold">{{ dataItem.role.roleId }}</span>
+  </div>
+
+  <form
+    class="flex w-[700px] flex-col"
+    [formGroup]="addRoleGivenForm"
+    (ngSubmit)="add()"
+  >
+    <div class="mt-9 flex flex-row items-start">
+      <div class="mt-3 w-[120px] flex-shrink-0 text-base font-semibold"
+        >Given</div
+      >
+
+      <div class="flex w-[400px] flex-col">
+        <ng-select
+          #addRoleGivenDialogGivenSelect
+          [fixNgSelectBottom]="addRoleGivenDialogGivenSelect"
+          data-cy="addRoleGivenDialogGivenSelect"
+          class="w-[400px] text-base"
+          [items]="availableGivens"
+          bindLabel="givenId"
+          bindValue="givenId"
+          [clearable]="false"
+          [searchable]="true"
+          (keyup.esc)="
+            $event.stopImmediatePropagation();
+            addRoleGivenDialogGivenSelect.blur()
+          "
+          (keyup.enter)="
+            $event.stopImmediatePropagation();
+            addRoleGivenDialogGivenSelect.blur()
+          "
+          appendTo="body"
+          formControlName="givenId"
+        >
+          <ng-template ng-label-tmp let-item="item">
+            <div class="ml-1 truncate">{{ item.givenId }}</div>
+          </ng-template>
+
+          <ng-template ng-option-tmp let-item="item">
+            <div class="ml-1 truncate">{{ item.givenId }}</div>
+          </ng-template>
+        </ng-select>
+        <m-validation
+          [control]="addRoleGivenForm.controls['givenId']"
+        ></m-validation>
+        <div
+          *ngIf="availableGivens.length === 0"
+          class="text-s400 mt-2 text-sm"
+        >
+          All project Givens are already selected for the current Role (or the
+          Project has no Givens)
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-row items-start">
+      <div class="mt-3 w-[120px] flex-shrink-0 text-base font-semibold">
+        {{ selectedGivenType === typeSingle ? 'Value' : 'Values' }}
+      </div>
+
+      <div class="flex w-[400px] flex-col">
+        <textarea
+          autocomplete="off"
+          spellcheck="false"
+          data-cy="addRoleGivenDialogValuesInput"
+          class="form-textarea border-s3 focus:border-m600 h-48 resize-none rounded"
+          [ngClass]="{
+            'border-r600':
+              addRoleGivenForm.controls['values'].invalid &&
+              addRoleGivenForm.controls['values'].touched
+          }"
+          formControlName="values"
+          [placeholder]="
+            selectedGivenType === typeSingle ? 'Value' : 'Values, one per line'
+          "
+        ></textarea>
+        <m-validation
+          [control]="addRoleGivenForm.controls['values']"
+        ></m-validation>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <button
+        data-cy="addRoleGivenDialogAddButton"
+        class="bg-m600 text-m0 w-28 rounded py-3 text-base font-medium focus:outline-none"
+        type="submit"
+        [disabled]="availableGivens.length === 0"
+        [ngClass]="{
+          'bg-s400 cursor-default': availableGivens.length === 0
+        }"
+        >Add</button
+      >
+
+      <button
+        data-cy="addRoleGivenDialogCancelButton"
+        class="border-m600 text-m600 ml-3 w-28 rounded border py-3 text-base font-medium focus:outline-none"
+        type="button"
+        (click)="cancel()"
+        >Cancel</button
+      >
+    </div>
+  </form>
+</div>

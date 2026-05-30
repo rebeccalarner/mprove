@@ -7,6 +7,7 @@ import {
 import { AttachUser } from '#backend/decorators/attach-user.decorator';
 import type { UserTab } from '#backend/drizzle/postgres/schema/_tabs';
 import { ThrottlerUserIdGuard } from '#backend/guards/throttler-user-id.guard';
+import { GivensService } from '#backend/services/db/givens.service';
 import { MembersService } from '#backend/services/db/members.service';
 import { ProjectsService } from '#backend/services/db/projects.service';
 import { RolesService } from '#backend/services/db/roles.service';
@@ -20,7 +21,8 @@ export class GetRolesController {
   constructor(
     private projectsService: ProjectsService,
     private membersService: MembersService,
-    private rolesService: RolesService
+    private rolesService: RolesService,
+    private givensService: GivensService
   ) {}
 
   @Post(ToBackendRequestInfoNameEnum.ToBackendGetRoles)
@@ -50,9 +52,14 @@ export class GetRolesController {
       projectId: projectId
     });
 
+    let apiGivens = await this.givensService.getApiGivens({
+      projectId: projectId
+    });
+
     let payload: ToBackendGetRolesResponsePayload = {
       userMember: this.membersService.tabToApi({ member: userMember }),
-      roles: apiRoles
+      roles: apiRoles,
+      givens: apiGivens
     };
 
     return payload;

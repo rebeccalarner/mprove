@@ -7,11 +7,16 @@ import { sendToBackend } from '#backend/functions/send-to-backend';
 import type { Prep } from '#backend/interfaces/prep';
 import { BRANCH_MAIN } from '#common/constants/top';
 import { BACKEND_E2E_RETRY_OPTIONS } from '#common/constants/top-backend';
+import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { LogLevelEnum } from '#common/enums/log-level.enum';
 import { ProjectRemoteTypeEnum } from '#common/enums/project-remote-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { makeId } from '#common/functions/make-id';
+import type {
+  ToBackendCreateGivenRequest,
+  ToBackendCreateGivenResponse
+} from '#common/zod/to-backend/givens/to-backend-create-given';
 import type {
   ToBackendCreateRoleRequest,
   ToBackendCreateRoleResponse
@@ -128,6 +133,48 @@ test('1', async t => {
         req: createRoleAReq
       });
 
+      let createGivenBReq: ToBackendCreateGivenRequest = {
+        info: {
+          name: ToBackendRequestInfoNameEnum.ToBackendCreateGiven,
+          traceId: traceId,
+          idempotencyKey: makeId()
+        },
+        payload: {
+          projectId: projectId,
+          givenId: 'GIVEN_B',
+          type: GivenTypeEnum.Array,
+          values: ['b1', 'b2']
+        }
+      };
+
+      await sendToBackend<ToBackendCreateGivenResponse>({
+        checkIsOk: true,
+        httpServer: prep.httpServer,
+        loginToken: prep.loginToken,
+        req: createGivenBReq
+      });
+
+      let createGivenAReq: ToBackendCreateGivenRequest = {
+        info: {
+          name: ToBackendRequestInfoNameEnum.ToBackendCreateGiven,
+          traceId: traceId,
+          idempotencyKey: makeId()
+        },
+        payload: {
+          projectId: projectId,
+          givenId: 'GIVEN_A',
+          type: GivenTypeEnum.Single,
+          values: ['a']
+        }
+      };
+
+      await sendToBackend<ToBackendCreateGivenResponse>({
+        checkIsOk: true,
+        httpServer: prep.httpServer,
+        loginToken: prep.loginToken,
+        req: createGivenAReq
+      });
+
       let req: ToBackendGetRolesRequest = {
         info: {
           name: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
@@ -163,6 +210,10 @@ test('1', async t => {
     assert.deepEqual(
       resp.payload.roles.map(x => x.roleId),
       ['role_a', 'role_b']
+    );
+    assert.deepEqual(
+      resp.payload.givens.map(x => x.givenId),
+      ['GIVEN_A', 'GIVEN_B']
     );
 
     isPass = true;

@@ -212,6 +212,22 @@ import {
   EditProjectNameDialogData
 } from '../modules/project/project-info/edit-project-name-dialog/edit-project-name-dialog.component';
 import {
+  AddProjectRoleDialogComponent,
+  type AddProjectRoleDialogData
+} from '../modules/project/project-roles/add-project-role-dialog/add-project-role-dialog.component';
+import {
+  AddRoleGivenDialogComponent,
+  type AddRoleGivenDialogData
+} from '../modules/project/project-roles/add-role-given-dialog/add-role-given-dialog.component';
+import {
+  DeleteProjectRoleDialogComponent,
+  type DeleteProjectRoleDialogData
+} from '../modules/project/project-roles/delete-project-role-dialog/delete-project-role-dialog.component';
+import {
+  EditRoleGivenDialogComponent,
+  type EditRoleGivenDialogData
+} from '../modules/project/project-roles/edit-role-given-dialog/edit-role-given-dialog.component';
+import {
   AddRoleDialogComponent,
   AddRoleDialogData
 } from '../modules/project/project-team/add-role-dialog/add-role-dialog.component';
@@ -828,6 +844,40 @@ export class MyDialogService {
       enableClose: false,
       closeButton: false,
       data: item
+    });
+  }
+
+  showAddProjectRole(item: AddProjectRoleDialogData): void {
+    this.dialogService.open(AddProjectRoleDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item
+    });
+  }
+
+  showDeleteProjectRole(item: DeleteProjectRoleDialogData): void {
+    this.dialogService.open(DeleteProjectRoleDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item
+    });
+  }
+
+  showAddRoleGiven(item: AddRoleGivenDialogData): void {
+    this.dialogService.open(AddRoleGivenDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item,
+      width: 800
+    });
+  }
+
+  showEditRoleGiven(item: EditRoleGivenDialogData): void {
+    this.dialogService.open(EditRoleGivenDialogComponent, {
+      enableClose: false,
+      closeButton: false,
+      data: item,
+      width: 800
     });
   }
 
