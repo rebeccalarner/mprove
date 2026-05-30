@@ -10,8 +10,23 @@ missing_packages=()
 # Function to get version from catalog
 get_version() {
     local pkg="$1"
-    # Handle both quoted and unquoted package names in YAML
-    grep -E "^[[:space:]]*['\"]?${pkg}['\"]?:" "$CATALOG_FILE" | sed "s/.*:[[:space:]]*//" | sed "s/^['\"]//;s/['\"]$//"
+    awk -v pkg="$pkg" '
+        $0 == "catalog:" { in_catalog = 1; next }
+        in_catalog && /^[^[:space:]][^:]*:/ { exit }
+        in_catalog {
+            line = $0
+            sub(/^[[:space:]]+/, "", line)
+            key = line
+            sub(/:.*/, "", key)
+            gsub(/^["'\''"]|["'\''"]$/, "", key)
+            if (key == pkg) {
+                sub(/^[^:]*:[[:space:]]*/, "", line)
+                gsub(/^["'\''"]|["'\''"]$/, "", line)
+                print line
+                exit
+            }
+        }
+    ' "$CATALOG_FILE"
 }
 
 # Function to update all dependencies that exist in catalog
