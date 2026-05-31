@@ -7,6 +7,7 @@ import {
   OnInit
 } from '@angular/core';
 import { DialogRef } from '@ngneat/dialog';
+import { NgScrollbarModule } from 'ngx-scrollbar';
 import { take, tap } from 'rxjs/operators';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
@@ -29,7 +30,7 @@ export interface GetMemberGivensDialogData {
   templateUrl: './get-member-givens-dialog.component.html',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule]
+  imports: [CommonModule, NgScrollbarModule]
 })
 export class GetMemberGivensDialogComponent implements OnInit {
   @HostListener('window:keyup.esc')

@@ -30,7 +30,6 @@ import { SessionBundleQuery } from '#front/app/queries/session-bundle.query';
 import { SessionEventsQuery } from '#front/app/queries/session-events.query';
 import { StructQuery, StructState } from '#front/app/queries/struct.query';
 import { UiQuery } from '#front/app/queries/ui.query';
-import { UserQuery } from '#front/app/queries/user.query';
 import { ApiService } from '#front/app/services/api.service';
 import { NavigateService } from '#front/app/services/navigate.service';
 import { environment } from '#front/environments/environment';
@@ -109,7 +108,6 @@ export class NavbarComponent implements OnInit {
     private structQuery: StructQuery,
     private navigateService: NavigateService,
     private uiQuery: UiQuery,
-    private userQuery: UserQuery,
     private memberQuery: MemberQuery,
     private apiService: ApiService,
     private spinner: NgxSpinnerService,

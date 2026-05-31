@@ -5,19 +5,25 @@ import { DRIZZLE } from '#backend/drizzle/drizzle.module';
 import type { GivenTab } from '#backend/drizzle/postgres/schema/_tabs';
 import { givensTable } from '#backend/drizzle/postgres/schema/givens';
 import { ErEnum } from '#common/enums/er.enum';
-import type { GivenTypeEnum } from '#common/enums/given-type.enum';
+import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { ServerError } from '#common/models/server-error';
 import type { Given } from '#common/zod/backend/given';
+import type {
+  MemberGiven,
+  MemberGivenValue
+} from '#common/zod/to-backend/members/to-backend-get-member-givens';
 import { HashService } from '../hash.service';
 import { TabService } from '../tab.service';
+import { RolesService } from './roles.service';
 
 @Injectable()
 export class GivensService {
   constructor(
     private tabService: TabService,
     private hashService: HashService,
+    private rolesService: RolesService,
     @Inject(DRIZZLE) private db: Db
   ) {}
 
@@ -112,5 +118,83 @@ export class GivensService {
       );
 
     return apiGivens;
+  }
+
+  async getMemberGivensForSelection(item: {
+    projectId: string;
+    roles: string[];
+  }) {
+    let { projectId, roles } = item;
+
+    let apiGivens = await this.getApiGivens({
+      projectId: projectId
+    });
+
+    let apiRoles = await this.rolesService.getApiRoles({
+      projectId: projectId
+    });
+
+    let memberRoles = apiRoles.filter(role => roles.indexOf(role.roleId) > -1);
+
+    let valueSourcesByGivenId: Record<
+      string,
+      Record<string, { isProjectDefault: boolean; roleIds: string[] }>
+    > = {};
+    let typeByGivenId: Record<string, GivenTypeEnum> = {};
+
+    apiGivens.forEach(given => {
+      valueSourcesByGivenId[given.givenId] = {};
+      typeByGivenId[given.givenId] = given.type;
+
+      given.values.forEach(value => {
+        valueSourcesByGivenId[given.givenId][value] = {
+          isProjectDefault: true,
+          roleIds: []
+        };
+      });
+    });
+
+    memberRoles.forEach(role => {
+      role.gvs.forEach(gv => {
+        let isGivenMissing = !valueSourcesByGivenId[gv.givenId];
+        if (isGivenMissing) {
+          valueSourcesByGivenId[gv.givenId] = {};
+        }
+
+        gv.values.forEach(value => {
+          let isValueMissing = !valueSourcesByGivenId[gv.givenId][value];
+          if (isValueMissing) {
+            valueSourcesByGivenId[gv.givenId][value] = {
+              isProjectDefault: false,
+              roleIds: []
+            };
+          }
+
+          valueSourcesByGivenId[gv.givenId][value].roleIds.push(role.roleId);
+        });
+      });
+    });
+
+    return Object.keys(valueSourcesByGivenId)
+      .sort((a, b) => (a > b ? 1 : b > a ? -1 : 0))
+      .map(givenId => {
+        let valueSources = valueSourcesByGivenId[givenId];
+
+        let memberGivenValues: MemberGivenValue[] = Object.keys(valueSources)
+          .sort((a, b) => (a > b ? 1 : b > a ? -1 : 0))
+          .map(value => ({
+            value: value,
+            isProjectDefault: valueSources[value].isProjectDefault,
+            roleIds: valueSources[value].roleIds
+          }));
+
+        let memberGiven: MemberGiven = {
+          givenId: givenId,
+          type: typeByGivenId[givenId],
+          memberGivenValues: memberGivenValues
+        };
+
+        return memberGiven;
+      });
   }
 }

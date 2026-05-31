@@ -1,31 +1,37 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import retry from 'async-retry';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { BackendConfig } from '#backend/config/backend-config';
 import type { Db } from '#backend/drizzle/drizzle.module';
 import { DRIZZLE } from '#backend/drizzle/drizzle.module';
 import type { UserTab } from '#backend/drizzle/postgres/schema/_tabs';
+import { membersTable } from '#backend/drizzle/postgres/schema/members';
 import { usersTable } from '#backend/drizzle/postgres/schema/users';
 import { getRetryOption } from '#backend/functions/get-retry-option';
 import { RESTRICTED_USER_ALIAS } from '#common/constants/top';
 import { DEFAULT_SRV_UI } from '#common/constants/top-backend';
 import { ErEnum } from '#common/enums/er.enum';
+import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { makeCopy } from '#common/functions/make-copy';
 import { makeId } from '#common/functions/make-id';
 import { MyRegex } from '#common/models/my-regex';
 import { ServerError } from '#common/models/server-error';
+import type { ProjectSelectedGivenLink } from '#common/zod/backend/project-selected-given-link';
+import { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { User } from '#common/zod/backend/user';
 import { HashService } from '../hash.service';
 import { TabService } from '../tab.service';
 import { DconfigsService } from './dconfigs.service';
+import { GivensService } from './givens.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private dconfigsService: DconfigsService,
+    private givensService: GivensService,
     private tabService: TabService,
     private hashService: HashService,
     private cs: ConfigService<BackendConfig>,
@@ -74,6 +80,10 @@ export class UsersService {
           ? user.ui?.projectReportLinks
           : defaultSrvUi.projectReportLinks,
         //
+        projectSelectedGivenLinks: isDefined(user.ui?.projectSelectedGivenLinks)
+          ? user.ui?.projectSelectedGivenLinks
+          : defaultSrvUi.projectSelectedGivenLinks,
+        //
         modelTreeLevels: isDefined(user.ui?.modelTreeLevels)
           ? user.ui?.modelTreeLevels
           : defaultSrvUi.modelTreeLevels,
@@ -117,6 +127,92 @@ export class UsersService {
     };
 
     return apiUser;
+  }
+
+  async selectUnselectedGivens(item: { user: UserTab; projectId: string }) {
+    let { user, projectId } = item;
+
+    user.ui = user.ui ?? makeCopy(DEFAULT_SRV_UI);
+
+    let existingLinks = user.ui.projectSelectedGivenLinks ?? [];
+
+    let member = await this.db.drizzle.query.membersTable
+      .findFirst({
+        where: and(
+          eq(membersTable.memberId, user.userId),
+          eq(membersTable.projectId, projectId)
+        )
+      })
+      .then(x => this.tabService.memberEntToTab(x));
+
+    if (isUndefined(member)) {
+      return user.ui.projectSelectedGivenLinks;
+    }
+
+    let memberGivens = await this.givensService.getMemberGivensForSelection({
+      projectId: member.projectId,
+      roles: member.roles
+    });
+
+    let existingLink = existingLinks.find(
+      link => link.projectId === member.projectId
+    );
+
+    let selectedGivens = existingLink?.givens ?? [];
+
+    let givens = memberGivens.map(given => {
+      let storedGiven = selectedGivens.find(
+        selectedGiven => selectedGiven.givenId === given.givenId
+      );
+
+      let availableValues = given.memberGivenValues.map(
+        memberGivenValue => memberGivenValue.value
+      );
+
+      let values: string[];
+
+      if (storedGiven === undefined) {
+        values =
+          given.type === GivenTypeEnum.Single
+            ? availableValues.slice(0, 1)
+            : availableValues;
+      } else if (given.type === GivenTypeEnum.Single) {
+        values = availableValues
+          .filter(value => storedGiven.values.indexOf(value) > -1)
+          .slice(0, 1);
+
+        if (values.length === 0 && availableValues.length > 0) {
+          values = availableValues.slice(0, 1);
+        }
+      } else {
+        values = availableValues.filter(
+          value => storedGiven.values.indexOf(value) > -1
+        );
+      }
+
+      let normalizedGiven: SelectedGiven = {
+        givenId: given.givenId,
+        values: values
+      };
+
+      return normalizedGiven;
+    });
+
+    let projectSelectedGivenLink: ProjectSelectedGivenLink = {
+      projectId: member.projectId,
+      givens: givens,
+      navTs: existingLink?.navTs ?? Date.now()
+    };
+
+    let hasExistingLink = isDefined(existingLink);
+
+    user.ui.projectSelectedGivenLinks = hasExistingLink
+      ? existingLinks.map(link =>
+          link.projectId === projectId ? projectSelectedGivenLink : link
+        )
+      : [...existingLinks, projectSelectedGivenLink];
+
+    return user.ui.projectSelectedGivenLinks;
   }
 
   checkUserPasswordHashIsDefined(item: { user: UserTab }) {

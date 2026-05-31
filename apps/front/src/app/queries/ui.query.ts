@@ -15,6 +15,7 @@ import type { ProjectDashboardLink } from '#common/zod/backend/project-dashboard
 import type { ProjectExplorerSessionLink } from '#common/zod/backend/project-explorer-session-link';
 import type { ProjectModelLink } from '#common/zod/backend/project-model-link';
 import type { ProjectReportLink } from '#common/zod/backend/project-report-link';
+import type { ProjectSelectedGivenLink } from '#common/zod/backend/project-selected-given-link';
 import type { Column } from '#common/zod/blockml/column';
 import type { Fraction } from '#common/zod/blockml/fraction';
 import type { ChartPointsData } from '#common/zod/front/chart-points-data';
@@ -71,6 +72,7 @@ export class UiState {
   projectDashboardLinks: ProjectDashboardLink[];
   projectExplorerSessionLinks: ProjectExplorerSessionLink[];
   projectReportLinks: ProjectReportLink[];
+  projectSelectedGivenLinks: ProjectSelectedGivenLink[];
   permissionsAutoAcceptSessionIds: string[];
   isOptimisticLoading: boolean;
   newSessionPermissionsAutoAccept: boolean;
@@ -133,6 +135,7 @@ let uiState: UiState = {
   projectDashboardLinks: [],
   projectExplorerSessionLinks: [],
   projectReportLinks: [],
+  projectSelectedGivenLinks: [],
   permissionsAutoAcceptSessionIds: [],
   newSessionPermissionsAutoAccept: false,
   newSessionExplorerProviderModel: undefined,
@@ -190,6 +193,10 @@ export class UiQuery extends BaseQuery<UiState> {
 
   projectReportLinks$ = this.store.pipe(
     select(state => state.projectReportLinks)
+  );
+
+  projectSelectedGivenLinks$ = this.store.pipe(
+    select(state => state.projectSelectedGivenLinks)
   );
 
   showMetricsModelName$ = this.store.pipe(

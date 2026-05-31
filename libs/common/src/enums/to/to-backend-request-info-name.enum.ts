@@ -19,6 +19,7 @@ export enum ToBackendRequestInfoNameEnum {
   ToBackendDeleteUser = 'api/ToBackendDeleteUser',
   ToBackendDeleteUserApiKey = 'api/ToBackendDeleteUserApiKey',
   ToBackendGenerateUserApiKey = 'api/ToBackendGenerateUserApiKey',
+  ToBackendGetUserGivens = 'api/ToBackendGetUserGivens',
   ToBackendGetUserProfile = 'api/ToBackendGetUserProfile',
   ToBackendLoginUser = 'api/ToBackendLoginUser',
   ToBackendLogoutUser = 'api/ToBackendLogoutUser',

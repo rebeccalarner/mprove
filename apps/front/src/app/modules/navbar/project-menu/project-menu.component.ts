@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { filter, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import {
   DEMO_ORG_NAME,
   PATH_API_KEYS,
@@ -14,11 +14,18 @@ import {
   PATH_TEAM,
   RESTRICTED_USER_ALIAS
 } from '#common/constants/top';
+import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
+import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
+import type {
+  ToBackendGetUserGivensRequestPayload,
+  ToBackendGetUserGivensResponse
+} from '#common/zod/to-backend/users/to-backend-get-user-givens';
 import { MemberQuery } from '#front/app/queries/member.query';
 import { NavQuery, NavState } from '#front/app/queries/nav.query';
-import { OrgQuery } from '#front/app/queries/org.query';
 import { UiQuery } from '#front/app/queries/ui.query';
 import { UserQuery } from '#front/app/queries/user.query';
+import { ApiService } from '#front/app/services/api.service';
+import { MyDialogService } from '#front/app/services/my-dialog.service';
 
 @Component({
   standalone: false,
@@ -85,10 +92,11 @@ export class ProjectMenuComponent implements OnInit {
 
   constructor(
     private uiQuery: UiQuery,
-    private orgQuery: OrgQuery,
     private userQuery: UserQuery,
     private memberQuery: MemberQuery,
     private navQuery: NavQuery,
+    private apiService: ApiService,
+    private myDialogService: MyDialogService,
     private router: Router,
     private cd: ChangeDetectorRef
   ) {}
@@ -165,5 +173,38 @@ export class ProjectMenuComponent implements OnInit {
       this.nav.projectId,
       PATH_API_KEYS
     ]);
+  }
+
+  showSelectedGivens() {
+    let payload: ToBackendGetUserGivensRequestPayload = {
+      projectId: this.nav.projectId
+    };
+
+    this.apiService
+      .req({
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendGetUserGivens,
+        payload: payload,
+        showSpinner: true
+      })
+      .pipe(
+        tap((resp: ToBackendGetUserGivensResponse) => {
+          if (resp.info?.status !== ResponseInfoStatusEnum.Ok) {
+            return;
+          }
+
+          let user = resp.payload.user;
+
+          this.userQuery.update(user);
+          this.uiQuery.updatePart({ ...user.ui });
+
+          this.myDialogService.showSelectedGivens({
+            projectId: this.nav.projectId,
+            userId: user.userId,
+            memberGivens: resp.payload.memberGivens
+          });
+        }),
+        take(1)
+      )
+      .subscribe();
   }
 }

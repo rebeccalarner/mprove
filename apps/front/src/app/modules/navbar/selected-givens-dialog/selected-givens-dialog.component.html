@@ -1,0 +1,142 @@
+<div class="bg-m0 flex max-h-[77vh] select-none flex-col p-9">
+  <div
+    data-cy="selectedGivensDialogTitle"
+    class="text-s2 mt-5 flex-grow text-left text-2xl font-semibold"
+    >Selected Givens</div
+  >
+
+  <div class="text-s400 mt-3 text-base">
+    Givens are global project parameters based on access roles.
+  </div>
+
+  <div class="mt-8 flex min-h-0 flex-col pr-2">
+    <div
+      *ngIf="memberGivens.length === 0"
+      class="text-s400 py-10 text-center text-lg"
+      >No givens</div
+    >
+
+    <div *ngIf="memberGivens.length > 0" class="pr-4">
+      <table class="border-s500 min-w-full table-fixed border-b">
+        <colgroup>
+          <col class="w-[380px]" />
+          <col />
+        </colgroup>
+
+        <thead>
+          <tr class="h-12 text-sm">
+            <th class="select-none text-left">Given</th>
+            <th class="select-none text-left">Value</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+
+    <ng-scrollbar
+      *ngIf="memberGivens.length > 0"
+      class="min-h-0"
+      [orientation]="'auto'"
+      [visibility]="'hover'"
+      [appearance]="'compact'"
+    >
+      <div class="pr-4">
+        <table class="min-w-full table-fixed">
+          <colgroup>
+            <col class="w-[380px]" />
+            <col />
+          </colgroup>
+
+          <tbody class="text-base">
+            <ng-container
+              *ngFor="let given of memberGivens; let isLastGiven = last"
+            >
+              <tr
+                *ngIf="given.memberGivenValues.length === 0"
+                class="h-12 align-top"
+                [ngClass]="{ 'border-s300 border-b': isLastGiven === false }"
+              >
+                <td class="truncate py-3 pr-5 font-medium">
+                  {{ given.givenId }}
+                </td>
+                <td class="text-s400 py-3 pr-5">No values</td>
+              </tr>
+
+              <tr
+                *ngFor="
+                  let value of getSortedValues({ given: given });
+                  let i = index;
+                  let isLast = last
+                "
+                class="h-9 align-top"
+                [ngClass]="{
+                  'border-s300 border-b':
+                    isLast === true && isLastGiven === false
+                }"
+              >
+                <td class="truncate py-2 pr-5 font-medium">
+                  <span *ngIf="i === 0">{{ given.givenId }}</span>
+                </td>
+                <td class="break-all py-2 pr-5">
+                  <button
+                    class="-ml-2 flex w-full cursor-pointer flex-row items-center gap-3 rounded px-2 py-1.5 text-left focus:outline-none"
+                    [ngClass]="{
+                      'hover:bg-green-50': given.type === givenTypeEnum.Single,
+                      'hover:bg-m50': given.type === givenTypeEnum.Array
+                    }"
+                    type="button"
+                    (click)="
+                      given.type === givenTypeEnum.Single
+                        ? selectSingleValue({
+                            givenId: given.givenId,
+                            value: value
+                          })
+                        : toggleArrayValue({
+                            givenId: given.givenId,
+                            value: value
+                          })
+                    "
+                  >
+                    <div
+                      class="text-m0 flex flex-shrink-0 items-center justify-center border-2"
+                      [ngClass]="{
+                        'h-6 w-6': given.type === givenTypeEnum.Single,
+                        'h-5 w-5': given.type === givenTypeEnum.Array,
+                        'rounded-full': given.type === givenTypeEnum.Single,
+                        rounded: given.type === givenTypeEnum.Array,
+                        'border-green-600': given.type === givenTypeEnum.Single,
+                        'border-m600': given.type === givenTypeEnum.Array,
+                        'bg-green-600':
+                          given.type === givenTypeEnum.Single &&
+                          isValueSelected({
+                            givenId: given.givenId,
+                            value: value
+                          }),
+                        'bg-m600':
+                          given.type === givenTypeEnum.Array &&
+                          isValueSelected({
+                            givenId: given.givenId,
+                            value: value
+                          })
+                      }"
+                    >
+                      <m-check-icon
+                        *ngIf="
+                          isValueSelected({
+                            givenId: given.givenId,
+                            value: value
+                          })
+                        "
+                      ></m-check-icon>
+                    </div>
+
+                    <div>{{ value }}</div>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-scrollbar>
+  </div>
+</div>

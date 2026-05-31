@@ -16,29 +16,8 @@
       >No givens</div
     >
 
-    <table
-      *ngIf="memberGivens.length > 0"
-      class="border-s500 min-w-full table-fixed border-b"
-    >
-      <colgroup>
-        <col class="w-[260px]" />
-        <col class="w-[140px]" />
-        <col class="w-[260px]" />
-        <col class="w-[560px]" />
-      </colgroup>
-
-      <thead>
-        <tr class="h-12 text-sm">
-          <th class="select-none text-left">Given</th>
-          <th class="select-none text-left">Type</th>
-          <th class="select-none text-left">Value</th>
-          <th class="select-none text-left">Roles</th>
-        </tr>
-      </thead>
-    </table>
-
-    <div *ngIf="memberGivens.length > 0" class="min-h-0 overflow-auto">
-      <table class="min-w-full table-fixed">
+    <div *ngIf="memberGivens.length > 0" class="pr-4">
+      <table class="border-s500 min-w-full table-fixed border-b">
         <colgroup>
           <col class="w-[260px]" />
           <col class="w-[140px]" />
@@ -46,62 +25,91 @@
           <col class="w-[560px]" />
         </colgroup>
 
-        <tbody class="text-base">
-          <ng-container
-            *ngFor="let given of memberGivens; let isLastGiven = last"
-          >
-            <tr
-              *ngIf="given.memberGivenValues.length === 0"
-              class="h-12 align-top"
-              [ngClass]="{ 'border-s300 border-b': isLastGiven === false }"
-            >
-              <td class="break-all py-3 pr-5 font-medium">
-                {{ given.givenId }}
-              </td>
-              <td class="py-3 pr-5">{{ given.type }}</td>
-              <td class="text-s400 py-3 pr-5">No values</td>
-              <td class="py-3 pr-5"></td>
-            </tr>
-
-            <tr
-              *ngFor="
-                let item of given.memberGivenValues;
-                let i = index;
-                let isLast = last
-              "
-              class="h-9 align-top"
-              [ngClass]="{
-                'border-s300 border-b': isLast === true && isLastGiven === false
-              }"
-            >
-              <td class="break-all py-2 pr-5 font-medium">
-                <span *ngIf="i === 0">{{ given.givenId }}</span>
-              </td>
-              <td class="py-2 pr-5">
-                <span *ngIf="i === 0">{{ given.type }}</span>
-              </td>
-              <td class="break-all py-2 pr-5">{{ item.value }}</td>
-              <td class="py-2 pr-5">
-                <div class="flex flex-row flex-wrap gap-2">
-                  <div
-                    *ngIf="item.isProjectDefault === true"
-                    class="bg-m100 text-s1 rounded px-2 py-1"
-                  >
-                    project
-                  </div>
-
-                  <div
-                    *ngFor="let roleId of item.roleIds"
-                    class="bg-m100 text-s1 rounded px-2 py-1"
-                  >
-                    {{ roleId }}
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-        </tbody>
+        <thead>
+          <tr class="h-12 text-sm">
+            <th class="select-none text-left">Given</th>
+            <th class="select-none text-left">Type</th>
+            <th class="select-none text-left">Values</th>
+            <th class="select-none text-left">Roles</th>
+          </tr>
+        </thead>
       </table>
     </div>
+
+    <ng-scrollbar
+      *ngIf="memberGivens.length > 0"
+      class="min-h-0"
+      [orientation]="'auto'"
+      [visibility]="'hover'"
+      [appearance]="'compact'"
+    >
+      <div class="pr-4">
+        <table class="min-w-full table-fixed">
+          <colgroup>
+            <col class="w-[260px]" />
+            <col class="w-[140px]" />
+            <col class="w-[260px]" />
+            <col class="w-[560px]" />
+          </colgroup>
+
+          <tbody class="text-base">
+            <ng-container
+              *ngFor="let given of memberGivens; let isLastGiven = last"
+            >
+              <tr
+                *ngIf="given.memberGivenValues.length === 0"
+                class="h-12 align-top"
+                [ngClass]="{ 'border-s300 border-b': isLastGiven === false }"
+              >
+                <td class="break-all py-3 pr-5 font-medium">
+                  {{ given.givenId }}
+                </td>
+                <td class="py-3 pr-5">{{ given.type }}</td>
+                <td class="text-s400 py-3 pr-5">No values</td>
+                <td class="py-3 pr-5"></td>
+              </tr>
+
+              <tr
+                *ngFor="
+                  let item of given.memberGivenValues;
+                  let i = index;
+                  let isLast = last
+                "
+                class="h-9 align-top"
+                [ngClass]="{
+                  'border-s300 border-b':
+                    isLast === true && isLastGiven === false
+                }"
+              >
+                <td class="break-all py-2 pr-5 font-medium">
+                  <span *ngIf="i === 0">{{ given.givenId }}</span>
+                </td>
+                <td class="py-2 pr-5">
+                  <span *ngIf="i === 0">{{ given.type }}</span>
+                </td>
+                <td class="break-all py-2 pr-5">{{ item.value }}</td>
+                <td class="py-2 pr-5">
+                  <div class="flex flex-row flex-wrap gap-2">
+                    <div
+                      *ngIf="item.isProjectDefault === true"
+                      class="bg-m100 text-s1 rounded px-2 py-1"
+                    >
+                      project
+                    </div>
+
+                    <div
+                      *ngFor="let roleId of item.roleIds"
+                      class="bg-m100 text-s1 rounded px-2 py-1"
+                    >
+                      {{ roleId }}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-scrollbar>
   </div>
 </div>

@@ -150,6 +150,7 @@ import { DeleteUserCodexAuthController } from './controllers/users/delete-user-c
 import { GenerateUserApiKeyController } from './controllers/users/generate-user-api-key/generate-user-api-key.controller';
 import { GetOrgUsersController } from './controllers/users/get-org-users/get-org-users.controller';
 import { GetServerUsersController } from './controllers/users/get-server-users/get-server-users.controller';
+import { GetUserGivensController } from './controllers/users/get-user-givens/get-user-givens.controller';
 import { GetUserProfileController } from './controllers/users/get-user-profile/get-user-profile.controller';
 import { LoginUserController } from './controllers/users/login-user/login-user.controller';
 import { LogoutUserController } from './controllers/users/logout-user/logout-user.controller';
@@ -306,6 +307,7 @@ export const appControllers = [
   ConfirmUserEmailController,
   CompleteUserRegistrationController,
   DeleteUserController,
+  GetUserGivensController,
   GetUserProfileController,
   LoginUserController,
   LogoutUserController,

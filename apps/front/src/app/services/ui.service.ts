@@ -10,6 +10,7 @@ import type { ProjectDashboardLink } from '#common/zod/backend/project-dashboard
 import type { ProjectExplorerSessionLink } from '#common/zod/backend/project-explorer-session-link';
 import type { ProjectModelLink } from '#common/zod/backend/project-model-link';
 import type { ProjectReportLink } from '#common/zod/backend/project-report-link';
+import type { ProjectSelectedGivenLink } from '#common/zod/backend/project-selected-given-link';
 import type { Ui } from '#common/zod/backend/ui';
 import type {
   ToBackendSetUserUiRequestPayload,
@@ -35,6 +36,7 @@ export class UiService {
     projectDashboardLinks?: ProjectDashboardLink[];
     projectExplorerSessionLinks?: ProjectExplorerSessionLink[];
     projectReportLinks?: ProjectReportLink[];
+    projectSelectedGivenLinks?: ProjectSelectedGivenLink[];
     permissionsAutoAcceptSessionIds?: string[];
     newSessionPermissionsAutoAccept?: boolean;
     newSessionExplorerProviderModel?: string;
@@ -50,6 +52,7 @@ export class UiService {
       projectDashboardLinks,
       projectExplorerSessionLinks,
       projectReportLinks,
+      projectSelectedGivenLinks,
       permissionsAutoAcceptSessionIds,
       newSessionPermissionsAutoAccept,
       newSessionExplorerProviderModel,
@@ -82,6 +85,9 @@ export class UiService {
       projectReportLinks: isDefined(projectReportLinks)
         ? projectReportLinks
         : uiState.projectReportLinks,
+      projectSelectedGivenLinks: isDefined(projectSelectedGivenLinks)
+        ? projectSelectedGivenLinks
+        : uiState.projectSelectedGivenLinks,
       permissionsAutoAcceptSessionIds: isDefined(
         permissionsAutoAcceptSessionIds
       )

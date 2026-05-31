@@ -6,6 +6,7 @@ import { zProjectDashboardLink } from '#common/zod/backend/project-dashboard-lin
 import { zProjectExplorerSessionLink } from '#common/zod/backend/project-explorer-session-link';
 import { zProjectModelLink } from '#common/zod/backend/project-model-link';
 import { zProjectReportLink } from '#common/zod/backend/project-report-link';
+import { zProjectSelectedGivenLink } from '#common/zod/backend/project-selected-given-link';
 import { zFraction } from '#common/zod/blockml/fraction';
 import { zTimezone } from '#common/zod/z-timezone';
 
@@ -20,6 +21,7 @@ export let zUi = z
     projectDashboardLinks: z.array(zProjectDashboardLink),
     projectExplorerSessionLinks: z.array(zProjectExplorerSessionLink).nullish(),
     projectReportLinks: z.array(zProjectReportLink),
+    projectSelectedGivenLinks: z.array(zProjectSelectedGivenLink).nullish(),
     permissionsAutoAcceptSessionIds: z.array(z.string()).nullish(),
     newSessionPermissionsAutoAccept: z.boolean().nullish(),
     newSessionExplorerProviderModel: z.string().nullish(),

@@ -120,6 +120,10 @@ import {
   CreateProjectDialogData
 } from '../modules/navbar/project-select/create-project-dialog/create-project-dialog.component';
 import {
+  SelectedGivensDialogComponent,
+  type SelectedGivensDialogData
+} from '../modules/navbar/selected-givens-dialog/selected-givens-dialog.component';
+import {
   DeleteOrgDialogComponent,
   DeleteOrgDialogData
 } from '../modules/org/org-account/delete-org-dialog/delete-org-dialog.component';
@@ -411,7 +415,16 @@ export class MyDialogService {
       enableClose: false,
       closeButton: false,
       data: item,
-      width: 800
+      width: '66vw'
+    });
+  }
+
+  showSelectedGivens(item: SelectedGivensDialogData): void {
+    this.dialogService.open(SelectedGivensDialogComponent, {
+      enableClose: true,
+      closeButton: true,
+      data: item,
+      width: 900
     });
   }
 
