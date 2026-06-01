@@ -194,7 +194,7 @@ export let zMconfigLt = z
     timezone: z.string(),
     limit: z.number(),
     filters: z.array(zFilter),
-    appliedGivens: z.record(z.string(), zAppliedGivenValue.nullish()).nullish(),
+    appliedGivens: z.record(z.string(), zAppliedGivenValue).nullish(),
     chart: zMconfigChart
   })
   .meta({ id: 'MconfigLt' });

@@ -30,7 +30,7 @@ export let zMconfig = z
     timezone: zTimezone,
     limit: z.number(),
     filters: z.array(zFilter),
-    appliedGivens: z.record(z.string(), zAppliedGivenValue.nullish()).nullish(),
+    appliedGivens: z.record(z.string(), zAppliedGivenValue).nullish(),
     chart: zMconfigChart,
     serverTs: z.number().int()
   })

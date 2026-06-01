@@ -19,7 +19,6 @@ import type { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { Fraction } from '#common/zod/blockml/fraction';
 import type { FileChart } from '#common/zod/blockml/internal/file-chart';
 import type { FileDashboard } from '#common/zod/blockml/internal/file-dashboard';
-import type { FilePartTile } from '#common/zod/blockml/internal/file-part-tile';
 import type { Mconfig } from '#common/zod/blockml/mconfig';
 import type { Model } from '#common/zod/blockml/model';
 import { addTraceSpan } from '#node-common/functions/add-trace-span';
@@ -27,14 +26,9 @@ import { bricksToFractions } from '#node-common/functions/bricks-to-fractions';
 import { MalloyConnection } from '#node-common/functions/make-malloy-connections';
 import { makeMalloyQuery } from '#node-common/functions/make-malloy-query';
 import { log } from '../extra/log';
+import type { FilePartTileExtra } from './file-part-tile-extra';
 
 let func = FuncEnum.FetchSql;
-
-interface FilePartTileExtra extends FilePartTile {
-  mconfigParentId: string;
-  filePath: string;
-  fileName: string;
-}
 
 export async function fetchSql<T extends dcType>(
   item: {
@@ -192,6 +186,7 @@ export async function fetchSql<T extends dcType>(
       tile.sql = newMconfig.compiledQuery.sql.split('\n');
       tile.malloyQueryStable = newMconfig.malloyQueryStable;
       tile.malloyQueryExtra = newMconfig.malloyQueryExtra;
+      tile.appliedGivens = newMconfig.appliedGivens;
       tile.filtersFractions = filtersFractions;
     }
   });
