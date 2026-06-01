@@ -101,7 +101,8 @@ test('1', async t => {
         payload: {
           projectId: projectId,
           givenId: givenId,
-          type: GivenTypeEnum.Array,
+          type: GivenTypeEnum.String,
+          isMultiple: true,
           values: ['a', 'b']
         }
       };
@@ -150,7 +151,8 @@ test('1', async t => {
     assert.equal(resp.info.error, undefined);
     assert.equal(resp.info.status, ResponseInfoStatusEnum.Ok);
     assert.equal(resp.payload.givens.length, 1);
-    assert.equal(resp.payload.givens[0].type, GivenTypeEnum.Array);
+    assert.equal(resp.payload.givens[0].type, GivenTypeEnum.String);
+    assert.equal(resp.payload.givens[0].isMultiple, true);
     assert.deepEqual(resp.payload.givens[0].values, ['edited']);
 
     isPass = true;

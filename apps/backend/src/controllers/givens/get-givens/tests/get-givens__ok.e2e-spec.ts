@@ -101,7 +101,8 @@ test('1', async t => {
         payload: {
           projectId: projectId,
           givenId: givenId,
-          type: GivenTypeEnum.Array,
+          type: GivenTypeEnum.String,
+          isMultiple: true,
           values: ['a', 'b']
         }
       };

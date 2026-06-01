@@ -142,7 +142,8 @@ test('1', async t => {
         payload: {
           projectId: projectId,
           givenId: 'GIVEN_B',
-          type: GivenTypeEnum.Array,
+          type: GivenTypeEnum.String,
+          isMultiple: true,
           values: ['b1', 'b2']
         }
       };
@@ -163,7 +164,8 @@ test('1', async t => {
         payload: {
           projectId: projectId,
           givenId: 'GIVEN_A',
-          type: GivenTypeEnum.Single,
+          type: GivenTypeEnum.String,
+          isMultiple: false,
           values: ['a']
         }
       };
