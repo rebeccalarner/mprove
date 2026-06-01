@@ -160,6 +160,10 @@ export class ExplorerChartRebuildService {
       mproveDir: currentStruct.mproveConfig.mproveDirValue,
       skipDb: true,
       envId: session.envId,
+      selectedGivens: await this.usersService.getSelectedGivens({
+        user: user,
+        projectId: session.projectId
+      }),
       overrideTimezone: undefined,
       isUseCache: true,
       cachedMproveConfig: currentStruct.mproveConfig,

@@ -370,6 +370,7 @@ export class SaveModifyDashboardController {
       mproveDir: currentStruct.mproveConfig.mproveDirValue,
       skipDb: true,
       envId: envId,
+      selectedGivens: [],
       overrideTimezone: timezone,
       isUseCache: true,
       cachedMproveConfig: currentStruct.mproveConfig,

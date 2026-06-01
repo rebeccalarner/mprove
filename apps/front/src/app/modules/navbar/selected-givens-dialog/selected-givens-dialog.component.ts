@@ -96,6 +96,7 @@ export class SelectedGivensDialogComponent implements OnInit {
 
       let newSelectedGiven: SelectedGiven = {
         givenId: given.givenId,
+        type: given.type,
         values: [value]
       };
 
@@ -121,6 +122,7 @@ export class SelectedGivensDialogComponent implements OnInit {
 
       let newSelectedGiven: SelectedGiven = {
         givenId: given.givenId,
+        type: given.type,
         values: values
       };
 

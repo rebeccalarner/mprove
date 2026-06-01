@@ -304,6 +304,7 @@ export class SaveCreateReportController {
         mproveDir: currentStruct.mproveConfig.mproveDirValue,
         skipDb: true,
         envId: envId,
+        selectedGivens: [],
         overrideTimezone: undefined,
         isUseCache: true,
         cachedMproveConfig: currentStruct.mproveConfig,

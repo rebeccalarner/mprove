@@ -204,6 +204,7 @@ export class CreateDraftChartController {
             ? apiMconfig.parentType
             : MconfigParentTypeEnum.Chart,
         mconfigParentId: isKeepQueryId === true ? apiMconfig.parentId : chartId,
+        user: user,
         model: model,
         mconfig: this.mconfigsService.apiToTab({ apiMconfig: apiMconfig }),
         queryOperations: isDefined(queryOperation) ? [queryOperation] : []

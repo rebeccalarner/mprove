@@ -3,7 +3,6 @@ import {
   ModelMaterializer,
   malloyToQuery,
   modelDefToModelInfo,
-  PreparedQuery,
   PreparedResult,
   QueryMaterializer
 } from '@malloydata/malloy';
@@ -38,6 +37,7 @@ import { setChartFields } from '#common/functions/set-chart-fields';
 import { setChartTitleOnSelectChange } from '#common/functions/set-chart-title-on-select-change';
 import { ServerError } from '#common/models/server-error';
 import type { QueryOperation } from '#common/zod/backend/query-operation';
+import type { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { Filter } from '#common/zod/blockml/filter';
 import type { Mconfig } from '#common/zod/blockml/mconfig';
 import type { Model } from '#common/zod/blockml/model';
@@ -47,6 +47,7 @@ import { getBlankMconfigAndQuery } from './get-blank-mconfig-and-query';
 import { MalloyConnection } from './make-malloy-connections';
 import { makeQueryId } from './make-query-id';
 import { processMalloyWhereOrHaving } from './process-malloy-where-or-having';
+import { selectedGivensToMalloyGivens } from './selected-givens-to-malloy-givens';
 
 export interface MalloyQueryResult {
   isError: boolean;
@@ -65,6 +66,7 @@ export async function makeMalloyQuery(item: {
   mconfig: Mconfig;
   queryOperations: QueryOperation[];
   malloyConnections: MalloyConnection[];
+  selectedGivens: SelectedGiven[];
 }) {
   let {
     projectId,
@@ -75,7 +77,8 @@ export async function makeMalloyQuery(item: {
     model,
     mconfig,
     queryOperations,
-    malloyConnections
+    malloyConnections,
+    selectedGivens
   } = item;
 
   mconfig.parentType = mconfigParentType;
@@ -476,6 +479,49 @@ export async function makeMalloyQuery(item: {
 
   let newMalloyQueryStable = astQuery.toMalloy();
 
+  let modelGivens = Object.values(model.malloyModelDef.givens ?? {});
+
+  // console.log('modelGivens');
+  // console.log(modelGivens);
+
+  let malloySelectedGivens = selectedGivensToMalloyGivens({
+    selectedGivens: selectedGivens
+  });
+
+  // console.log('malloySelectedGivens');
+  // console.log(malloySelectedGivens);
+
+  let malloyFilteredGivens = Object.fromEntries(
+    modelGivens
+      .map(g => g.name)
+      .filter(k => k in malloySelectedGivens)
+      .map(k => [k, malloySelectedGivens[k]])
+  );
+
+  // console.log('malloyFilteredGivens before processing');
+  // console.log(malloyFilteredGivens);
+
+  modelGivens.forEach(given => {
+    let givenValue = malloyFilteredGivens[given.name];
+
+    let stringGivenValue =
+      typeof givenValue === 'string' ? givenValue : undefined;
+
+    if (
+      stringGivenValue !== undefined &&
+      ['date', 'timestamp', 'timestamptz'].indexOf(given.type.type) > -1
+    ) {
+      let startsWithMalloyTimestampPrefix = stringGivenValue.startsWith('@');
+
+      malloyFilteredGivens[given.name] = startsWithMalloyTimestampPrefix
+        ? stringGivenValue.slice(1)
+        : stringGivenValue;
+    }
+  });
+
+  // console.log('malloyFilteredGivens processed');
+  // console.log(malloyFilteredGivens);
+
   let runtime = new MalloyRuntime({
     urlReader: {
       readURL: async (_url: URL) => {
@@ -510,8 +556,15 @@ export async function makeMalloyQuery(item: {
 
   let qm: QueryMaterializer = mm.loadQuery(newMalloyQueryExtra); // 0 ms
 
-  let pq: PreparedQuery = await qm.getPreparedQuery();
-  let pr: PreparedResult = pq.getPreparedResult();
+  // let pq: PreparedQuery = await qm.getPreparedQuery();
+  // let pr: PreparedResult = pq.getPreparedResult();
+
+  let pr: PreparedResult = await qm.getPreparedResult({
+    givens: malloyFilteredGivens
+  });
+
+  // console.log('pr.sql');
+  // console.log(pr.sql);
 
   //
 

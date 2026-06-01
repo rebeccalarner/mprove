@@ -66,6 +66,7 @@ import type {
 import type { Ev } from '#common/zod/backend/ev';
 import type { MproveConfig } from '#common/zod/backend/mprove-config';
 import type { ProjectConnection } from '#common/zod/backend/project-connection';
+import type { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { BmlFile } from '#common/zod/blockml/bml-file';
 import type { FileChart } from '#common/zod/blockml/internal/file-chart';
 import type { FileDashboard } from '#common/zod/blockml/internal/file-dashboard';
@@ -142,7 +143,8 @@ export class RebuildStructService {
       isUseCache,
       cachedMproveConfig,
       cachedModels,
-      cachedMetrics
+      cachedMetrics,
+      selectedGivens
     } = reqValid.payload;
 
     let projectConnections: ProjectConnection[] = [];
@@ -182,6 +184,7 @@ export class RebuildStructService {
       cachedMproveConfig: cachedMproveConfig,
       cachedModels: cachedModels,
       cachedMetrics: cachedMetrics,
+      selectedGivens: selectedGivens,
       isTest: false
     });
 
@@ -245,6 +248,7 @@ export class RebuildStructService {
     envId: string;
     evs: Ev[];
     projectConnections: ProjectConnection[];
+    selectedGivens?: SelectedGiven[];
     overrideTimezone: string;
   }): Promise<RebuildStructPrep> {
     let configPath = item.dir + '/' + MPROVE_CONFIG_FILENAME;
@@ -284,6 +288,7 @@ export class RebuildStructService {
       envId: item.envId,
       evs: item.evs,
       projectConnections: item.projectConnections,
+      selectedGivens: item.selectedGivens ?? [],
       mproveDir: mproveDir,
       overrideTimezone: item.overrideTimezone,
       projectId: undefined,
@@ -304,6 +309,7 @@ export class RebuildStructService {
     envId: string;
     evs: Ev[];
     projectConnections: ProjectConnection[];
+    selectedGivens: SelectedGiven[];
     mproveDir: string;
     overrideTimezone: string;
     projectId: string;
@@ -609,6 +615,7 @@ export class RebuildStructService {
         caseSensitiveStringFilters: toBooleanFromLowercaseString(
           projectConfig.case_sensitive_string_filters
         ),
+        selectedGivens: item.selectedGivens,
         structId: item.structId,
         errors: errors,
         caller: CallerEnum.BuildDashboardTile
@@ -632,6 +639,7 @@ export class RebuildStructService {
         caseSensitiveStringFilters: toBooleanFromLowercaseString(
           projectConfig.case_sensitive_string_filters
         ),
+        selectedGivens: item.selectedGivens,
         structId: item.structId,
         errors: errors,
         caller: CallerEnum.BuildChartTile

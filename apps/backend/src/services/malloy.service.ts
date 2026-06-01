@@ -3,7 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { BackendConfig } from '#backend/config/backend-config';
 import type { Db } from '#backend/drizzle/drizzle.module';
 import { DRIZZLE } from '#backend/drizzle/drizzle.module';
-import type { MconfigTab } from '#backend/drizzle/postgres/schema/_tabs';
+import type {
+  MconfigTab,
+  UserTab
+} from '#backend/drizzle/postgres/schema/_tabs';
 import { logToConsoleBackend } from '#backend/functions/log-to-console-backend';
 import { ErEnum } from '#common/enums/er.enum';
 import { LogLevelEnum } from '#common/enums/log-level.enum';
@@ -18,6 +21,7 @@ import { ConnectionsService } from './db/connections.service';
 import { EnvsService } from './db/envs.service';
 import { MconfigsService } from './db/mconfigs.service';
 import { QueriesService } from './db/queries.service';
+import { UsersService } from './db/users.service';
 
 @Injectable()
 export class MalloyService {
@@ -26,6 +30,7 @@ export class MalloyService {
     private mconfigsService: MconfigsService,
     private queriesService: QueriesService,
     private connectionsService: ConnectionsService,
+    private usersService: UsersService,
     private cs: ConfigService<BackendConfig>,
     private logger: Logger,
     @Inject(DRIZZLE) private db: Db
@@ -37,6 +42,7 @@ export class MalloyService {
     structId: string;
     mconfigParentType: MconfigParentTypeEnum;
     mconfigParentId: string;
+    user: UserTab;
     model: Model;
     mconfig: MconfigTab;
     queryOperations: QueryOperation[];
@@ -47,6 +53,7 @@ export class MalloyService {
       structId,
       mconfigParentType,
       mconfigParentId,
+      user,
       model,
       mconfig,
       queryOperations
@@ -74,6 +81,11 @@ export class MalloyService {
       connections: [projectConnection]
     });
 
+    let selectedGivens = await this.usersService.getSelectedGivens({
+      user: user,
+      projectId: projectId
+    });
+
     let { isError, errorMessage, apiNewMconfig, apiNewQuery } =
       await addTraceSpan({
         spanName: 'backend.makeMalloyQuery',
@@ -87,7 +99,8 @@ export class MalloyService {
             model: model,
             mconfig: mconfig,
             queryOperations: queryOperations,
-            malloyConnections: malloyConnections
+            malloyConnections: malloyConnections,
+            selectedGivens: selectedGivens
           })
       });
 

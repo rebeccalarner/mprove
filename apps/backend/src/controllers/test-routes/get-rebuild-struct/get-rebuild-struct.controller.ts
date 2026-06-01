@@ -129,6 +129,7 @@ export class GetRebuildStructController {
         baseConnections: connectionsWithFallback.map(x =>
           this.connectionsService.tabToBaseConnection({ connection: x })
         ),
+        selectedGivens: [],
         overrideTimezone: overrideTimezone,
         isUseCache: isUseCache,
         cachedMproveConfig: cachedMproveConfig,

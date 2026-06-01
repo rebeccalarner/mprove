@@ -283,6 +283,7 @@ export class ProjectsService {
       diskFiles: diskResponse.payload.prodFiles,
       mproveDir: diskResponse.payload.mproveDir,
       envId: PROJECT_ENV_PROD,
+      selectedGivens: [],
       overrideTimezone: undefined,
       evs: evs,
       connections: connections
@@ -297,6 +298,7 @@ export class ProjectsService {
       diskFiles: diskResponse.payload.prodFiles,
       mproveDir: diskResponse.payload.mproveDir,
       envId: PROJECT_ENV_PROD,
+      selectedGivens: [],
       overrideTimezone: undefined,
       evs: evs,
       connections: connections

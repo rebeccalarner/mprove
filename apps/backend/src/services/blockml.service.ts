@@ -19,6 +19,7 @@ import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import type { Ev } from '#common/zod/backend/ev';
 import type { MproveConfig } from '#common/zod/backend/mprove-config';
+import type { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { Model } from '#common/zod/blockml/model';
 import type { ModelMetric } from '#common/zod/blockml/model-metric';
 import type { DiskCatalogFile } from '#common/zod/disk/disk-catalog-file';
@@ -67,6 +68,7 @@ export class BlockmlService {
     skipDb?: boolean;
     connections?: ConnectionTab[];
     evs?: Ev[];
+    selectedGivens: SelectedGiven[];
     overrideTimezone: string;
     isUseCache?: boolean;
     cachedMproveConfig?: MproveConfig;
@@ -85,6 +87,7 @@ export class BlockmlService {
       skipDb,
       connections,
       evs,
+      selectedGivens,
       overrideTimezone,
       isUseCache,
       cachedMproveConfig,
@@ -138,6 +141,7 @@ export class BlockmlService {
         envId: envId,
         evs: isDefined(evs) ? evs : apiEnv.evsWithFallback,
         baseConnections: baseConnections,
+        selectedGivens: selectedGivens,
         overrideTimezone: overrideTimezone,
         isUseCache: !!isUseCache,
         cachedMproveConfig: cachedMproveConfig,

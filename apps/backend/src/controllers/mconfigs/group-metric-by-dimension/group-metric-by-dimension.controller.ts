@@ -243,6 +243,7 @@ export class GroupMetricByDimensionController {
         structId: struct.structId,
         mconfigParentType: apiMconfig.parentType,
         mconfigParentId: apiMconfig.parentId,
+        user: user,
         model: model,
         mconfig: this.mconfigsService.apiToTab({ apiMconfig: apiMconfig }),
         queryOperations: [queryOperation]

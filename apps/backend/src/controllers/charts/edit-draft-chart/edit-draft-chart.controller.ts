@@ -196,6 +196,7 @@ export class EditDraftChartController {
         structId: struct.structId,
         mconfigParentType: MconfigParentTypeEnum.Chart,
         mconfigParentId: chartId,
+        user: user,
         model: model,
         mconfig: this.mconfigsService.apiToTab({ apiMconfig: apiMconfig }),
         queryOperations: [queryOperation]

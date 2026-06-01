@@ -204,6 +204,7 @@ export class SpecialRebuildStructsController {
           diskFiles: getCatalogFilesResponse.payload.files,
           mproveDir: getCatalogFilesResponse.payload.mproveDir,
           envId: bridge.envId,
+          selectedGivens: [],
           overrideTimezone: overrideTimezone
         });
 

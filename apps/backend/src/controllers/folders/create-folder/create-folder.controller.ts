@@ -171,6 +171,7 @@ export class CreateFolderController {
           diskFiles: diskResponse.payload.files,
           mproveDir: diskResponse.payload.mproveDir,
           envId: x.envId,
+          selectedGivens: [],
           overrideTimezone: undefined
         });
 

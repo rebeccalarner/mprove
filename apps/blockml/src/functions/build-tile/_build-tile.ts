@@ -6,6 +6,7 @@ import { ProjectWeekStartEnum } from '#common/enums/project-week-start.enum';
 import { CallerEnum } from '#common/enums/special/caller.enum';
 import { dcType } from '#common/types/dc-type';
 import type { ProjectConnection } from '#common/zod/backend/project-connection';
+import type { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { FileStore } from '#common/zod/blockml/internal/file-store';
 import type { Model } from '#common/zod/blockml/model';
 import { MalloyConnection } from '#node-common/functions/make-malloy-connections';
@@ -32,6 +33,7 @@ export async function buildTile<T extends dcType>(
     weekStart: ProjectWeekStartEnum;
     timezone: string;
     caseSensitiveStringFilters: boolean;
+    selectedGivens: SelectedGiven[];
     errors: BmError[];
     structId: string;
     caller: CallerEnum;
@@ -129,6 +131,7 @@ export async function buildTile<T extends dcType>(
       weekStart: item.weekStart,
       timezone: item.timezone,
       caseSensitiveStringFilters: item.caseSensitiveStringFilters,
+      selectedGivens: item.selectedGivens,
       envId: item.envId,
       projectId: item.projectId,
       structId: item.structId,

@@ -136,6 +136,7 @@ export class QueryInfoChartService {
         structId: struct.structId,
         mconfigParentType: chartMconfig.parentType,
         mconfigParentId: chartMconfig.parentId,
+        user: user,
         model: model,
         mconfig: chartMconfig,
         queryOperations: [queryOperation]

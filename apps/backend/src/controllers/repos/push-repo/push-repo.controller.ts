@@ -216,6 +216,7 @@ export class PushRepoController {
           diskFiles: diskResponse.payload.productionFiles,
           mproveDir: diskResponse.payload.productionMproveDir,
           envId: x.envId,
+          selectedGivens: [],
           overrideTimezone: undefined
         });
 

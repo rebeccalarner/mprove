@@ -15,6 +15,7 @@ import { makeId } from '#common/functions/make-id';
 import { dcType } from '#common/types/dc-type';
 import type { ProjectConnection } from '#common/zod/backend/project-connection';
 import type { QueryOperation } from '#common/zod/backend/query-operation';
+import type { SelectedGiven } from '#common/zod/backend/selected-given';
 import type { Fraction } from '#common/zod/blockml/fraction';
 import type { FileChart } from '#common/zod/blockml/internal/file-chart';
 import type { FileDashboard } from '#common/zod/blockml/internal/file-dashboard';
@@ -48,6 +49,7 @@ export async function fetchSql<T extends dcType>(
     weekStart: ProjectWeekStartEnum;
     timezone: string;
     caseSensitiveStringFilters: boolean;
+    selectedGivens: SelectedGiven[];
     errors: BmError[];
     structId: string;
     caller: CallerEnum;
@@ -148,6 +150,7 @@ export async function fetchSql<T extends dcType>(
             model: apiModel,
             mconfig: mconfig,
             malloyConnections: item.malloyConnections,
+            selectedGivens: item.selectedGivens,
             queryOperations: [
               ...tile.select.map(x => {
                 let op: QueryOperation = {

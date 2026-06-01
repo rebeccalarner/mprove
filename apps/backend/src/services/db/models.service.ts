@@ -10,6 +10,7 @@ import { ModelEnt, modelsTable } from '#backend/drizzle/postgres/schema/models';
 import { checkAccess } from '#backend/functions/check-access';
 import { checkModelAccess } from '#backend/functions/check-model-access';
 import { ErEnum } from '#common/enums/er.enum';
+import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { ServerError } from '#common/models/server-error';
 import type { Member } from '#common/zod/backend/member';
@@ -31,28 +32,37 @@ export class ModelsService {
   tabToApi(item: { model: ModelTab; hasAccess: boolean }): ModelX {
     let { model, hasAccess } = item;
 
-    let timeframeBaseFieldIds = model.fields
-      .filter(field => field.isTimeframeBase === true)
-      .map(field => field.id);
+    let timeframeBaseFieldIds: string[];
+    let fields;
+    let nodes;
 
-    let fields = model.fields.filter(field => field.isTimeframeBase === false);
+    // TODO: save-create-chart to not use tabToApi on partial data
+    if (isDefined(model.fields)) {
+      timeframeBaseFieldIds = model.fields
+        .filter(field => field.isTimeframeBase === true)
+        .map(field => field.id);
 
-    let nodes = model.nodes.map(node => {
-      node.children?.map(midNode => {
-        if (midNode.children) {
-          midNode.children = midNode.children?.filter(child => {
-            return (
-              child.isField === false ||
-              timeframeBaseFieldIds.indexOf(child.id) < 0
-            );
-          });
-        }
+      fields = model.fields.filter(field => field.isTimeframeBase === false);
+    }
 
-        return midNode;
+    if (isDefined(model.nodes)) {
+      nodes = model.nodes.map(node => {
+        node.children?.map(midNode => {
+          if (midNode.children) {
+            midNode.children = midNode.children?.filter(child => {
+              return (
+                child.isField === false ||
+                timeframeBaseFieldIds.indexOf(child.id) < 0
+              );
+            });
+          }
+
+          return midNode;
+        });
+
+        return node;
       });
-
-      return node;
-    });
+    }
 
     let apiModel: ModelX = {
       structId: model.structId,

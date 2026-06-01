@@ -129,6 +129,18 @@ export class UsersService {
     return apiUser;
   }
 
+  async getSelectedGivens(item: { user: UserTab; projectId: string }) {
+    let { user, projectId } = item;
+
+    await this.selectUnselectedGivens({ user: user, projectId: projectId });
+
+    let projectSelectedGivenLink = user.ui.projectSelectedGivenLinks?.find(
+      link => link.projectId === projectId
+    );
+
+    return projectSelectedGivenLink?.givens ?? [];
+  }
+
   async selectUnselectedGivens(item: { user: UserTab; projectId: string }) {
     let { user, projectId } = item;
 
@@ -192,6 +204,7 @@ export class UsersService {
 
       let normalizedGiven: SelectedGiven = {
         givenId: given.givenId,
+        type: given.type,
         values: values
       };
 

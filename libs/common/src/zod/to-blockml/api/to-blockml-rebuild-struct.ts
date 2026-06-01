@@ -3,6 +3,7 @@ import { zBaseConnection } from '#common/zod/backend/base-connection';
 import { zExtraSchema } from '#common/zod/backend/connection-schemas/extra-schema';
 import { zEv } from '#common/zod/backend/ev';
 import { zMproveConfig } from '#common/zod/backend/mprove-config';
+import { zSelectedGiven } from '#common/zod/backend/selected-given';
 import { zBmlError } from '#common/zod/blockml/bml-error';
 import { zBmlFile } from '#common/zod/blockml/bml-file';
 import { zChart } from '#common/zod/blockml/chart';
@@ -25,6 +26,7 @@ export let zToBlockmlRebuildStructRequestPayload = z
     mproveDir: z.string().nullish(),
     files: z.array(zBmlFile),
     baseConnections: z.array(zBaseConnection),
+    selectedGivens: z.array(zSelectedGiven),
     overrideTimezone: z.string().nullish(),
     isUseCache: z.boolean(),
     cachedMproveConfig: zMproveConfig.nullish(),

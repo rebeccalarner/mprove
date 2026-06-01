@@ -35,11 +35,13 @@ import { makeCopy } from '#common/functions/make-copy';
 import { ServerError } from '#common/models/server-error';
 import type { DiskCatalogFile } from '#common/zod/disk/disk-catalog-file';
 import type { ToBackendGetDashboardResponsePayload } from '#common/zod/to-backend/dashboards/to-backend-get-dashboard';
+import { UsersService } from './db/users.service';
 
 @Injectable()
 export class QueryInfoDashboardService {
   constructor(
     private tabService: TabService,
+    private usersService: UsersService,
     private membersService: MembersService,
     private modelsService: ModelsService,
     private blockmlService: BlockmlService,
@@ -156,6 +158,11 @@ export class QueryInfoDashboardService {
       })
       .then(xs => xs.map(x => this.tabService.modelEntToTab(x)));
 
+    let selectedGivens = await this.usersService.getSelectedGivens({
+      user: user,
+      projectId: projectId
+    });
+
     let {
       struct: tempStruct,
       dashboards: apiDashboards,
@@ -172,6 +179,7 @@ export class QueryInfoDashboardService {
       mproveDir: currentStruct.mproveConfig.mproveDirValue,
       skipDb: true,
       envId: envId,
+      selectedGivens: selectedGivens,
       overrideTimezone: timezone,
       isUseCache: true,
       cachedMproveConfig: currentStruct.mproveConfig,

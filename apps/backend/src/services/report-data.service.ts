@@ -453,6 +453,7 @@ export class ReportDataService {
                 structId: struct.structId,
                 mconfigParentType: MconfigParentTypeEnum.Report,
                 mconfigParentId: report.reportId,
+                user: user,
                 model: model,
                 mconfig: mconfig,
                 queryOperations: [
