@@ -1,0 +1,1 @@
+ALTER TABLE "givens" ADD COLUMN "is_multiple" boolean;

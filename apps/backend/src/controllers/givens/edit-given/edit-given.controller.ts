@@ -70,6 +70,12 @@ export class EditGivenController {
       givenId: givenId
     });
 
+    this.givensService.validateGivenValues({
+      type: given.type,
+      isMultiple: given.isMultiple === true,
+      values: values
+    });
+
     given.values = values;
 
     await retry(

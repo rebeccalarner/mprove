@@ -680,6 +680,7 @@ export class TabToEntService {
       projectId: tab.projectId,
       givenId: tab.givenId,
       type: tab.type,
+      isMultiple: tab.isMultiple,
       ...this.getEntProps({
         dataSt: givenSt,
         dataLt: givenLt,

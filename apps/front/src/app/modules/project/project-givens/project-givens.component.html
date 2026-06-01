@@ -42,6 +42,7 @@
                 <th class="select-none text-left"></th>
                 <th class="w-[360px] select-none text-left">Given</th>
                 <th class="select-none text-left">Type</th>
+                <!-- <th class="select-none text-left">Array</th> -->
                 <th class="select-none text-left">Default Values</th>
               </tr>
             </thead>
@@ -95,7 +96,10 @@
                 <td class="w-[360px] whitespace-nowrap pr-5">{{
                   given.givenId
                 }}</td>
-                <td class="w-48">{{ given.type }}</td>
+                <td class="w-48"
+                  >{{ given.type }}{{ given.isMultiple ? ' [ ]' : '' }}</td
+                >
+                <!-- <td class="w-24">{{ given.isMultiple }}</td> -->
                 <td class="min-w-[360px] py-4 pr-5">
                   <div class="flex flex-col gap-1">
                     <div *ngFor="let value of given.values" class="break-all">

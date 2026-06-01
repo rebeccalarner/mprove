@@ -5,7 +5,11 @@ import {
   HostListener,
   OnInit
 } from '@angular/core';
-import type { FormGroup } from '@angular/forms';
+import type {
+  AbstractControl,
+  FormGroup,
+  ValidationErrors
+} from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
@@ -13,6 +17,7 @@ import { take, tap } from 'rxjs/operators';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
+import { getGivenValueValidationError } from '#common/functions/given-type';
 import { isUndefined } from '#common/functions/is-undefined';
 import type { Given } from '#common/zod/backend/given';
 import type { Role } from '#common/zod/backend/role';
@@ -51,8 +56,7 @@ export class AddRoleGivenDialogComponent implements OnInit {
   availableGivens: Given[] = [];
 
   selectedGivenType: GivenTypeEnum;
-  typeSingle = GivenTypeEnum.Single;
-
+  selectedGivenIsMultiple = false;
   constructor(
     public ref: DialogRef<AddRoleGivenDialogData>,
     private fb: FormBuilder,
@@ -69,7 +73,10 @@ export class AddRoleGivenDialogComponent implements OnInit {
 
     this.addRoleGivenForm = this.fb.group({
       givenId: [undefined, [Validators.required]],
-      values: [undefined, [Validators.maxLength(10000)]]
+      values: [
+        undefined,
+        [Validators.maxLength(10000), this.givenValuesValidator]
+      ]
     });
 
     this.addRoleGivenForm.controls['givenId'].valueChanges.subscribe(
@@ -79,6 +86,8 @@ export class AddRoleGivenDialogComponent implements OnInit {
         );
 
         this.selectedGivenType = selectedGiven?.type;
+        this.selectedGivenIsMultiple = selectedGiven?.isMultiple === true;
+        this.addRoleGivenForm.controls['values'].updateValueAndValidity();
       }
     );
 
@@ -135,4 +144,23 @@ export class AddRoleGivenDialogComponent implements OnInit {
       .map(x => x.trim())
       .filter(x => x !== '');
   }
+
+  private givenValuesValidator = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    if (this.selectedGivenType === undefined) {
+      return null;
+    }
+
+    let values = this.parseValues({ values: control.value });
+    let message = getGivenValueValidationError({
+      type: this.selectedGivenType,
+      isMultiple: this.selectedGivenIsMultiple,
+      values: values
+    });
+
+    return message === undefined
+      ? null
+      : { wrongGivenValue: { message: message } };
+  };
 }

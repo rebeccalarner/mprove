@@ -1,4 +1,8 @@
 export enum GivenTypeEnum {
-  Single = 'Single',
-  Array = 'Array'
+  String = 'String',
+  Number = 'Number',
+  Boolean = 'Boolean',
+  Date = 'Date',
+  Timestamp = 'Timestamp'
+  // TimestampTz = 'TimestampTz'
 }

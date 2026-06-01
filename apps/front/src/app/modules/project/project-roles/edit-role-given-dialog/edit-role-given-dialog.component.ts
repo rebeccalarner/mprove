@@ -5,13 +5,18 @@ import {
   HostListener,
   OnInit
 } from '@angular/core';
-import type { FormGroup } from '@angular/forms';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import type {
+  AbstractControl,
+  FormGroup,
+  ValidationErrors
+} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogRef } from '@ngneat/dialog';
 import { take, tap } from 'rxjs/operators';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
+import { getGivenValueValidationError } from '#common/functions/given-type';
 import type { Given } from '#common/zod/backend/given';
 import type { Gv } from '#common/zod/backend/gv';
 import type { Role } from '#common/zod/backend/role';
@@ -49,8 +54,7 @@ export class EditRoleGivenDialogComponent implements OnInit {
   editRoleGivenForm: FormGroup;
 
   givenType: GivenTypeEnum;
-  typeSingle = GivenTypeEnum.Single;
-
+  givenIsMultiple = false;
   constructor(
     public ref: DialogRef<EditRoleGivenDialogData>,
     private fb: FormBuilder,
@@ -64,9 +68,13 @@ export class EditRoleGivenDialogComponent implements OnInit {
     );
 
     this.givenType = given?.type;
+    this.givenIsMultiple = given?.isMultiple === true;
 
     this.editRoleGivenForm = this.fb.group({
-      values: [this.dataItem.gv.values.join('\n')]
+      values: [
+        this.dataItem.gv.values.join('\n'),
+        [Validators.maxLength(10000), this.givenValuesValidator]
+      ]
     });
 
     setTimeout(() => {
@@ -122,4 +130,23 @@ export class EditRoleGivenDialogComponent implements OnInit {
       .map(x => x.trim())
       .filter(x => x !== '');
   }
+
+  private givenValuesValidator = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    if (this.givenType === undefined) {
+      return null;
+    }
+
+    let values = this.parseValues({ values: control.value });
+    let message = getGivenValueValidationError({
+      type: this.givenType,
+      isMultiple: this.givenIsMultiple,
+      values: values
+    });
+
+    return message === undefined
+      ? null
+      : { wrongGivenValue: { message: message } };
+  };
 }

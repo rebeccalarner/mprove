@@ -12,7 +12,6 @@ import { getRetryOption } from '#backend/functions/get-retry-option';
 import { RESTRICTED_USER_ALIAS } from '#common/constants/top';
 import { DEFAULT_SRV_UI } from '#common/constants/top-backend';
 import { ErEnum } from '#common/enums/er.enum';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { makeCopy } from '#common/functions/make-copy';
@@ -185,10 +184,10 @@ export class UsersService {
 
       if (storedGiven === undefined) {
         values =
-          given.type === GivenTypeEnum.Single
-            ? availableValues.slice(0, 1)
-            : availableValues;
-      } else if (given.type === GivenTypeEnum.Single) {
+          given.isMultiple === true
+            ? availableValues
+            : availableValues.slice(0, 1);
+      } else if (given.isMultiple !== true) {
         values = availableValues
           .filter(value => storedGiven.values.indexOf(value) > -1)
           .slice(0, 1);
@@ -205,6 +204,7 @@ export class UsersService {
       let normalizedGiven: SelectedGiven = {
         givenId: given.givenId,
         type: given.type,
+        isMultiple: given.isMultiple,
         values: values
       };
 

@@ -1,6 +1,7 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   index,
   json,
   pgTable,
@@ -20,6 +21,7 @@ export const givensTable = pgTable(
     projectId: varchar('project_id', { length: 32 }).notNull(),
     givenId: varchar('given_id', { length: 32 }).notNull(), // name
     type: varchar('type').$type<GivenTypeEnum>().notNull(),
+    isMultiple: boolean('is_multiple'),
     st: json('st').$type<{ encrypted: string; decrypted: GivenSt }>().notNull(),
     lt: json('lt').$type<{ encrypted: string; decrypted: GivenLt }>().notNull(),
     keyTag: text('key_tag'),

@@ -5,6 +5,7 @@ import {
   HostListener,
   OnInit
 } from '@angular/core';
+import type { AbstractControl, ValidationErrors } from '@angular/forms';
 import {
   FormBuilder,
   FormGroup,
@@ -13,10 +14,15 @@ import {
 } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
+import { UiSwitchModule } from 'ngx-ui-switch';
 import { take, tap } from 'rxjs/operators';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
+import {
+  getGivenValueValidationError,
+  givenTypes
+} from '#common/functions/given-type';
 import type {
   ToBackendCreateGivenRequestPayload,
   ToBackendCreateGivenResponse
@@ -37,7 +43,13 @@ export interface AddGivenDialogData {
   templateUrl: './add-given-dialog.component.html',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule, NgSelectModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    SharedModule,
+    NgSelectModule,
+    UiSwitchModule
+  ]
 })
 export class AddGivenDialogComponent implements OnInit {
   @HostListener('window:keyup.esc')
@@ -49,8 +61,7 @@ export class AddGivenDialogComponent implements OnInit {
 
   addGivenForm: FormGroup;
 
-  givenTypes = [GivenTypeEnum.Single, GivenTypeEnum.Array];
-  typeSingle = GivenTypeEnum.Single;
+  givenTypes = givenTypes;
 
   constructor(
     public ref: DialogRef<AddGivenDialogData>,
@@ -69,8 +80,20 @@ export class AddGivenDialogComponent implements OnInit {
           Validators.maxLength(32)
         ]
       ],
-      type: [GivenTypeEnum.Single, [Validators.required]],
-      values: [undefined, [Validators.maxLength(10000)]]
+      type: [GivenTypeEnum.String, [Validators.required]],
+      isMultiple: [false],
+      values: [
+        undefined,
+        [Validators.maxLength(10000), this.givenValuesValidator]
+      ]
+    });
+
+    this.addGivenForm.controls['type'].valueChanges.subscribe(() => {
+      this.addGivenForm.controls['values'].updateValueAndValidity();
+    });
+
+    this.addGivenForm.controls['isMultiple'].valueChanges.subscribe(() => {
+      this.addGivenForm.controls['values'].updateValueAndValidity();
     });
 
     setTimeout(() => {
@@ -91,6 +114,7 @@ export class AddGivenDialogComponent implements OnInit {
       projectId: this.dataItem.projectId,
       givenId: this.addGivenForm.value.givenId,
       type: this.addGivenForm.value.type,
+      isMultiple: this.addGivenForm.value.isMultiple,
       values: this.parseValues({ values: this.addGivenForm.value.values })
     };
 
@@ -118,6 +142,12 @@ export class AddGivenDialogComponent implements OnInit {
     this.ref.close();
   }
 
+  toggleIsMultiple() {
+    this.addGivenForm.controls['isMultiple'].setValue(
+      this.addGivenForm.controls['isMultiple'].value !== true
+    );
+  }
+
   private parseValues(item: { values: string }) {
     let { values } = item;
 
@@ -126,4 +156,25 @@ export class AddGivenDialogComponent implements OnInit {
       .map(x => x.trim())
       .filter(x => x !== '');
   }
+
+  private givenValuesValidator = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    if (!this.addGivenForm) {
+      return null;
+    }
+
+    let type = this.addGivenForm.controls['type'].value;
+    let isMultiple = this.addGivenForm.controls['isMultiple'].value === true;
+    let values = this.parseValues({ values: control.value });
+    let message = getGivenValueValidationError({
+      type: type,
+      isMultiple: isMultiple,
+      values: values
+    });
+
+    return message === undefined
+      ? null
+      : { wrongGivenValue: { message: message } };
+  };
 }

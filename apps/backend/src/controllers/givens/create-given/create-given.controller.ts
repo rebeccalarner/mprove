@@ -54,7 +54,7 @@ export class CreateGivenController {
     @AttachUser() user: UserTab,
     @Body() body: ToBackendCreateGivenRequestDto
   ) {
-    let { projectId, givenId, type, values } = body.payload;
+    let { projectId, givenId, type, isMultiple, values } = body.payload;
 
     await this.projectsService.getProjectCheckExists({
       projectId: projectId
@@ -70,10 +70,17 @@ export class CreateGivenController {
       givenId: givenId
     });
 
+    this.givensService.validateGivenValues({
+      type: type,
+      isMultiple: isMultiple,
+      values: values
+    });
+
     let newGiven = this.givensService.makeGiven({
       projectId: projectId,
       givenId: givenId,
       type: type,
+      isMultiple: isMultiple,
       values: values
     });
 

@@ -6,6 +6,7 @@ export let zGiven = z
     projectId: z.string(),
     givenId: z.string(),
     type: z.enum(GivenTypeEnum),
+    isMultiple: z.boolean(),
     values: z.array(z.string())
   })
   .meta({ id: 'Given' });

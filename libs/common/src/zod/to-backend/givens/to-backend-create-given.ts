@@ -17,6 +17,7 @@ export let zToBackendCreateGivenRequestPayload = z
         'givenId must start with an uppercase letter or underscore and contain only uppercase letters, digits and underscores'
     }),
     type: z.enum(GivenTypeEnum),
+    isMultiple: z.boolean(),
     values: z.array(z.string())
   })
   .meta({ id: 'ToBackendCreateGivenRequestPayload' });

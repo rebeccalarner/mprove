@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { tap } from 'rxjs/operators';
 import { PROJECT_GIVENS_PAGE_TITLE } from '#common/constants/page-titles';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import type { Given } from '#common/zod/backend/given';
 import { GivensQuery } from '#front/app/queries/givens.query';
 import { MemberQuery } from '#front/app/queries/member.query';
@@ -17,9 +16,6 @@ import { MyDialogService } from '#front/app/services/my-dialog.service';
 })
 export class ProjectGivensComponent implements OnInit {
   pageTitle = PROJECT_GIVENS_PAGE_TITLE;
-
-  typeSingle = GivenTypeEnum.Single;
-  typeArray = GivenTypeEnum.Array;
 
   nav: NavState;
   nav$ = this.navQuery.select().pipe(

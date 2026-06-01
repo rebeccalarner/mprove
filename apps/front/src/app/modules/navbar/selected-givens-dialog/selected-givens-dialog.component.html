@@ -6,7 +6,7 @@
   >
 
   <div class="text-s400 mt-3 text-base">
-    Givens are global project parameters based on access roles.
+    Givens available for selection based on your access roles.
   </div>
 
   <div class="mt-8 flex min-h-0 flex-col pr-2">
@@ -80,12 +80,12 @@
                   <button
                     class="-ml-2 flex w-full cursor-pointer flex-row items-center gap-3 rounded px-2 py-1.5 text-left focus:outline-none"
                     [ngClass]="{
-                      'hover:bg-green-50': given.type === givenTypeEnum.Single,
-                      'hover:bg-m50': given.type === givenTypeEnum.Array
+                      'hover:bg-green-50': !given.isMultiple,
+                      'hover:bg-m50': given.isMultiple
                     }"
                     type="button"
                     (click)="
-                      given.type === givenTypeEnum.Single
+                      !given.isMultiple
                         ? selectSingleValue({
                             givenId: given.givenId,
                             value: value
@@ -99,20 +99,20 @@
                     <div
                       class="text-m0 flex flex-shrink-0 items-center justify-center border-2"
                       [ngClass]="{
-                        'h-6 w-6': given.type === givenTypeEnum.Single,
-                        'h-5 w-5': given.type === givenTypeEnum.Array,
-                        'rounded-full': given.type === givenTypeEnum.Single,
-                        rounded: given.type === givenTypeEnum.Array,
-                        'border-green-600': given.type === givenTypeEnum.Single,
-                        'border-m600': given.type === givenTypeEnum.Array,
+                        'h-6 w-6': !given.isMultiple,
+                        'h-5 w-5': given.isMultiple,
+                        'rounded-full': !given.isMultiple,
+                        rounded: given.isMultiple,
+                        'border-green-600': !given.isMultiple,
+                        'border-m600': given.isMultiple,
                         'bg-green-600':
-                          given.type === givenTypeEnum.Single &&
+                          !given.isMultiple &&
                           isValueSelected({
                             givenId: given.givenId,
                             value: value
                           }),
                         'bg-m600':
-                          given.type === givenTypeEnum.Array &&
+                          given.isMultiple &&
                           isValueSelected({
                             givenId: given.givenId,
                             value: value

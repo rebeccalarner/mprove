@@ -5,12 +5,18 @@ import {
   HostListener,
   OnInit
 } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import type { AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import { DialogRef } from '@ngneat/dialog';
 import { take, tap } from 'rxjs/operators';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
+import { getGivenValueValidationError } from '#common/functions/given-type';
 import type { Given } from '#common/zod/backend/given';
 import type {
   ToBackendEditGivenRequestPayload,
@@ -43,8 +49,6 @@ export class EditGivenDialogComponent implements OnInit {
 
   editGivenForm: FormGroup;
 
-  typeSingle = GivenTypeEnum.Single;
-
   constructor(
     public ref: DialogRef<EditGivenDialogData>,
     private fb: FormBuilder,
@@ -54,7 +58,10 @@ export class EditGivenDialogComponent implements OnInit {
 
   ngOnInit() {
     this.editGivenForm = this.fb.group({
-      values: [this.dataItem.given.values.join('\n')]
+      values: [
+        this.dataItem.given.values.join('\n'),
+        [Validators.maxLength(10000), this.givenValuesValidator]
+      ]
     });
 
     setTimeout(() => {
@@ -109,4 +116,19 @@ export class EditGivenDialogComponent implements OnInit {
       .map(x => x.trim())
       .filter(x => x !== '');
   }
+
+  private givenValuesValidator = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    let values = this.parseValues({ values: control.value });
+    let message = getGivenValueValidationError({
+      type: this.dataItem.given.type,
+      isMultiple: this.dataItem.given.isMultiple,
+      values: values
+    });
+
+    return message === undefined
+      ? null
+      : { wrongGivenValue: { message: message } };
+  };
 }

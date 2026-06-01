@@ -77,6 +77,17 @@ export class EditRoleGivenController {
       givenId: givenId
     });
 
+    let given = await this.givensService.getGivenCheckExists({
+      projectId: projectId,
+      givenId: givenId
+    });
+
+    this.givensService.validateGivenValues({
+      type: given.type,
+      isMultiple: given.isMultiple === true,
+      values: values
+    });
+
     roleGiven.values = values;
 
     await retry(

@@ -72,9 +72,15 @@ export class CreateRoleGivenController {
       roleId: roleId
     });
 
-    await this.givensService.getGivenCheckExists({
+    let given = await this.givensService.getGivenCheckExists({
       projectId: projectId,
       givenId: givenId
+    });
+
+    this.givensService.validateGivenValues({
+      type: given.type,
+      isMultiple: given.isMultiple === true,
+      values: values
     });
 
     this.rolesService.checkRoleGivenDoesNotExist({

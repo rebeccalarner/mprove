@@ -6,6 +6,7 @@ import type { GivenTab } from '#backend/drizzle/postgres/schema/_tabs';
 import { givensTable } from '#backend/drizzle/postgres/schema/givens';
 import { ErEnum } from '#common/enums/er.enum';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
+import { getGivenValueValidationError } from '#common/functions/given-type';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { ServerError } from '#common/models/server-error';
@@ -31,9 +32,10 @@ export class GivensService {
     projectId: string;
     givenId: string;
     type: GivenTypeEnum;
+    isMultiple: boolean;
     values: string[];
   }): GivenTab {
-    let { projectId, givenId, type, values } = item;
+    let { projectId, givenId, type, isMultiple, values } = item;
 
     let given: GivenTab = {
       givenFullId: this.hashService.makeGivenFullId({
@@ -43,6 +45,7 @@ export class GivensService {
       projectId: projectId,
       givenId: givenId,
       type: type,
+      isMultiple: isMultiple,
       values: values,
       keyTag: undefined,
       serverTs: undefined
@@ -58,10 +61,34 @@ export class GivensService {
       projectId: given.projectId,
       givenId: given.givenId,
       type: given.type,
+      isMultiple: given.isMultiple === true,
       values: given.values
     };
 
     return apiGiven;
+  }
+
+  validateGivenValues(item: {
+    type: GivenTypeEnum;
+    isMultiple: boolean;
+    values: string[];
+  }) {
+    let { type, isMultiple, values } = item;
+
+    let error = getGivenValueValidationError({
+      type: type,
+      isMultiple: isMultiple,
+      values: values
+    });
+
+    if (isDefined(error)) {
+      throw new ServerError({
+        message: ErEnum.BACKEND_WRONG_GIVEN_VALUE,
+        displayData: {
+          error: error
+        }
+      });
+    }
   }
 
   async checkGivenDoesNotExist(item: { projectId: string; givenId: string }) {
@@ -141,10 +168,12 @@ export class GivensService {
       Record<string, { isProjectDefault: boolean; roleIds: string[] }>
     > = {};
     let typeByGivenId: Record<string, GivenTypeEnum> = {};
+    let isMultipleByGivenId: Record<string, boolean> = {};
 
     apiGivens.forEach(given => {
       valueSourcesByGivenId[given.givenId] = {};
       typeByGivenId[given.givenId] = given.type;
+      isMultipleByGivenId[given.givenId] = given.isMultiple;
 
       given.values.forEach(value => {
         valueSourcesByGivenId[given.givenId][value] = {
@@ -191,6 +220,7 @@ export class GivensService {
         let memberGiven: MemberGiven = {
           givenId: givenId,
           type: typeByGivenId[givenId],
+          isMultiple: isMultipleByGivenId[givenId] === true,
           memberGivenValues: memberGivenValues
         };
 

@@ -41,6 +41,7 @@ export class ValidationService {
       ['fileNameWrongChars', 'Use only "a-z0-9_" chars'],
       ['envVariableNameWrongChars', 'Use only "A-Z0-9_" chars'],
       ['givenIdWrongChars', 'Start with A-Z or _ and use only A-Z, 0-9, _'],
+      ['wrongGivenValue', validatorValue?.message ?? 'Wrong given value'],
       ['roleIdWrongChars', 'Start with a-z or _ and use only a-z, 0-9, _'],
       [
         'labelIsNotUnique',

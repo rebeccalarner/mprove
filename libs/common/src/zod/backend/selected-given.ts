@@ -5,6 +5,7 @@ export let zSelectedGiven = z
   .object({
     givenId: z.string(),
     type: z.enum(GivenTypeEnum),
+    isMultiple: z.boolean(),
     values: z.array(z.string())
   })
   .meta({ id: 'SelectedGiven' });

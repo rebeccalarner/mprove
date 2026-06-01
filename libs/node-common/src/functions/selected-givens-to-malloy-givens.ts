@@ -1,5 +1,5 @@
 import type { GivenValue } from '@malloydata/malloy';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
+import { givenValuesToMalloyValues } from '#common/functions/given-type';
 import type { SelectedGiven } from '#common/zod/backend/selected-given';
 
 export function selectedGivensToMalloyGivens(item: {
@@ -14,10 +14,11 @@ export function selectedGivensToMalloyGivens(item: {
       return;
     }
 
-    malloyGivens[selectedGiven.givenId] =
-      selectedGiven.type === GivenTypeEnum.Single
-        ? selectedGiven.values[0]
-        : selectedGiven.values;
+    malloyGivens[selectedGiven.givenId] = givenValuesToMalloyValues({
+      type: selectedGiven.type,
+      isMultiple: selectedGiven.isMultiple,
+      values: selectedGiven.values
+    }) as GivenValue;
   });
 
   return malloyGivens;

@@ -29,6 +29,7 @@ import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { MconfigParentTypeEnum } from '#common/enums/mconfig-parent-type.enum';
 import { QueryOperationTypeEnum } from '#common/enums/query-operation-type.enum';
 import { QueryStatusEnum } from '#common/enums/query-status.enum';
+import { isGivenTypeMalloyCompatible } from '#common/functions/given-type';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { makeId } from '#common/functions/make-id';
@@ -491,11 +492,25 @@ export async function makeMalloyQuery(item: {
   // console.log('malloySelectedGivens');
   // console.log(malloySelectedGivens);
 
+  let selectedGivenById = Object.fromEntries(
+    selectedGivens.map(selectedGiven => [selectedGiven.givenId, selectedGiven])
+  );
+
   let malloyFilteredGivens = Object.fromEntries(
     modelGivens
-      .map(g => g.name)
-      .filter(k => k in malloySelectedGivens)
-      .map(k => [k, malloySelectedGivens[k]])
+      .filter(given => {
+        let selectedGiven = selectedGivenById[given.name];
+
+        return (
+          isDefined(selectedGiven) &&
+          isGivenTypeMalloyCompatible({
+            givenType: selectedGiven.type,
+            isMultiple: selectedGiven.isMultiple,
+            malloyType: given.type
+          })
+        );
+      })
+      .map(given => [given.name, malloySelectedGivens[given.name]])
   );
 
   // console.log('malloyFilteredGivens before processing');
