@@ -149,18 +149,17 @@
                         >
                           <button
                             data-cy="projectRolesEditGivenButton"
-                            class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none group-hover:visible"
+                            class="invisible select-none rounded border px-3 py-2 text-base leading-3 shadow-sm focus:outline-none group-hover:visible"
                             [ngClass]="{
-                              'text-s400 cursor-default': isAdmin === false,
-                              'text-s1 hover:bg-m200': isAdmin === true
+                              'border-s400 text-s500 hover:bg-m200':
+                                isAdmin === true,
+                              'border-s300 text-s400 cursor-default':
+                                isAdmin === false
                             }"
                             (click)="editRoleGiven(role, gv)"
                             [disabled]="isAdmin === false"
+                            >Edit</button
                           >
-                            <div>
-                              <m-edit-icon></m-edit-icon>
-                            </div>
-                          </button>
                         </div>
 
                         <div

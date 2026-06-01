@@ -163,7 +163,7 @@ export class GivensService {
 
     let memberRoles = apiRoles.filter(role => roles.indexOf(role.roleId) > -1);
 
-    let valueSourcesByGivenId: Record<
+    let valueOriginsByGivenId: Record<
       string,
       Record<string, { isProjectDefault: boolean; roleIds: string[] }>
     > = {};
@@ -171,12 +171,12 @@ export class GivensService {
     let isMultipleByGivenId: Record<string, boolean> = {};
 
     apiGivens.forEach(given => {
-      valueSourcesByGivenId[given.givenId] = {};
+      valueOriginsByGivenId[given.givenId] = {};
       typeByGivenId[given.givenId] = given.type;
       isMultipleByGivenId[given.givenId] = given.isMultiple;
 
       given.values.forEach(value => {
-        valueSourcesByGivenId[given.givenId][value] = {
+        valueOriginsByGivenId[given.givenId][value] = {
           isProjectDefault: true,
           roleIds: []
         };
@@ -185,36 +185,36 @@ export class GivensService {
 
     memberRoles.forEach(role => {
       role.gvs.forEach(gv => {
-        let isGivenMissing = !valueSourcesByGivenId[gv.givenId];
+        let isGivenMissing = !valueOriginsByGivenId[gv.givenId];
         if (isGivenMissing) {
-          valueSourcesByGivenId[gv.givenId] = {};
+          valueOriginsByGivenId[gv.givenId] = {};
         }
 
         gv.values.forEach(value => {
-          let isValueMissing = !valueSourcesByGivenId[gv.givenId][value];
+          let isValueMissing = !valueOriginsByGivenId[gv.givenId][value];
           if (isValueMissing) {
-            valueSourcesByGivenId[gv.givenId][value] = {
+            valueOriginsByGivenId[gv.givenId][value] = {
               isProjectDefault: false,
               roleIds: []
             };
           }
 
-          valueSourcesByGivenId[gv.givenId][value].roleIds.push(role.roleId);
+          valueOriginsByGivenId[gv.givenId][value].roleIds.push(role.roleId);
         });
       });
     });
 
-    return Object.keys(valueSourcesByGivenId)
+    return Object.keys(valueOriginsByGivenId)
       .sort((a, b) => (a > b ? 1 : b > a ? -1 : 0))
       .map(givenId => {
-        let valueSources = valueSourcesByGivenId[givenId];
+        let valueOrigins = valueOriginsByGivenId[givenId];
 
-        let memberGivenValues: MemberGivenValue[] = Object.keys(valueSources)
+        let memberGivenValues: MemberGivenValue[] = Object.keys(valueOrigins)
           .sort((a, b) => (a > b ? 1 : b > a ? -1 : 0))
           .map(value => ({
             value: value,
-            isProjectDefault: valueSources[value].isProjectDefault,
-            roleIds: valueSources[value].roleIds
+            isProjectDefault: valueOrigins[value].isProjectDefault,
+            roleIds: valueOrigins[value].roleIds
           }));
 
         let memberGiven: MemberGiven = {
