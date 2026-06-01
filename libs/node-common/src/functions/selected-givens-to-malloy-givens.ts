@@ -10,15 +10,11 @@ export function selectedGivensToMalloyGivens(item: {
   let malloyGivens: Record<string, GivenValue> = {};
 
   selectedGivens.forEach(selectedGiven => {
-    if (selectedGiven.values.length === 0) {
-      return;
-    }
-
     malloyGivens[selectedGiven.givenId] = givenValuesToMalloyValues({
       type: selectedGiven.type,
       isMultiple: selectedGiven.isMultiple,
       values: selectedGiven.values
-    }) as GivenValue;
+    });
   });
 
   return malloyGivens;

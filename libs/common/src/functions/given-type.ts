@@ -1,3 +1,4 @@
+import type { GivenValue } from '@malloydata/malloy';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
 
 export let givenTypes = [
@@ -124,8 +125,12 @@ export function givenValuesToMalloyValues(item: {
   type: GivenTypeEnum;
   isMultiple: boolean;
   values: string[];
-}) {
+}): GivenValue {
   let { type, isMultiple, values } = item;
+
+  if (values.length === 0) {
+    return [];
+  }
 
   let convertedValues = values.map(value =>
     givenValueToMalloyValue({ type: type, value: value })
