@@ -17,12 +17,10 @@
 
     <div class="mt-8 flex flex-row items-center text-base">
       <div class="w-[120px] flex-shrink-0 font-semibold">Type</div>
-      <div class="ml-2">{{ dataItem.given.type }}</div>
-    </div>
-
-    <div class="mt-8 flex flex-row items-center text-base">
-      <div class="w-[120px] flex-shrink-0 font-semibold">Array</div>
-      <div class="ml-2">{{ dataItem.given.isMultiple }}</div>
+      <div class="ml-2"
+        >{{ dataItem.given.type
+        }}{{ dataItem.given.isMultiple ? ' [ ]' : '' }}</div
+      >
     </div>
 
     <div class="mt-6 flex min-h-[220px] flex-row items-start">

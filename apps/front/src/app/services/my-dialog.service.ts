@@ -424,7 +424,7 @@ export class MyDialogService {
       enableClose: true,
       closeButton: true,
       data: item,
-      width: 900
+      width: 1100
     });
   }
 
