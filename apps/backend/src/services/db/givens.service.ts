@@ -6,7 +6,7 @@ import type { GivenTab } from '#backend/drizzle/postgres/schema/_tabs';
 import { givensTable } from '#backend/drizzle/postgres/schema/givens';
 import { ErEnum } from '#common/enums/er.enum';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
-import { getGivenValueValidationError } from '#common/functions/given-type';
+import { getGivenValueValidationError } from '#common/functions/get-given-value-validation-error';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { ServerError } from '#common/models/server-error';

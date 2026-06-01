@@ -1,4 +1,5 @@
 import {
+  type GivenValue,
   Runtime as MalloyRuntime,
   ModelMaterializer,
   malloyToQuery,
@@ -26,11 +27,12 @@ import {
 import { DOUBLE_UNDERSCORE } from '#common/constants/top';
 import { ErEnum } from '#common/enums/er.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
+import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { MconfigParentTypeEnum } from '#common/enums/mconfig-parent-type.enum';
 import { QueryOperationTypeEnum } from '#common/enums/query-operation-type.enum';
 import { QueryStatusEnum } from '#common/enums/query-status.enum';
-import { isGivenTypeMalloyCompatible } from '#common/functions/given-type';
 import { isDefined } from '#common/functions/is-defined';
+import { isGivenTypeMalloyCompatible } from '#common/functions/is-given-type-malloy-compatible';
 import { isUndefined } from '#common/functions/is-undefined';
 import { makeId } from '#common/functions/make-id';
 import { replaceChartField } from '#common/functions/replace-chart-field';
@@ -48,7 +50,6 @@ import { getBlankMconfigAndQuery } from './get-blank-mconfig-and-query';
 import { MalloyConnection } from './make-malloy-connections';
 import { makeQueryId } from './make-query-id';
 import { processMalloyWhereOrHaving } from './process-malloy-where-or-having';
-import { selectedGivensToMalloyGivens } from './selected-givens-to-malloy-givens';
 
 export interface MalloyQueryResult {
   isError: boolean;
@@ -485,8 +486,21 @@ export async function makeMalloyQuery(item: {
   // console.log('modelGivens');
   // console.log(modelGivens);
 
-  let malloySelectedGivens = selectedGivensToMalloyGivens({
-    selectedGivens: selectedGivens
+  let malloySelectedGivens: Record<string, GivenValue> = {};
+
+  selectedGivens.forEach(selectedGiven => {
+    if (selectedGiven.values.length === 0) {
+      malloySelectedGivens[selectedGiven.givenId] = [];
+      return;
+    }
+
+    let convertedValues = selectedGiven.values.map(value =>
+      selectedGiven.type === GivenTypeEnum.Boolean ? value === 'true' : value
+    );
+
+    malloySelectedGivens[selectedGiven.givenId] = selectedGiven.isMultiple
+      ? convertedValues
+      : convertedValues[0];
   });
 
   // console.log('malloySelectedGivens');

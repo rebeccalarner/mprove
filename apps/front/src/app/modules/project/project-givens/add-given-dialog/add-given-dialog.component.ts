@@ -15,10 +15,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
 import { UiSwitchModule } from 'ngx-ui-switch';
 import { take, tap } from 'rxjs/operators';
+import { GIVEN_TYPES } from '#common/constants/top';
 import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
-import { givenTypes } from '#common/functions/given-type';
 import type {
   ToBackendCreateGivenRequestPayload,
   ToBackendCreateGivenResponse
@@ -57,7 +57,7 @@ export class AddGivenDialogComponent implements OnInit {
 
   addGivenForm: FormGroup;
 
-  givenTypes = givenTypes;
+  givenTypes = GIVEN_TYPES;
 
   constructor(
     public ref: DialogRef<AddGivenDialogData>,

@@ -3,6 +3,7 @@ import { DetailUnitEnum } from '#common/enums/detail-unit.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { FieldTypeEnum } from '#common/enums/field-type.enum';
 import { FractionLogicEnum } from '#common/enums/fraction/fraction-logic.enum';
+import { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ProjectWeekStartEnum } from '#common/enums/project-week-start.enum';
 import { RelationshipTypeEnum } from '#common/enums/relationship-type.enum';
 import { RowTypeEnum } from '#common/enums/row-type.enum';
@@ -20,6 +21,15 @@ export const MPROVE_SYNC_FILENAME = 'sync.json';
 export const UTC = 'UTC';
 
 export const MALLOY_FILTER_ANY = 'f``';
+
+export const GIVEN_TYPES = [
+  GivenTypeEnum.String,
+  GivenTypeEnum.Number,
+  GivenTypeEnum.Boolean,
+  GivenTypeEnum.Date,
+  GivenTypeEnum.Timestamp
+  // GivenTypeEnum.TimestampTz
+];
 
 export const EXPLORER_CONTEXT_USAGE_WARNING_PERCENTAGE = 75;
 

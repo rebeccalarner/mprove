@@ -7,7 +7,7 @@ import type {
 import { formatSpecifier } from 'd3-format';
 import type { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { getMotherduckDatabaseWrongChars } from '#common/functions/check-motherduck-database-name';
-import { getGivenValueValidationError } from '#common/functions/given-type';
+import { getGivenValueValidationError } from '#common/functions/get-given-value-validation-error';
 import { isUndefined } from '#common/functions/is-undefined';
 import { isUndefinedOrEmpty } from '#common/functions/is-undefined-or-empty';
 import { MyRegex } from '#common/models/my-regex';
