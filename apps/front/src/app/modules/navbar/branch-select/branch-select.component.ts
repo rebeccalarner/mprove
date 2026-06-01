@@ -337,9 +337,18 @@ export class BranchSelectComponent {
         uiState.builderLeft === BuilderLeftEnum.ChangesToCommit ||
         uiState.builderLeft === BuilderLeftEnum.ChangesToPush;
 
+      let left = uiState.builderLeft;
+      if (
+        newSelectedBranchItem.repoType !== RepoTypeEnum.Session &&
+        left === BuilderLeftEnum.Info
+      ) {
+        left = BuilderLeftEnum.Tree;
+        this.uiQuery.updatePart({ builderLeft: left });
+      }
+
       let navArray = [...baseNavArray, PATH_BUILDER];
       let queryParams: Record<string, any> = {
-        left: uiState.builderLeft,
+        left: left,
         right: uiState.builderRight
       };
 
