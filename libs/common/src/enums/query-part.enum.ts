@@ -1,4 +1,5 @@
 export enum QueryPartEnum {
+  JsonAppliedGivens = 'JsonAppliedGivens',
   MalloyQuery = 'MalloyQuery',
   MalloyCompiledQuery = 'MalloyCompiledQuery',
   JsonStoreRequestParts = 'JsonStoreRequestParts',

@@ -160,7 +160,8 @@ export class QueryInfoViewerComponent implements OnChanges, OnInit, OnDestroy {
       this.queryPart === QueryPartEnum.SqlMalloy ||
       this.queryPart === QueryPartEnum.SqlMain
         ? 'SQL'
-        : this.queryPart === QueryPartEnum.MalloyCompiledQuery ||
+        : this.queryPart === QueryPartEnum.JsonAppliedGivens ||
+            this.queryPart === QueryPartEnum.MalloyCompiledQuery ||
             this.queryPart === QueryPartEnum.JsonStoreRequestParts ||
             this.queryPart === QueryPartEnum.JsonResults
           ? 'JSON'
@@ -180,7 +181,12 @@ export class QueryInfoViewerComponent implements OnChanges, OnInit, OnDestroy {
         ? LIGHT_PLUS_THEME_EXTRA_SINGLE_READ
         : VS_LIGHT_THEME_EXTRA_SINGLE_READ;
 
-    if (this.queryPart === QueryPartEnum.MalloyQuery) {
+    if (this.queryPart === QueryPartEnum.JsonAppliedGivens) {
+      let appliedGivens = this.chart.tiles[0].mconfig.appliedGivens;
+      this.content = isDefined(appliedGivens)
+        ? JSON.stringify(appliedGivens, null, 2)
+        : '';
+    } else if (this.queryPart === QueryPartEnum.MalloyQuery) {
       this.content = this.chart.tiles[0].mconfig.malloyQueryExtra;
     } else if (this.queryPart === QueryPartEnum.MalloyCompiledQuery) {
       let parsed = this.chart.tiles[0].mconfig.compiledQuery;

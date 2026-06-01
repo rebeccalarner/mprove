@@ -1,9 +1,9 @@
 import {
-  type GivenValue,
   Runtime as MalloyRuntime,
   ModelMaterializer,
   malloyToQuery,
   modelDefToModelInfo,
+  PreparedQuery,
   PreparedResult,
   QueryMaterializer
 } from '@malloydata/malloy';
@@ -41,6 +41,8 @@ import { setChartTitleOnSelectChange } from '#common/functions/set-chart-title-o
 import { ServerError } from '#common/models/server-error';
 import type { QueryOperation } from '#common/zod/backend/query-operation';
 import type { SelectedGiven } from '#common/zod/backend/selected-given';
+import type { SelectedGivenValue } from '#common/zod/backend/selected-given-value';
+import type { AppliedGivenValue } from '#common/zod/blockml/applied-given-value';
 import type { Filter } from '#common/zod/blockml/filter';
 import type { Mconfig } from '#common/zod/blockml/mconfig';
 import type { Model } from '#common/zod/blockml/model';
@@ -486,7 +488,7 @@ export async function makeMalloyQuery(item: {
   // console.log('modelGivens');
   // console.log(modelGivens);
 
-  let malloySelectedGivens: Record<string, GivenValue> = {};
+  let malloySelectedGivens: Record<string, SelectedGivenValue> = {};
 
   selectedGivens.forEach(selectedGiven => {
     if (selectedGiven.values.length === 0) {
@@ -585,12 +587,37 @@ export async function makeMalloyQuery(item: {
 
   let qm: QueryMaterializer = mm.loadQuery(newMalloyQueryExtra); // 0 ms
 
-  // let pq: PreparedQuery = await qm.getPreparedQuery();
-  // let pr: PreparedResult = pq.getPreparedResult();
+  let pq: PreparedQuery = await qm.getPreparedQuery();
 
-  let pr: PreparedResult = await qm.getPreparedResult({
+  let pr: PreparedResult = pq.getPreparedResult({
     givens: malloyFilteredGivens
   });
+
+  let appliedGivens: Record<string, AppliedGivenValue> = {};
+
+  pq.givens.forEach((given, givenName) => {
+    let hasProvidedGiven = Object.prototype.hasOwnProperty.call(
+      malloyFilteredGivens,
+      givenName
+    );
+
+    if (hasProvidedGiven) {
+      appliedGivens[givenName] = malloyFilteredGivens[givenName];
+      return;
+    }
+
+    let defaultText = (given as any)._internal?.defaultText;
+
+    if (isDefined(defaultText)) {
+      appliedGivens[givenName] = { defaultText: defaultText };
+    }
+  });
+
+  // console.log('pq.givens');
+  // console.dir(pq.givens, { depth: null });
+
+  // console.log('appliedGivens');
+  // console.log(appliedGivens);
 
   // console.log('pr.sql');
   // console.log(pr.sql);
@@ -732,6 +759,7 @@ export async function makeMalloyQuery(item: {
         : mconfig.timezone,
     limit: compiledQuery.structs[0].resultMetadata.limit,
     filters: mconfig.filters,
+    appliedGivens: appliedGivens,
     chart: mconfig.chart,
     serverTs: 1
   };

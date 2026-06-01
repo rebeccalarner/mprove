@@ -1478,6 +1478,31 @@
                   </div>
 
                   <div
+                    *ngIf="model.type === modelTypeMalloy"
+                    (click)="setShowJsonAppliedGivens()"
+                    class="ml-3 flex h-11 cursor-pointer select-none flex-row items-center text-lg"
+                  >
+                    <div
+                      class="flex w-[75px] flex-row items-center justify-center"
+                    >
+                      <div
+                        [ngClass]="{
+                          'text-s400':
+                            rightIsShow === false ||
+                            queryPartForm.controls['queryPart'].value !==
+                              queryPartEnum.JsonAppliedGivens,
+                          'font-semibold':
+                            rightIsShow &&
+                            queryPartForm.controls['queryPart'].value ===
+                              queryPartEnum.JsonAppliedGivens
+                        }"
+                      >
+                        GIVENS
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
                     *ngIf="model.type === modelTypeStore"
                     (click)="setShowJsonStoreRequestParts()"
                     class="ml-3 flex h-11 cursor-pointer select-none flex-row items-center text-lg"
@@ -1706,7 +1731,7 @@
                     >
                       <m-arrow-narrow-right-icon></m-arrow-narrow-right-icon>
 
-                      <div class="ml-2 text-lg"> Edit File</div>
+                      <div class="ml-2 text-lg">File</div>
                     </button>
                   </div>
 

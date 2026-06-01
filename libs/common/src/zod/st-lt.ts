@@ -17,6 +17,7 @@ import { zConnectionRawSchema } from '#common/zod/backend/connection-schemas/raw
 import { zEv } from '#common/zod/backend/ev';
 import { zMproveConfig } from '#common/zod/backend/mprove-config';
 import { zUi } from '#common/zod/backend/ui';
+import { zAppliedGivenValue } from '#common/zod/blockml/applied-given-value';
 import { zBmlError } from '#common/zod/blockml/bml-error';
 import { zDashboardField } from '#common/zod/blockml/dashboard-field';
 import { zFilter } from '#common/zod/blockml/filter';
@@ -193,6 +194,7 @@ export let zMconfigLt = z
     timezone: z.string(),
     limit: z.number(),
     filters: z.array(zFilter),
+    appliedGivens: z.record(z.string(), zAppliedGivenValue.nullish()).nullish(),
     chart: zMconfigChart
   })
   .meta({ id: 'MconfigLt' });

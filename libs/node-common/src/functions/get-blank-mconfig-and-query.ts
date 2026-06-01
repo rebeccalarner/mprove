@@ -77,6 +77,7 @@ export function getBlankMconfigAndQuery(item: {
     timezone: mconfig.timezone,
     limit: 500,
     filters: [],
+    appliedGivens: undefined,
     chart: makeCopy(DEFAULT_CHART),
     serverTs: 1
   };

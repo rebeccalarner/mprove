@@ -80,6 +80,7 @@ export class MconfigsService {
       timezone: mconfig.timezone,
       limit: mconfig.limit,
       filters: mconfig.filters,
+      appliedGivens: mconfig.appliedGivens,
       chart: mconfig.chart,
       serverTs: mconfig.serverTs
     };
@@ -115,6 +116,7 @@ export class MconfigsService {
       timezone: apiMconfig.timezone,
       limit: apiMconfig.limit,
       filters: apiMconfig.filters,
+      appliedGivens: apiMconfig.appliedGivens,
       chart: apiMconfig.chart,
       sessionId: undefined,
       keyTag: undefined,

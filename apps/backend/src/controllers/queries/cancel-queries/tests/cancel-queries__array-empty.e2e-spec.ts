@@ -81,6 +81,7 @@ test('1', async t => {
       timezone: UTC,
       limit: 500,
       filters: [],
+      appliedGivens: undefined,
       chart: makeCopy(DEFAULT_CHART),
       serverTs: 1
     };

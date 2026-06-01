@@ -108,6 +108,7 @@ export async function fetchSql<T extends dcType>(
         timezone: timezone,
         limit: undefined,
         filters: [],
+        appliedGivens: undefined,
         chart: makeCopy(DEFAULT_CHART),
         serverTs: 1
       };

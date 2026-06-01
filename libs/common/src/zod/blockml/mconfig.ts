@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MconfigParentTypeEnum } from '#common/enums/mconfig-parent-type.enum';
 import { ModelTypeEnum } from '#common/enums/model-type.enum';
+import { zAppliedGivenValue } from '#common/zod/blockml/applied-given-value';
 import { zFilter } from '#common/zod/blockml/filter';
 import { zMconfigChart } from '#common/zod/blockml/mconfig-chart';
 import { zSorting } from '#common/zod/blockml/sorting';
@@ -29,6 +30,7 @@ export let zMconfig = z
     timezone: zTimezone,
     limit: z.number(),
     filters: z.array(zFilter),
+    appliedGivens: z.record(z.string(), zAppliedGivenValue.nullish()).nullish(),
     chart: zMconfigChart,
     serverTs: z.number().int()
   })

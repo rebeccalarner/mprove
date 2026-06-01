@@ -786,6 +786,7 @@ export class TabToEntService {
       timezone: tab.timezone,
       limit: tab.limit,
       filters: tab.filters,
+      appliedGivens: tab.appliedGivens,
       chart: tab.chart
     };
 

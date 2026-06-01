@@ -246,6 +246,7 @@ export class ModelsComponent implements OnInit, OnDestroy {
         isDefined(this.model.modelId) &&
         ((this.model.type === ModelTypeEnum.Malloy &&
           [
+            QueryPartEnum.JsonAppliedGivens,
             QueryPartEnum.MalloyQuery,
             QueryPartEnum.MalloyCompiledQuery,
             QueryPartEnum.SqlMalloy,
@@ -729,6 +730,15 @@ export class ModelsComponent implements OnInit, OnDestroy {
     }
     this.queryPartForm.controls['queryPart'].setValue(
       QueryPartEnum.JsonStoreRequestParts
+    );
+  }
+
+  setShowJsonAppliedGivens() {
+    if (this.rightIsShow === false) {
+      this.rightIsShow = true;
+    }
+    this.queryPartForm.controls['queryPart'].setValue(
+      QueryPartEnum.JsonAppliedGivens
     );
   }
 
