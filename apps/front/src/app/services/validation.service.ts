@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
-import { AbstractControl, FormControl, ValidationErrors } from '@angular/forms';
+import type {
+  AbstractControl,
+  FormControl,
+  ValidationErrors
+} from '@angular/forms';
 import { formatSpecifier } from 'd3-format';
+import type { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { getMotherduckDatabaseWrongChars } from '#common/functions/check-motherduck-database-name';
+import { getGivenValueValidationError } from '#common/functions/given-type';
 import { isUndefined } from '#common/functions/is-undefined';
 import { isUndefinedOrEmpty } from '#common/functions/is-undefined-or-empty';
 import { MyRegex } from '#common/models/my-regex';
@@ -156,6 +162,44 @@ export class ValidationService {
       return { wrongFormatNumber: true };
     }
     return null;
+  }
+
+  static parseGivenValues(item: { values: string }) {
+    let { values } = item;
+
+    return (values ?? '')
+      .split('\n')
+      .map(x => x.trim())
+      .filter(x => x !== '');
+  }
+
+  static givenValuesValidator(item: {
+    getType: () => GivenTypeEnum | undefined;
+    getIsMultiple: () => boolean;
+  }) {
+    let { getType, getIsMultiple } = item;
+
+    return (control: AbstractControl): ValidationErrors | null => {
+      let type = getType();
+
+      if (type === undefined) {
+        return null;
+      }
+
+      let values = ValidationService.parseGivenValues({
+        values: control.value
+      });
+
+      let message = getGivenValueValidationError({
+        type: type,
+        isMultiple: getIsMultiple(),
+        values: values
+      });
+
+      return isUndefined(message)
+        ? null
+        : { wrongGivenValue: { message: message } };
+    };
   }
 
   static numberOrEmptyValidator(control: FormControl) {

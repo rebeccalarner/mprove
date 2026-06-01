@@ -5,18 +5,13 @@ import {
   HostListener,
   OnInit
 } from '@angular/core';
-import type {
-  AbstractControl,
-  FormGroup,
-  ValidationErrors
-} from '@angular/forms';
+import type { FormGroup } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogRef } from '@ngneat/dialog';
 import { take, tap } from 'rxjs/operators';
-import { GivenTypeEnum } from '#common/enums/given-type.enum';
+import type { GivenTypeEnum } from '#common/enums/given-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
-import { getGivenValueValidationError } from '#common/functions/given-type';
 import type { Given } from '#common/zod/backend/given';
 import type { Gv } from '#common/zod/backend/gv';
 import type { Role } from '#common/zod/backend/role';
@@ -28,6 +23,7 @@ import { SharedModule } from '#front/app/modules/shared/shared.module';
 import { MemberQuery } from '#front/app/queries/member.query';
 import { RolesQuery } from '#front/app/queries/roles.query';
 import type { ApiService } from '#front/app/services/api.service';
+import { ValidationService } from '#front/app/services/validation.service';
 
 export interface EditRoleGivenDialogData {
   apiService: ApiService;
@@ -55,6 +51,7 @@ export class EditRoleGivenDialogComponent implements OnInit {
 
   givenType: GivenTypeEnum;
   givenIsMultiple = false;
+
   constructor(
     public ref: DialogRef<EditRoleGivenDialogData>,
     private fb: FormBuilder,
@@ -73,7 +70,13 @@ export class EditRoleGivenDialogComponent implements OnInit {
     this.editRoleGivenForm = this.fb.group({
       values: [
         this.dataItem.gv.values.join('\n'),
-        [Validators.maxLength(10000), this.givenValuesValidator]
+        [
+          Validators.maxLength(10000),
+          ValidationService.givenValuesValidator({
+            getType: () => this.givenType,
+            getIsMultiple: () => this.givenIsMultiple
+          })
+        ]
       ]
     });
 
@@ -95,7 +98,9 @@ export class EditRoleGivenDialogComponent implements OnInit {
       projectId: this.dataItem.role.projectId,
       roleId: this.dataItem.role.roleId,
       givenId: this.dataItem.gv.givenId,
-      values: this.parseValues({ values: this.editRoleGivenForm.value.values })
+      values: ValidationService.parseGivenValues({
+        values: this.editRoleGivenForm.value.values
+      })
     };
 
     let apiService: ApiService = this.dataItem.apiService;
@@ -121,32 +126,4 @@ export class EditRoleGivenDialogComponent implements OnInit {
   cancel() {
     this.ref.close();
   }
-
-  private parseValues(item: { values: string }) {
-    let { values } = item;
-
-    return (values ?? '')
-      .split('\n')
-      .map(x => x.trim())
-      .filter(x => x !== '');
-  }
-
-  private givenValuesValidator = (
-    control: AbstractControl
-  ): ValidationErrors | null => {
-    if (this.givenType === undefined) {
-      return null;
-    }
-
-    let values = this.parseValues({ values: control.value });
-    let message = getGivenValueValidationError({
-      type: this.givenType,
-      isMultiple: this.givenIsMultiple,
-      values: values
-    });
-
-    return message === undefined
-      ? null
-      : { wrongGivenValue: { message: message } };
-  };
 }
