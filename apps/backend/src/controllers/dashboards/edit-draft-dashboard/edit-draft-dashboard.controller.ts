@@ -36,6 +36,7 @@ import { ProjectsService } from '#backend/services/db/projects.service';
 import { QueriesService } from '#backend/services/db/queries.service';
 import { SessionsService } from '#backend/services/db/sessions.service';
 import { StructsService } from '#backend/services/db/structs.service';
+import { UsersService } from '#backend/services/db/users.service';
 import { TabService } from '#backend/services/tab.service';
 import {
   MPROVE_CONFIG_DIR_DOT_SLASH,
@@ -64,6 +65,7 @@ export class EditDraftDashboardController {
     private branchesService: BranchesService,
     private modelsService: ModelsService,
     private membersService: MembersService,
+    private usersService: UsersService,
     private projectsService: ProjectsService,
     private blockmlService: BlockmlService,
     private structsService: StructsService,
@@ -241,6 +243,11 @@ export class EditDraftDashboardController {
       })
       .then(xs => xs.map(x => this.tabService.modelEntToTab(x)));
 
+    let selectedGivens = await this.usersService.getSelectedGivens({
+      user: user,
+      projectId: projectId
+    });
+
     let {
       struct: tempStruct,
       dashboards: apiDashboards,
@@ -257,6 +264,7 @@ export class EditDraftDashboardController {
       mproveDir: currentStruct.mproveConfig.mproveDirValue,
       skipDb: true,
       envId: envId,
+      selectedGivens: selectedGivens,
       overrideTimezone: timezone,
       isUseCache: true,
       cachedMproveConfig: currentStruct.mproveConfig,

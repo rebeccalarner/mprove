@@ -38,6 +38,7 @@ import { ProjectsService } from '#backend/services/db/projects.service';
 import { QueriesService } from '#backend/services/db/queries.service';
 import { SessionsService } from '#backend/services/db/sessions.service';
 import { StructsService } from '#backend/services/db/structs.service';
+import { UsersService } from '#backend/services/db/users.service';
 import { ParentService } from '#backend/services/parent.service';
 import { TabService } from '#backend/services/tab.service';
 import {
@@ -66,6 +67,7 @@ export class CreateDraftDashboardController {
     private tabService: TabService,
     private branchesService: BranchesService,
     private modelsService: ModelsService,
+    private usersService: UsersService,
     private membersService: MembersService,
     private projectsService: ProjectsService,
     private blockmlService: BlockmlService,
@@ -245,6 +247,11 @@ export class CreateDraftDashboardController {
       })
       .then(xs => xs.map(x => this.tabService.modelEntToTab(x)));
 
+    let selectedGivens = await this.usersService.getSelectedGivens({
+      user: user,
+      projectId: projectId
+    });
+
     let {
       struct: tempStruct,
       dashboards: apiDashboards,
@@ -261,6 +268,7 @@ export class CreateDraftDashboardController {
       mproveDir: currentStruct.mproveConfig.mproveDirValue,
       skipDb: true,
       envId: envId,
+      selectedGivens: selectedGivens,
       overrideTimezone: timezone,
       isUseCache: true,
       cachedMproveConfig: currentStruct.mproveConfig,

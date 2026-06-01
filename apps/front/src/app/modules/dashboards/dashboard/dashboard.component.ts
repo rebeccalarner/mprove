@@ -263,7 +263,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       newDashboardId: makeId(),
       newDashboardFields: this.dashboard.fields,
       timezone: this.uiQuery.getValue().timezone,
-      isQueryCache: true,
+      isQueryCache: false, // TODO: if set to true, then create/edit draft dashboard queries should use user givens
       cachedQueryMconfigIds: this.dashboard.tiles.map(
         tile => tile.mconfig.mconfigId
       )
@@ -287,7 +287,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       newDashboardId: makeId(),
       newDashboardFields: this.dashboard.fields,
       timezone: this.uiQuery.getValue().timezone,
-      isQueryCache: true,
+      isQueryCache: false, // TODO: if set to true, then create/edit draft dashboard queries should use user givens
       cachedQueryMconfigIds: this.dashboard.tiles.map(
         tile => tile.mconfig.mconfigId
       )
