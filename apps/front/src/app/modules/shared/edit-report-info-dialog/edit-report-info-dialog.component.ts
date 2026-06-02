@@ -4,15 +4,19 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   HostListener,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { NgSelectComponent, NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
+import { TippyDirective } from '@ngneat/helipopper';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { take, tap } from 'rxjs/operators';
 import { MPROVE_USERS_FOLDER } from '#common/constants/top';
@@ -21,12 +25,16 @@ import { RepoTypeEnum } from '#common/enums/repo-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { isDefined } from '#common/functions/is-defined';
-import { isDefinedAndNotEmpty } from '#common/functions/is-defined-and-not-empty';
+import type { Role } from '#common/zod/backend/role';
 import type { Report } from '#common/zod/blockml/report';
 import type {
   ToBackendSaveModifyReportRequestPayload,
   ToBackendSaveModifyReportResponse
 } from '#common/zod/to-backend/reports/to-backend-save-modify-report';
+import type {
+  ToBackendGetRolesRequestPayload,
+  ToBackendGetRolesResponse
+} from '#common/zod/to-backend/roles/to-backend-get-roles';
 import { setValueAndMark } from '#front/app/functions/set-value-and-mark';
 import { ReportQuery } from '#front/app/queries/report.query';
 import { ReportsQuery } from '#front/app/queries/reports.query';
@@ -51,11 +59,22 @@ export interface EditReportInfoDialogData {
   templateUrl: './edit-report-info-dialog.component.html',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SharedModule,
+    NgSelectModule,
+    TippyDirective
+  ]
 })
 export class EditReportInfoDialogComponent implements OnInit {
+  @ViewChild('editReportInfoDialogRoleSelect', { static: false })
+  editReportInfoDialogRoleSelectElement: NgSelectComponent;
+
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
+    this.editReportInfoDialogRoleSelectElement?.close();
     this.ref.close();
   }
 
@@ -65,9 +84,8 @@ export class EditReportInfoDialogComponent implements OnInit {
     title: [undefined, [Validators.required, Validators.maxLength(255)]]
   });
 
-  rolesForm: FormGroup = this.fb.group({
-    roles: [undefined, [Validators.maxLength(255)]]
-  });
+  roles: Role[] = [];
+  selectedAccessRoles: string[] = [];
 
   alias: string;
   alias$ = this.userQuery.alias$.pipe(
@@ -102,10 +120,10 @@ export class EditReportInfoDialogComponent implements OnInit {
       control: this.titleForm.controls['title'],
       value: this.ref.data.report.title
     });
-    setValueAndMark({
-      control: this.rolesForm.controls['roles'],
-      value: this.ref.data.report.accessRoles?.join(', ')
-    });
+
+    this.selectedAccessRoles = [...(this.ref.data.report.accessRoles || [])];
+
+    this.loadRoles();
 
     setTimeout(() => {
       (document.activeElement as HTMLElement).blur();
@@ -113,10 +131,7 @@ export class EditReportInfoDialogComponent implements OnInit {
   }
 
   save() {
-    if (
-      this.titleForm.controls['title'].valid &&
-      this.rolesForm.controls['roles'].valid
-    ) {
+    if (this.titleForm.controls['title'].valid) {
       this.spinner.show(APP_SPINNER_NAME);
 
       this.ref.close();
@@ -124,7 +139,7 @@ export class EditReportInfoDialogComponent implements OnInit {
       let uiState = this.uiQuery.getValue();
 
       let newTitle: string = this.titleForm.controls['title'].value;
-      let roles: string = this.rolesForm.controls['roles'].value;
+      let roles = [...this.selectedAccessRoles];
 
       let payload: ToBackendSaveModifyReportRequestPayload = {
         projectId: this.ref.data.projectId,
@@ -134,9 +149,7 @@ export class EditReportInfoDialogComponent implements OnInit {
         fromReportId: this.ref.data.report.reportId,
         modReportId: this.ref.data.report.reportId,
         title: newTitle.trim(),
-        accessRoles: isDefinedAndNotEmpty(roles?.trim())
-          ? roles.split(',').map(x => x.trim())
-          : [],
+        accessRoles: roles,
         timezone: uiState.timezone,
         timeSpec: uiState.timeSpec,
         timeRangeFractionBrick: uiState.timeRangeFraction.brick,
@@ -180,6 +193,32 @@ export class EditReportInfoDialogComponent implements OnInit {
         )
         .subscribe();
     }
+  }
+
+  loadRoles() {
+    let payload: ToBackendGetRolesRequestPayload = {
+      projectId: this.ref.data.projectId
+    };
+
+    let apiService: ApiService = this.ref.data.apiService;
+
+    apiService
+      .req({
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
+        payload: payload
+      })
+      .pipe(
+        tap((resp: ToBackendGetRolesResponse) => {
+          if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
+            this.roles = resp.payload.roles.sort((a, b) =>
+              a.roleId > b.roleId ? 1 : b.roleId > a.roleId ? -1 : 0
+            );
+            this.cd.detectChanges();
+          }
+        }),
+        take(1)
+      )
+      .subscribe();
   }
 
   cancel() {

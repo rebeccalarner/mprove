@@ -240,7 +240,7 @@ export class SaveModifyDashboardController {
         dashboard: fromDashboardX,
         newDashboardId: fromDashboardX.dashboardId,
         newTitle: fromDashboardX.title,
-        roles: fromDashboardX.accessRoles.join(', '),
+        roles: fromDashboardX.accessRoles,
         caseSensitiveStringFilters:
           currentStruct.mproveConfig.caseSensitiveStringFilters,
         timezone: UTC

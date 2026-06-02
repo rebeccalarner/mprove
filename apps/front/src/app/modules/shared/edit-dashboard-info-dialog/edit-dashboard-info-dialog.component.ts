@@ -4,15 +4,19 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   HostListener,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { NgSelectComponent, NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
+import { TippyDirective } from '@ngneat/helipopper';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { take, tap } from 'rxjs/operators';
 import { MPROVE_USERS_FOLDER } from '#common/constants/top';
@@ -22,10 +26,15 @@ import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum'
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { isDefined } from '#common/functions/is-defined';
 import type { DashboardPart } from '#common/zod/backend/dashboard-part';
+import type { Role } from '#common/zod/backend/role';
 import type {
   ToBackendSaveModifyDashboardRequestPayload,
   ToBackendSaveModifyDashboardResponse
 } from '#common/zod/to-backend/dashboards/to-backend-save-modify-dashboard';
+import type {
+  ToBackendGetRolesRequestPayload,
+  ToBackendGetRolesResponse
+} from '#common/zod/to-backend/roles/to-backend-get-roles';
 import { setValueAndMark } from '#front/app/functions/set-value-and-mark';
 import { DashboardQuery } from '#front/app/queries/dashboard.query';
 import { DashboardPartsQuery } from '#front/app/queries/dashboard-parts.query';
@@ -50,11 +59,22 @@ export interface EditDashboardInfoDialogData {
   templateUrl: './edit-dashboard-info-dialog.component.html',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SharedModule,
+    NgSelectModule,
+    TippyDirective
+  ]
 })
 export class EditDashboardInfoDialogComponent implements OnInit {
+  @ViewChild('editDashboardInfoDialogRoleSelect', { static: false })
+  editDashboardInfoDialogRoleSelectElement: NgSelectComponent;
+
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
+    this.editDashboardInfoDialogRoleSelectElement?.close();
     this.ref.close();
   }
 
@@ -64,9 +84,8 @@ export class EditDashboardInfoDialogComponent implements OnInit {
     title: [undefined, [Validators.required, Validators.maxLength(255)]]
   });
 
-  rolesForm: FormGroup = this.fb.group({
-    roles: [undefined, [Validators.maxLength(255)]]
-  });
+  roles: Role[] = [];
+  selectedAccessRoles: string[] = [];
 
   alias: string;
   alias$ = this.userQuery.alias$.pipe(
@@ -101,10 +120,12 @@ export class EditDashboardInfoDialogComponent implements OnInit {
       control: this.titleForm.controls['title'],
       value: this.ref.data.dashboardPart.title
     });
-    setValueAndMark({
-      control: this.rolesForm.controls['roles'],
-      value: this.ref.data.dashboardPart.accessRoles?.join(', ')
-    });
+
+    this.selectedAccessRoles = [
+      ...(this.ref.data.dashboardPart.accessRoles || [])
+    ];
+
+    this.loadRoles();
 
     setTimeout(() => {
       (document.activeElement as HTMLElement).blur();
@@ -112,18 +133,13 @@ export class EditDashboardInfoDialogComponent implements OnInit {
   }
 
   save() {
-    if (
-      this.titleForm.controls['title'].valid &&
-      this.rolesForm.controls['roles'].valid
-    ) {
+    if (this.titleForm.controls['title'].valid) {
       this.spinner.show(APP_SPINNER_NAME);
 
       this.ref.close();
 
-      let uiState = this.uiQuery.getValue();
-
       let newTitle: string = this.titleForm.controls['title'].value;
-      let roles: string = this.rolesForm.controls['roles'].value;
+      let roles = [...this.selectedAccessRoles];
 
       let payload: ToBackendSaveModifyDashboardRequestPayload = {
         projectId: this.ref.data.projectId,
@@ -180,6 +196,32 @@ export class EditDashboardInfoDialogComponent implements OnInit {
         )
         .subscribe();
     }
+  }
+
+  loadRoles() {
+    let payload: ToBackendGetRolesRequestPayload = {
+      projectId: this.ref.data.projectId
+    };
+
+    let apiService: ApiService = this.ref.data.apiService;
+
+    apiService
+      .req({
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
+        payload: payload
+      })
+      .pipe(
+        tap((resp: ToBackendGetRolesResponse) => {
+          if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
+            this.roles = resp.payload.roles.sort((a, b) =>
+              a.roleId > b.roleId ? 1 : b.roleId > a.roleId ? -1 : 0
+            );
+            this.cd.detectChanges();
+          }
+        }),
+        take(1)
+      )
+      .subscribe();
   }
 
   cancel() {

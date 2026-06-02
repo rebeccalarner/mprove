@@ -15,9 +15,9 @@ import { APP_SPINNER_NAME } from '#common/constants/top-front';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { isDefined } from '#common/functions/is-defined';
-import { isDefinedAndNotEmpty } from '#common/functions/is-defined-and-not-empty';
 import { isUndefined } from '#common/functions/is-undefined';
 import type { ReportX } from '#common/zod/backend/report-x';
+import type { Role } from '#common/zod/backend/role';
 import type {
   ToBackendSaveCreateReportRequestPayload,
   ToBackendSaveCreateReportResponse
@@ -26,6 +26,10 @@ import type {
   ToBackendSaveModifyReportRequestPayload,
   ToBackendSaveModifyReportResponse
 } from '#common/zod/to-backend/reports/to-backend-save-modify-report';
+import type {
+  ToBackendGetRolesRequestPayload,
+  ToBackendGetRolesResponse
+} from '#common/zod/to-backend/roles/to-backend-get-roles';
 import { setValueAndMark } from '#front/app/functions/set-value-and-mark';
 import { NavQuery, NavState } from '#front/app/queries/nav.query';
 import { ReportQuery } from '#front/app/queries/report.query';
@@ -56,9 +60,13 @@ export class ReportSaveAsDialogComponent implements OnInit {
   @ViewChild('reportSaveAsDialogExistingReportSelect', { static: false })
   reportSaveAsDialogExistingReportSelectElement: NgSelectComponent;
 
+  @ViewChild('reportSaveAsDialogRoleSelect', { static: false })
+  reportSaveAsDialogRoleSelectElement: NgSelectComponent;
+
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
     this.reportSaveAsDialogExistingReportSelectElement?.close();
+    this.reportSaveAsDialogRoleSelectElement?.close();
   }
 
   usersFolder = MPROVE_USERS_FOLDER;
@@ -71,10 +79,6 @@ export class ReportSaveAsDialogComponent implements OnInit {
 
   titleForm: FormGroup = this.fb.group({
     title: [undefined, [Validators.required, Validators.maxLength(255)]]
-  });
-
-  rolesForm: FormGroup = this.fb.group({
-    roles: [undefined, [Validators.maxLength(255)]]
   });
 
   saveAs: ReportSaveAsEnum = ReportSaveAsEnum.NEW_REPORT;
@@ -95,6 +99,9 @@ export class ReportSaveAsDialogComponent implements OnInit {
   selectedRepPath: string;
 
   reports: ReportX[];
+
+  roles: Role[] = [];
+  selectedAccessRoles: string[] = [];
 
   nav: NavState;
   nav$ = this.navQuery.select().pipe(
@@ -128,6 +135,7 @@ export class ReportSaveAsDialogComponent implements OnInit {
 
   ngOnInit() {
     this.report = this.ref.data.report;
+    this.nav = this.navQuery.getValue();
 
     this.fromReportId = this.ref.data.report.reportId;
     this.newReportId = this.ref.data.report.reportId;
@@ -137,15 +145,14 @@ export class ReportSaveAsDialogComponent implements OnInit {
       value: this.report.title
     });
 
-    setValueAndMark({
-      control: this.rolesForm.controls['roles'],
-      value: this.report.accessRoles?.join(', ')
-    });
+    this.selectedAccessRoles = [...(this.report.accessRoles || [])];
 
     this.reports = this.ref.data.reports.map(x => {
       (x as any).disabled = !x.canEditOrDeleteReport;
       return x;
     });
+
+    this.loadRoles();
 
     this.makePath();
 
@@ -155,14 +162,11 @@ export class ReportSaveAsDialogComponent implements OnInit {
   }
 
   save() {
-    if (
-      this.titleForm.controls['title'].valid &&
-      this.rolesForm.controls['roles'].valid
-    ) {
+    if (this.titleForm.controls['title'].valid) {
       this.ref.close();
 
       let newTitle = this.titleForm.controls['title'].value;
-      let roles = this.rolesForm.controls['roles'].value;
+      let roles = [...this.selectedAccessRoles];
 
       if (this.saveAs === ReportSaveAsEnum.NEW_REPORT) {
         this.saveAsNewRep({
@@ -186,7 +190,7 @@ export class ReportSaveAsDialogComponent implements OnInit {
     this.saveAs = ReportSaveAsEnum.REPLACE_EXISTING_REPORT;
   }
 
-  saveAsNewRep(item: { newTitle: string; roles: string }) {
+  saveAsNewRep(item: { newTitle: string; roles: string[] }) {
     let { newTitle, roles } = item;
 
     let uiState = this.uiQuery.getValue();
@@ -199,7 +203,7 @@ export class ReportSaveAsDialogComponent implements OnInit {
       newReportId: this.newReportId,
       fromReportId: this.fromReportId,
       title: newTitle,
-      accessRoles: isDefinedAndNotEmpty(roles?.trim()) ? roles.split(',') : [],
+      accessRoles: roles,
       timezone: uiState.timezone,
       timeSpec: uiState.timeSpec,
       timeRangeFractionBrick: uiState.timeRangeFraction.brick,
@@ -255,7 +259,7 @@ export class ReportSaveAsDialogComponent implements OnInit {
       .subscribe();
   }
 
-  saveAsExistingRep(item: { newTitle: string; roles: string }) {
+  saveAsExistingRep(item: { newTitle: string; roles: string[] }) {
     let { newTitle, roles } = item;
 
     let uiState = this.uiQuery.getValue();
@@ -270,9 +274,7 @@ export class ReportSaveAsDialogComponent implements OnInit {
       modReportId: this.selectedReportId,
       fromReportId: this.fromReportId,
       title: newTitle,
-      accessRoles: isDefinedAndNotEmpty(roles?.trim())
-        ? roles.split(',').map(x => x.trim())
-        : [],
+      accessRoles: roles,
       timezone: uiState.timezone,
       timeSpec: uiState.timeSpec,
       timeRangeFractionBrick: uiState.timeRangeFraction.brick,
@@ -331,7 +333,37 @@ export class ReportSaveAsDialogComponent implements OnInit {
         x => x.reportId === this.selectedReportId
       );
       this.titleForm.controls['title'].setValue(selectedReport.title);
+      this.selectedAccessRoles = [...(selectedReport.accessRoles || [])];
+      this.cd.detectChanges();
     }
+  }
+
+  loadRoles() {
+    let payload: ToBackendGetRolesRequestPayload = {
+      projectId: this.nav.projectId
+    };
+
+    let apiService: ApiService = this.ref.data.apiService;
+
+    apiService
+      .req({
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
+        payload: payload
+      })
+      .pipe(
+        tap((resp: ToBackendGetRolesResponse) => {
+          if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
+            let newSortedRoles = resp.payload.roles.sort((a, b) =>
+              a.roleId > b.roleId ? 1 : b.roleId > a.roleId ? -1 : 0
+            );
+
+            this.roles = newSortedRoles;
+            this.cd.detectChanges();
+          }
+        }),
+        take(1)
+      )
+      .subscribe();
   }
 
   makePath() {

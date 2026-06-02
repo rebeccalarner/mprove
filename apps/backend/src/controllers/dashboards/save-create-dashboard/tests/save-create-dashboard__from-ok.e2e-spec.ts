@@ -152,7 +152,7 @@ test('1', async t => {
           newDashboardId: dashboardId,
           fromDashboardId: fromDashboardId,
           dashboardTitle: newTitle,
-          accessRoles: fromDashboard.accessRoles.join(', '),
+          accessRoles: fromDashboard.accessRoles,
           tilesGrid: fromDashboard.tiles,
           timezone: UTC
         }

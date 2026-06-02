@@ -96,10 +96,6 @@ import {
   ChartsReplaceColumnFieldDialogData
 } from '../modules/models/charts-replace-column-field-dialog/charts-replace-column-field-dialog.component';
 import {
-  CreateModelDialogComponent,
-  CreateModelDialogData
-} from '../modules/models/create-model-dialog/create-model-dialog.component';
-import {
   CreateBranchDialogComponent,
   CreateBranchDialogData
 } from '../modules/navbar/branch-select/create-branch-dialog/create-branch-dialog.component';
@@ -922,15 +918,6 @@ export class MyDialogService {
       closeButton: false,
       data: item,
       width: 700
-    });
-  }
-
-  showCreateModel(item: CreateModelDialogData): void {
-    this.dialogService.open(CreateModelDialogComponent, {
-      enableClose: false,
-      closeButton: false,
-      data: item,
-      width: 800
     });
   }
 

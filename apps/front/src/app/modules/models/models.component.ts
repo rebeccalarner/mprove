@@ -49,7 +49,6 @@ import { ModelTypeEnum } from '#common/enums/model-type.enum';
 import { QueryOperationTypeEnum } from '#common/enums/query-operation-type.enum';
 import { QueryPartEnum } from '#common/enums/query-part.enum';
 import { QueryStatusEnum } from '#common/enums/query-status.enum';
-import { RepoTypeEnum } from '#common/enums/repo-type.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { encodeFilePath } from '#common/functions/encode-file-path';
@@ -172,7 +171,6 @@ export class ModelsComponent implements OnInit, OnDestroy {
   modelTreeLevelsFlatTime = ModelTreeLevelsEnum.FlatTime;
   modelTreeLevelsNested = ModelTreeLevelsEnum.Nested;
 
-  repoTypeEnum = RepoTypeEnum;
   queryStatusEnum = QueryStatusEnum;
   connectionTypeEnum = ConnectionTypeEnum;
   chartTypeEnum = ChartTypeEnum;
@@ -324,14 +322,6 @@ export class ModelsComponent implements OnInit, OnDestroy {
   nav$ = this.navQuery.select().pipe(
     tap(x => {
       this.nav = x;
-      this.cd.detectChanges();
-    })
-  );
-
-  isEditor: boolean;
-  isEditor$ = this.memberQuery.isEditor$.pipe(
-    tap(x => {
-      this.isEditor = x;
       this.cd.detectChanges();
     })
   );
@@ -1706,16 +1696,6 @@ export class ModelsComponent implements OnInit, OnDestroy {
         chartId: EMPTY_CHART_ID
       });
     }
-  }
-
-  createModel(modelSelect?: any) {
-    if (isDefined(modelSelect)) {
-      modelSelect.close();
-    }
-
-    this.myDialogService.showCreateModel({
-      apiService: this.apiService
-    });
   }
 
   scrollToSelectedChart(item: { isSmooth: boolean }) {

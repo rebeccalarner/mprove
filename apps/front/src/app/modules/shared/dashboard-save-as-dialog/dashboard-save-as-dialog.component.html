@@ -170,27 +170,46 @@
     </div>
   </div>
 
-  <div class="flex flex-row items-start">
+  <div class="flex min-h-[100px] flex-row items-start">
     <div class="flex flex-col">
       <div class="text-s1 flex h-9 w-32 select-none items-center text-base"
         >Access Roles</div
       >
     </div>
 
-    <div [formGroup]="rolesForm" class="ml-5 flex flex-col items-start">
-      <input
-        autocomplete="off"
-        spellcheck="false"
-        data-cy="dashboardSaveAsDialogRolesInput"
-        class="form-input border-s3 focus:border-m600 h-9 w-96 rounded"
-        [ngClass]="{
-          'border-r600':
-            rolesForm.controls['roles'].invalid &&
-            rolesForm.controls['roles'].touched
-        }"
-        formControlName="roles"
-      />
-      <m-validation [control]="rolesForm.controls['roles']"></m-validation>
+    <div class="ml-5 flex flex-col items-start">
+      <div [tp]="templateAccessRoles" [tpIsEnabled]="roles.length === 0">
+        <ng-template #templateAccessRoles>
+          <div>Project has no roles</div>
+        </ng-template>
+
+        <ng-select
+          #dashboardSaveAsDialogRoleSelect
+          [fixNgSelectBottom]="dashboardSaveAsDialogRoleSelect"
+          data-cy="dashboardSaveAsDialogRoleSelect"
+          class="min-h-11 w-96 flex-shrink-0"
+          [items]="roles"
+          [multiple]="true"
+          [searchable]="true"
+          [clearable]="true"
+          [(ngModel)]="selectedAccessRoles"
+          (keyup.esc)="
+            $event.stopImmediatePropagation();
+            dashboardSaveAsDialogRoleSelect.blur()
+          "
+          (keyup.enter)="
+            $event.stopImmediatePropagation();
+            dashboardSaveAsDialogRoleSelect.blur()
+          "
+          appendTo="body"
+          bindLabel="roleId"
+          bindValue="roleId"
+        >
+          <ng-template ng-label-tmp ng-option-tmp let-item="item">
+            <div class="ml-1 truncate text-base">{{ item.roleId }}</div>
+          </ng-template>
+        </ng-select>
+      </div>
     </div>
   </div>
 

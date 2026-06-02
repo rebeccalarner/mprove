@@ -11,10 +11,13 @@ import {
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { NgSelectComponent, NgSelectModule } from '@ng-select/ng-select';
 import { DialogRef } from '@ngneat/dialog';
+import { TippyDirective } from '@ngneat/helipopper';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { take, tap } from 'rxjs/operators';
 import { MPROVE_USERS_FOLDER } from '#common/constants/top';
@@ -24,10 +27,15 @@ import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-reques
 import { isDefined } from '#common/functions/is-defined';
 import { makeId } from '#common/functions/make-id';
 import type { DashboardX } from '#common/zod/backend/dashboard-x';
+import type { Role } from '#common/zod/backend/role';
 import type {
   ToBackendSaveCreateDashboardRequestPayload,
   ToBackendSaveCreateDashboardResponse
 } from '#common/zod/to-backend/dashboards/to-backend-save-create-dashboard';
+import type {
+  ToBackendGetRolesRequestPayload,
+  ToBackendGetRolesResponse
+} from '#common/zod/to-backend/roles/to-backend-get-roles';
 import { DashboardPartsQuery } from '#front/app/queries/dashboard-parts.query';
 import { NavQuery, NavState } from '#front/app/queries/nav.query';
 import { StructQuery, StructState } from '#front/app/queries/struct.query';
@@ -46,11 +54,22 @@ export interface CreateDashboardDialogData {
   templateUrl: './create-dashboard-dialog.component.html',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SharedModule,
+    NgSelectModule,
+    TippyDirective
+  ]
 })
 export class CreateDashboardDialogComponent implements OnInit {
+  @ViewChild('dashboardsCreateDialogRoleSelect', { static: false })
+  dashboardsCreateDialogRoleSelectElement: NgSelectComponent;
+
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
+    this.dashboardsCreateDialogRoleSelectElement?.close();
     this.ref.close();
   }
 
@@ -64,9 +83,8 @@ export class CreateDashboardDialogComponent implements OnInit {
     title: [undefined, [Validators.maxLength(255)]]
   });
 
-  rolesForm: FormGroup = this.fb.group({
-    roles: [undefined, [Validators.maxLength(255)]]
-  });
+  roles: Role[] = [];
+  selectedAccessRoles: string[] = [];
 
   newDashboardId = makeId();
 
@@ -108,6 +126,9 @@ export class CreateDashboardDialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.nav = this.navQuery.getValue();
+    this.loadRoles();
+
     setTimeout(() => {
       this.dashboardTitleElement.nativeElement.focus();
     }, 0);
@@ -120,14 +141,11 @@ export class CreateDashboardDialogComponent implements OnInit {
       return;
     }
 
-    if (
-      this.titleForm.controls['title'].valid &&
-      this.rolesForm.controls['roles'].valid
-    ) {
+    if (this.titleForm.controls['title'].valid) {
       this.ref.close();
 
       let newTitle = this.titleForm.controls['title'].value;
-      let roles = this.rolesForm.controls['roles'].value;
+      let roles = [...this.selectedAccessRoles];
 
       this.createDashboard({
         newTitle: newTitle,
@@ -136,7 +154,7 @@ export class CreateDashboardDialogComponent implements OnInit {
     }
   }
 
-  createDashboard(item: { newTitle: string; roles: string }) {
+  createDashboard(item: { newTitle: string; roles: string[] }) {
     this.spinner.show(APP_SPINNER_NAME);
 
     let { newTitle, roles } = item;
@@ -189,6 +207,32 @@ export class CreateDashboardDialogComponent implements OnInit {
             } else {
               this.spinner.hide(APP_SPINNER_NAME);
             }
+          }
+        }),
+        take(1)
+      )
+      .subscribe();
+  }
+
+  loadRoles() {
+    let payload: ToBackendGetRolesRequestPayload = {
+      projectId: this.nav.projectId
+    };
+
+    let apiService: ApiService = this.ref.data.apiService;
+
+    apiService
+      .req({
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
+        payload: payload
+      })
+      .pipe(
+        tap((resp: ToBackendGetRolesResponse) => {
+          if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
+            this.roles = resp.payload.roles.sort((a, b) =>
+              a.roleId > b.roleId ? 1 : b.roleId > a.roleId ? -1 : 0
+            );
+            this.cd.detectChanges();
           }
         }),
         take(1)

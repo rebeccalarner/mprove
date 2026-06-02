@@ -16,7 +16,7 @@ export let zToBackendSaveCreateDashboardRequestPayload = z
     fromDashboardId: z.string().nullish(),
     newDashboardId: z.string(),
     dashboardTitle: z.string().nullish(),
-    accessRoles: z.string().nullish(),
+    accessRoles: z.array(z.string()).nullish(),
     tilesGrid: z.array(zTileX).nullish(),
     timezone: z.string()
   })

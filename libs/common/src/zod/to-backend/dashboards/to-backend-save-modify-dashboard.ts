@@ -20,7 +20,7 @@ export let zToBackendSaveModifyDashboardRequestPayload = z
     isReplaceTile: z.boolean().nullish(),
     selectedTileTitle: z.string().nullish(),
     dashboardTitle: z.string().nullish(),
-    accessRoles: z.string().nullish(),
+    accessRoles: z.array(z.string()).nullish(),
     tilesGrid: z.array(zTileX).nullish(),
     timezone: z.string()
   })

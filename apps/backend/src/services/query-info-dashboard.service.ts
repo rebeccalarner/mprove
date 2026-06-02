@@ -124,7 +124,7 @@ export class QueryInfoDashboardService {
       dashboard: fromDashboardX,
       newDashboardId: newDashboardId,
       newTitle: fromDashboardX.title,
-      roles: fromDashboardX.accessRoles.join(', '),
+      roles: fromDashboardX.accessRoles,
       caseSensitiveStringFilters:
         currentStruct.mproveConfig.caseSensitiveStringFilters,
       timezone: UTC

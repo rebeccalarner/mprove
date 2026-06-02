@@ -20,6 +20,7 @@ import { makeCopy } from '#common/functions/make-copy';
 import { makeId } from '#common/functions/make-id';
 import type { DashboardPart } from '#common/zod/backend/dashboard-part';
 import type { DashboardX } from '#common/zod/backend/dashboard-x';
+import type { Role } from '#common/zod/backend/role';
 import type { Dashboard } from '#common/zod/blockml/dashboard';
 import type {
   ToBackendGetDashboardsRequestPayload,
@@ -33,7 +34,10 @@ import type {
   ToBackendSaveModifyDashboardRequestPayload,
   ToBackendSaveModifyDashboardResponse
 } from '#common/zod/to-backend/dashboards/to-backend-save-modify-dashboard';
-import { setValueAndMark } from '#front/app/functions/set-value-and-mark';
+import type {
+  ToBackendGetRolesRequestPayload,
+  ToBackendGetRolesResponse
+} from '#common/zod/to-backend/roles/to-backend-get-roles';
 import { DashboardPartsQuery } from '#front/app/queries/dashboard-parts.query';
 import { NavQuery, NavState } from '#front/app/queries/nav.query';
 import { StructQuery, StructState } from '#front/app/queries/struct.query';
@@ -61,9 +65,13 @@ export class DashboardSaveAsDialogComponent implements OnInit {
   @ViewChild('dashboardSaveAsDialogExistingDashboardSelect', { static: false })
   dashboardSaveAsDialogExistingDashboardSelectElement: NgSelectComponent;
 
+  @ViewChild('dashboardSaveAsDialogRoleSelect', { static: false })
+  dashboardSaveAsDialogRoleSelectElement: NgSelectComponent;
+
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
     this.dashboardSaveAsDialogExistingDashboardSelectElement?.close();
+    this.dashboardSaveAsDialogRoleSelectElement?.close();
   }
 
   usersFolder = MPROVE_USERS_FOLDER;
@@ -82,9 +90,8 @@ export class DashboardSaveAsDialogComponent implements OnInit {
     title: [undefined, [Validators.required, Validators.maxLength(255)]]
   });
 
-  rolesForm: FormGroup = this.fb.group({
-    roles: [undefined, [Validators.maxLength(255)]]
-  });
+  roles: Role[] = [];
+  selectedAccessRoles: string[] = [];
 
   alias: string;
   alias$ = this.userQuery.alias$.pipe(
@@ -137,10 +144,7 @@ export class DashboardSaveAsDialogComponent implements OnInit {
         ? this.dashboard.dashboardId
         : undefined;
 
-    setValueAndMark({
-      control: this.rolesForm.controls['roles'],
-      value: this.dashboard.accessRoles?.join(', ')
-    });
+    this.selectedAccessRoles = [...(this.dashboard.accessRoles || [])];
 
     let nav: NavState;
     this.navQuery
@@ -152,6 +156,10 @@ export class DashboardSaveAsDialogComponent implements OnInit {
         take(1)
       )
       .subscribe();
+
+    this.nav = nav;
+
+    this.loadRoles();
 
     let payload: ToBackendGetDashboardsRequestPayload = {
       projectId: nav.projectId,
@@ -195,16 +203,12 @@ export class DashboardSaveAsDialogComponent implements OnInit {
 
   save() {
     this.titleForm.markAllAsTouched();
-    this.rolesForm.markAllAsTouched();
 
-    if (
-      this.titleForm.controls['title'].valid &&
-      this.rolesForm.controls['roles'].valid
-    ) {
+    if (this.titleForm.controls['title'].valid) {
       this.ref.close();
 
       let newTitle = this.titleForm.controls['title'].value;
-      let roles = this.rolesForm.controls['roles'].value;
+      let roles = [...this.selectedAccessRoles];
 
       if (this.saveAs === DashboardSaveAsEnum.NEW_DASHBOARD) {
         this.saveAsNewDashboard({
@@ -226,6 +230,7 @@ export class DashboardSaveAsDialogComponent implements OnInit {
     this.saveAs = DashboardSaveAsEnum.NEW_DASHBOARD;
 
     this.titleForm.controls['title'].setValue(undefined);
+    this.selectedAccessRoles = [...(this.dashboard.accessRoles || [])];
   }
 
   existingDashboardOnClick() {
@@ -234,7 +239,7 @@ export class DashboardSaveAsDialogComponent implements OnInit {
     this.makePathAndSetValues();
   }
 
-  saveAsNewDashboard(item: { newTitle: string; roles: string }) {
+  saveAsNewDashboard(item: { newTitle: string; roles: string[] }) {
     this.spinner.show(APP_SPINNER_NAME);
 
     let { newTitle, roles } = item;
@@ -301,7 +306,7 @@ export class DashboardSaveAsDialogComponent implements OnInit {
       .subscribe();
   }
 
-  saveAsExistingDashboard(item: { newTitle: string; roles: string }) {
+  saveAsExistingDashboard(item: { newTitle: string; roles: string[] }) {
     this.spinner.show(APP_SPINNER_NAME);
 
     let { newTitle, roles } = item;
@@ -393,10 +398,35 @@ export class DashboardSaveAsDialogComponent implements OnInit {
       this.selectedDashboardPath = parts.join(' / ');
 
       this.titleForm.controls['title'].setValue(selectedDashboard.title);
-      this.rolesForm.controls['roles'].setValue(
-        selectedDashboard.accessRoles.join(', ')
-      );
+      this.selectedAccessRoles = [...(selectedDashboard.accessRoles || [])];
+      this.cd.detectChanges();
     }
+  }
+
+  loadRoles() {
+    let payload: ToBackendGetRolesRequestPayload = {
+      projectId: this.nav.projectId
+    };
+
+    let apiService: ApiService = this.ref.data.apiService;
+
+    apiService
+      .req({
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendGetRoles,
+        payload: payload
+      })
+      .pipe(
+        tap((resp: ToBackendGetRolesResponse) => {
+          if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
+            this.roles = resp.payload.roles.sort((a, b) =>
+              a.roleId > b.roleId ? 1 : b.roleId > a.roleId ? -1 : 0
+            );
+            this.cd.detectChanges();
+          }
+        }),
+        take(1)
+      )
+      .subscribe();
   }
 
   cancel() {

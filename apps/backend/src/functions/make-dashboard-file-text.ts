@@ -19,7 +19,7 @@ export function makeDashboardFileText(item: {
   dashboard: DashboardX;
   newDashboardId: string;
   newTitle: string;
-  roles: string;
+  roles: string[] | null | undefined;
   timezone: string;
   caseSensitiveStringFilters: boolean;
 }) {
@@ -40,8 +40,8 @@ export function makeDashboardFileText(item: {
     dashboard: newDashboardId,
     title: isDefined(newTitle) ? newTitle.trim() : undefined,
     access_roles:
-      isDefined(roles) && roles.trim().length > 0
-        ? roles.split(',').map(x => x.trim())
+      isDefined(roles) && roles.length > 0
+        ? roles.map(x => x.trim())
         : undefined,
     parameters:
       isDefined(dashboard.fields) && dashboard.fields.length > 0
