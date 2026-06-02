@@ -70,6 +70,7 @@ async function bootstrap() {
       .addTag('Envs')
       .addTag('Files')
       .addTag('Folders')
+      .addTag('Givens')
       .addTag('Mconfigs')
       .addTag('Members')
       .addTag('Models')
