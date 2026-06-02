@@ -21,17 +21,14 @@ import {
   take,
   tap
 } from 'rxjs';
-import { DOUBLE_UNDERSCORE, MALLOY_FILTER_ANY } from '#common/constants/top';
+import { MALLOY_FILTER_ANY } from '#common/constants/top';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FractionOperatorEnum } from '#common/enums/fraction/fraction-operator.enum';
 import { FractionTypeEnum } from '#common/enums/fraction/fraction-type.enum';
-import { QueryStatusEnum } from '#common/enums/query-status.enum';
 import { ResponseInfoStatusEnum } from '#common/enums/response-info-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isDefinedAndNotEmpty } from '#common/functions/is-defined-and-not-empty';
-import { isUndefined } from '#common/functions/is-undefined';
-import { sleep } from '#common/functions/sleep';
 import { MyRegex } from '#common/models/my-regex';
 import type { Fraction } from '#common/zod/blockml/fraction';
 import type { EventFractionUpdate } from '#common/zod/front/event-fraction-update';
@@ -39,14 +36,6 @@ import type {
   ToBackendSuggestDimensionValuesRequestPayload,
   ToBackendSuggestDimensionValuesResponse
 } from '#common/zod/to-backend/mconfigs/to-backend-suggest-dimension-values';
-import type {
-  ToBackendGetQueryRequestPayload,
-  ToBackendGetQueryResponse
-} from '#common/zod/to-backend/queries/to-backend-get-query';
-import type {
-  ToBackendRunQueriesRequestPayload,
-  ToBackendRunQueriesResponse
-} from '#common/zod/to-backend/queries/to-backend-run-queries';
 import { NavQuery } from '#front/app/queries/nav.query';
 import { ApiService } from '#front/app/services/api.service';
 import { FractionTypeItem } from '../fraction.component';
@@ -261,86 +250,79 @@ export class FractionStringComponent implements OnInit, OnDestroy {
                 )
                 .toPromise();
 
-              let q2Resp = await this.apiService
-                .req({
-                  pathInfoName:
-                    ToBackendRequestInfoNameEnum.ToBackendRunQueries,
-                  payload: {
-                    projectId: nav.projectId,
-                    repoId: nav.repoId,
-                    branchId: nav.branchId,
-                    envId: nav.envId,
-                    mconfigIds: [q1Resp.payload.mconfig.mconfigId]
-                  } as ToBackendRunQueriesRequestPayload
-                })
-                .pipe(
-                  tap((resp: ToBackendRunQueriesResponse) => {
-                    if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
-                      return resp;
-                    }
-                  }),
-                  take(1)
-                )
-                .toPromise();
-
-              let q3Resp: ToBackendGetQueryResponse;
-
-              while (
-                isUndefined(q3Resp) ||
-                q3Resp?.payload.query.status === QueryStatusEnum.Running
-              ) {
-                await sleep(500);
-
-                q3Resp = await this.apiService
-                  .req({
-                    pathInfoName:
-                      ToBackendRequestInfoNameEnum.ToBackendGetQuery,
-                    payload: {
-                      projectId: nav.projectId,
-                      repoId: nav.repoId,
-                      branchId: nav.branchId,
-                      envId: nav.envId,
-                      mconfigId: q1Resp.payload.mconfig.mconfigId,
-                      queryId: q2Resp.payload.runningQueries[0].queryId
-                    } as ToBackendGetQueryRequestPayload
-                  })
-                  .pipe(
-                    tap((resp: ToBackendGetQueryResponse) => {
-                      if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
-                        return resp;
+              if (isDefined(q1Resp.payload.errorMessage)) {
+                this.items = isDefinedAndNotEmpty(this.searchValue)
+                  ? [
+                      {
+                        id: 0,
+                        name: this.searchValue
+                      },
+                      {
+                        id: 1,
+                        name: 'Error: Suggest Values Failed',
+                        errorMessage: q1Resp.payload.errorMessage,
+                        disabled: true
                       }
-                    })
-                  )
-                  .toPromise();
-              }
-
-              this.items = isDefined(q3Resp?.payload?.query?.data)
-                ? q3Resp.payload.query.data.map((row: any, i: number) => ({
+                    ]
+                  : [
+                      {
+                        id: 0,
+                        name: 'Error: Suggest Values Failed',
+                        errorMessage: q1Resp.payload.errorMessage,
+                        disabled: true
+                      }
+                    ];
+              } else if (isDefined(q1Resp.payload.matchedValuesMessage)) {
+                this.items = isDefinedAndNotEmpty(this.searchValue)
+                  ? [
+                      {
+                        id: 0,
+                        name: this.searchValue
+                      },
+                      {
+                        id: 1,
+                        name: q1Resp.payload.matchedValuesMessage,
+                        disabled: true
+                      }
+                    ]
+                  : [
+                      {
+                        id: 0,
+                        name: q1Resp.payload.matchedValuesMessage,
+                        disabled: true
+                      }
+                    ];
+              } else {
+                this.items = (q1Resp.payload.matchedValues ?? []).map(
+                  (x, i) => ({
                     id: i,
-                    name: row['row'][fieldId.split('.').join(DOUBLE_UNDERSCORE)]
-                  }))
-                : [];
-
-              if (isDefinedAndNotEmpty(this.searchValue)) {
-                this.items = [
-                  {
-                    id: 0,
-                    name: this.searchValue
-                  },
-                  ...this.items.map(item => {
-                    let newItem = Object.assign(item, {
-                      id: item.id + 1
-                    });
-
-                    return newItem;
+                    name: x.value
                   })
-                ];
-              }
-
-              if (q3Resp?.payload.query.status === QueryStatusEnum.Error) {
-                throw new Error(
-                  `Suggest Values Query Error: ${q3Resp.payload.query.lastErrorMessage}`
                 );
+
+                if (isDefinedAndNotEmpty(this.searchValue)) {
+                  let searchValueLc = this.searchValue.toLowerCase();
+
+                  let hasSearchValue = this.items.some(
+                    item => item.name?.toLowerCase() === searchValueLc
+                  );
+
+                  if (hasSearchValue === false) {
+                    this.items = [
+                      {
+                        id: 0,
+                        name: this.searchValue
+                      },
+                      ...this.items.map(item => {
+                        let newItem = Object.assign(item, {
+                          id: item.id + 1
+                        });
+
+                        return newItem;
+                      })
+                    ];
+                  }
+                }
               }
             } catch (error: any) {
               this.loading = false;

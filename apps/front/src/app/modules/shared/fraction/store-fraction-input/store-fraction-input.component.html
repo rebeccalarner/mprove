@@ -49,6 +49,14 @@
             bindValue="name"
             formControlName="inputValue"
           >
+            <ng-template ng-option-tmp let-item="item">
+              <div
+                class="truncate"
+                [tp]="item.errorMessage"
+                [tpIsEnabled]="!!item.errorMessage"
+                >{{ item.name }}</div
+              >
+            </ng-template>
           </ng-select>
 
           <input

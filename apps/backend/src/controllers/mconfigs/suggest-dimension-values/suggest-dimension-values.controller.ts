@@ -10,21 +10,20 @@ import { ConfigService } from '@nestjs/config';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import retry from 'async-retry';
-import { and, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { BackendConfig } from '#backend/config/backend-config';
 import {
   ToBackendSuggestDimensionValuesRequestDto,
   ToBackendSuggestDimensionValuesResponseDto
 } from '#backend/controllers/mconfigs/suggest-dimension-values/suggest-dimension-values.dto';
+import { RunQueriesService } from '#backend/controllers/queries/run-queries/run-queries.service';
 import { AttachUser } from '#backend/decorators/attach-user.decorator';
 import type { Db } from '#backend/drizzle/drizzle.module';
 import { DRIZZLE } from '#backend/drizzle/drizzle.module';
-import type {
-  MconfigTab,
-  QueryTab,
-  UserTab
-} from '#backend/drizzle/postgres/schema/_tabs';
-import { queriesTable } from '#backend/drizzle/postgres/schema/queries';
+import type { QueryTab, UserTab } from '#backend/drizzle/postgres/schema/_tabs';
+import { cachedColumnsTable } from '#backend/drizzle/postgres/schema/cached-columns';
+import { cachedPartsTable } from '#backend/drizzle/postgres/schema/cached-parts';
+import { modelFieldLeafsTable } from '#backend/drizzle/postgres/schema/model-field-leafs';
 import { getRetryOption } from '#backend/functions/get-retry-option';
 import { ThrottlerUserIdGuard } from '#backend/guards/throttler-user-id.guard';
 import { BranchesService } from '#backend/services/db/branches.service';
@@ -37,9 +36,7 @@ import { ProjectsService } from '#backend/services/db/projects.service';
 import { QueriesService } from '#backend/services/db/queries.service';
 import { SessionsService } from '#backend/services/db/sessions.service';
 import { StructsService } from '#backend/services/db/structs.service';
-import { MalloyService } from '#backend/services/malloy.service';
 import { ParentService } from '#backend/services/parent.service';
-import { TabService } from '#backend/services/tab.service';
 import { DEFAULT_CHART } from '#common/constants/mconfig-chart';
 import { UTC } from '#common/constants/top';
 import { THROTTLE_CUSTOM } from '#common/constants/top-backend';
@@ -47,16 +44,29 @@ import { FractionOperatorEnum } from '#common/enums/fraction/fraction-operator.e
 import { FractionTypeEnum } from '#common/enums/fraction/fraction-type.enum';
 import { MconfigParentTypeEnum } from '#common/enums/mconfig-parent-type.enum';
 import { ModelTypeEnum } from '#common/enums/model-type.enum';
-import { QueryOperationTypeEnum } from '#common/enums/query-operation-type.enum';
+import { QueryStatusEnum } from '#common/enums/query-status.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isDefinedAndNotEmpty } from '#common/functions/is-defined-and-not-empty';
 import { makeCopy } from '#common/functions/make-copy';
 import { makeId } from '#common/functions/make-id';
-import type { QueryOperation } from '#common/zod/backend/query-operation';
 import type { Mconfig } from '#common/zod/blockml/mconfig';
 import type { ToBackendSuggestDimensionValuesResponsePayload } from '#common/zod/to-backend/mconfigs/to-backend-suggest-dimension-values';
 import { getYYYYMMDDFromEpochUtcByTimezone } from '#node-common/functions/get-yyyymmdd-from-epoch-utc-by-timezone';
+
+type CachedMatchedValueRow = {
+  value: string | null;
+  count: number;
+};
+
+type CachedColumnRow = {
+  cachedColumnFullId: string;
+};
+
+type MatchedValue = {
+  value: string;
+  count: number;
+};
 
 @ApiTags('Mconfigs')
 @UseGuards(ThrottlerUserIdGuard)
@@ -64,7 +74,6 @@ import { getYYYYMMDDFromEpochUtcByTimezone } from '#node-common/functions/get-yy
 @Controller()
 export class SuggestDimensionValuesController {
   constructor(
-    private tabService: TabService,
     private parentService: ParentService,
     private projectsService: ProjectsService,
     private modelsService: ModelsService,
@@ -73,10 +82,10 @@ export class SuggestDimensionValuesController {
     private structsService: StructsService,
     private bridgesService: BridgesService,
     private envsService: EnvsService,
-    private malloyService: MalloyService,
     private mconfigsService: MconfigsService,
     private queriesService: QueriesService,
     private sessionsService: SessionsService,
+    private runQueriesService: RunQueriesService,
     private cs: ConfigService<BackendConfig>,
     private logger: Logger,
     @Inject(DRIZZLE) private db: Db
@@ -188,158 +197,170 @@ export class SuggestDimensionValuesController {
       suggestModel: model
     });
 
-    let apiMconfig: Mconfig;
+    if (model.type === ModelTypeEnum.Malloy) {
+      // let temporaryPayload: ToBackendSuggestDimensionValuesResponsePayload = {
+      //   matchedValues: [],
+      //   errorMessage: 'Temporary Malloy suggest error for UI testing'
+      // };
 
-    let queryOperations: QueryOperation[];
+      // return temporaryPayload;
 
-    if (model.type === ModelTypeEnum.Store) {
-      apiMconfig = {
-        structId: bridge.structId,
-        mconfigId: makeId(),
-        queryId: makeId(),
-        modelId: modelId,
-        modelType: ModelTypeEnum.Store,
-        parentType: parentType,
-        parentId: parentId,
-        dateRangeIncludesRightSide: undefined, // adjustMconfig overrides it
-        storePart: undefined,
-        modelLabel: model.label,
-        modelFilePath: model.filePath,
-        malloyQueryStable: undefined,
-        malloyQueryExtra: undefined,
-        compiledQuery: undefined,
-        select: [fieldId],
-        sortings: [],
-        sorts: `${fieldId}`,
-        timezone: UTC,
-        limit: 500,
-        filters: isDefinedAndNotEmpty(term)
-          ? [
-              {
-                fieldId: fieldId,
-                fractions: [
-                  {
-                    brick: `%${term}%`,
-                    parentBrick: `%${term}%`,
-                    type: FractionTypeEnum.StringContains,
-                    operator: FractionOperatorEnum.Or
-                  }
-                ]
-              }
-            ]
-          : [],
-        appliedGivens: undefined,
-        chart: makeCopy(DEFAULT_CHART),
-        serverTs: 1
+      let rawCachedColumnsData: { rows: CachedColumnRow[] } =
+        await this.db.drizzle.execute(sql`
+SELECT
+  cached_columns.cached_column_full_id AS "cachedColumnFullId"
+FROM ${cachedColumnsTable} AS cached_columns
+INNER JOIN ${modelFieldLeafsTable} AS model_field_leafs
+  ON model_field_leafs.struct_id = ${struct.structId}
+  AND model_field_leafs.model_id = ${modelId}
+  AND model_field_leafs.model_type = ${ModelTypeEnum.Malloy}
+  AND model_field_leafs.field_id = ${fieldId}
+  AND model_field_leafs.connection_id = cached_columns.connection_id
+  AND model_field_leafs.schema_name_lc = cached_columns.schema_name_lc
+  AND model_field_leafs.table_name_lc = cached_columns.table_name_lc
+  AND model_field_leafs.column_name_lc = cached_columns.column_name_lc
+WHERE cached_columns.project_id = ${projectId}
+  AND cached_columns.env_id = ${envId}
+  AND cached_columns.status = 'completed'
+LIMIT 1;
+`);
+
+      let cachedColumnRows = rawCachedColumnsData.rows || [];
+
+      if (cachedColumnRows.length === 0) {
+        let payload: ToBackendSuggestDimensionValuesResponsePayload = {
+          matchedValues: [],
+          matchedValuesMessage: 'no cached values'
+        };
+
+        return payload;
+      }
+
+      let hasTerm = isDefinedAndNotEmpty(term);
+
+      let termFilterSql = sql``;
+
+      if (hasTerm === true) {
+        let termString = term ?? '';
+
+        let escapedTerm = termString.replace(/[\\%_]/g, x => `\\${x}`);
+
+        termFilterSql = sql`
+    AND cached_parts.column_value_lc LIKE ${`%${escapedTerm.toLowerCase()}%`} ESCAPE '\'
+`;
+      }
+
+      let rawData: { rows: CachedMatchedValueRow[] } =
+        await this.db.drizzle.execute(sql`
+SELECT
+  cached_parts.column_value AS "value",
+  cached_parts.count AS "count"
+FROM ${cachedPartsTable} AS cached_parts
+INNER JOIN ${modelFieldLeafsTable} AS model_field_leafs
+  ON model_field_leafs.struct_id = ${struct.structId}
+  AND model_field_leafs.model_id = ${modelId}
+  AND model_field_leafs.model_type = ${ModelTypeEnum.Malloy}
+  AND model_field_leafs.field_id = ${fieldId}
+  AND model_field_leafs.connection_id = cached_parts.connection_id
+  AND model_field_leafs.schema_name_lc = cached_parts.schema_name_lc
+  AND model_field_leafs.table_name_lc = cached_parts.table_name_lc
+  AND model_field_leafs.column_name_lc = cached_parts.column_name_lc
+WHERE cached_parts.project_id = ${projectId}
+  AND cached_parts.env_id = ${envId}
+  AND cached_parts.column_value IS NOT NULL
+  ${termFilterSql}
+ORDER BY cached_parts.count DESC, cached_parts.column_value ASC
+LIMIT 500;
+`);
+
+      let rows = rawData.rows || [];
+
+      let payload: ToBackendSuggestDimensionValuesResponsePayload = {
+        matchedValues: rows.map(row => ({
+          value: row.value ?? '',
+          count: Number(row.count)
+        }))
       };
-    } else if (model.type === ModelTypeEnum.Malloy) {
-      apiMconfig = {
-        structId: bridge.structId,
-        mconfigId: makeId(),
-        queryId: makeId(),
-        modelId: modelId,
-        modelType: ModelTypeEnum.Malloy,
-        parentType: parentType,
-        parentId: parentId,
-        dateRangeIncludesRightSide: undefined,
-        storePart: undefined,
-        modelLabel: model.label,
-        modelFilePath: model.filePath,
-        malloyQueryStable: undefined,
-        malloyQueryExtra: undefined,
-        compiledQuery: undefined,
-        select: [],
-        sortings: [],
-        sorts: undefined,
-        timezone: UTC,
-        limit: 500,
-        filters: [],
-        appliedGivens: undefined,
-        chart: makeCopy(DEFAULT_CHART),
-        serverTs: 1
-      };
 
-      let queryOperation1: QueryOperation = {
-        type: QueryOperationTypeEnum.GroupOrAggregatePlusSort,
-        fieldId: fieldId,
-        sortFieldId: fieldId,
-        desc: false,
-        timezone: apiMconfig.timezone
-      };
-
-      let queryOperation2: QueryOperation = isDefinedAndNotEmpty(term)
-        ? {
-            type: QueryOperationTypeEnum.WhereOrHaving,
-            timezone: apiMconfig.timezone,
-            filters: [
-              {
-                fieldId: fieldId,
-                fractions: [
-                  {
-                    brick: `f\`%${term}%\``,
-                    parentBrick: `f\`%${term}%\``,
-                    type: FractionTypeEnum.StringContains,
-                    operator: FractionOperatorEnum.Or,
-                    stringValue: term
-                  }
-                ]
-              }
-            ]
-          }
-        : undefined;
-
-      queryOperations = isDefined(queryOperation2)
-        ? [queryOperation1, queryOperation2]
-        : [queryOperation1];
+      return payload;
     }
 
-    let newMconfig: MconfigTab;
+    if (model.type !== ModelTypeEnum.Store) {
+      let payload: ToBackendSuggestDimensionValuesResponsePayload = {
+        matchedValues: []
+      };
+
+      return payload;
+    }
+
+    let apiMconfig: Mconfig = {
+      structId: bridge.structId,
+      mconfigId: makeId(),
+      queryId: makeId(),
+      modelId: modelId,
+      modelType: ModelTypeEnum.Store,
+      parentType: parentType,
+      parentId: parentId,
+      dateRangeIncludesRightSide: undefined, // adjustMconfig overrides it
+      storePart: undefined,
+      modelLabel: model.label,
+      modelFilePath: model.filePath,
+      malloyQueryStable: undefined,
+      malloyQueryExtra: undefined,
+      compiledQuery: undefined,
+      select: [fieldId],
+      sortings: [],
+      sorts: `${fieldId}`,
+      timezone: UTC,
+      limit: 500,
+      filters: isDefinedAndNotEmpty(term)
+        ? [
+            {
+              fieldId: fieldId,
+              fractions: [
+                {
+                  brick: `%${term}%`,
+                  parentBrick: `%${term}%`,
+                  type: FractionTypeEnum.StringContains,
+                  operator: FractionOperatorEnum.Or
+                }
+              ]
+            }
+          ]
+        : [],
+      appliedGivens: undefined,
+      chart: makeCopy(DEFAULT_CHART),
+      serverTs: 1
+    };
+
     let newQuery: QueryTab;
     let isError = false;
 
-    if (model.type === ModelTypeEnum.Store) {
-      let mqe = await this.mconfigsService.prepStoreMconfigQuery({
-        struct: struct,
-        project: project,
-        envId: envId,
-        model: model,
-        mconfigParentType: apiMconfig.parentType,
-        mconfigParentId: apiMconfig.parentId,
-        mconfig: this.mconfigsService.apiToTab({ apiMconfig: apiMconfig }),
-        metricsStartDateYYYYMMDD: isDefined(cellMetricsStartDateMs)
-          ? getYYYYMMDDFromEpochUtcByTimezone({
-              timezone: apiMconfig.timezone,
-              secondsEpochUTC: cellMetricsStartDateMs / 1000
-            })
-          : undefined,
-        metricsEndDateYYYYMMDD: isDefined(cellMetricsEndDateMs)
-          ? getYYYYMMDDFromEpochUtcByTimezone({
-              timezone: apiMconfig.timezone,
-              secondsEpochUTC: cellMetricsEndDateMs / 1000
-            })
-          : undefined
-      });
+    let mqe = await this.mconfigsService.prepStoreMconfigQuery({
+      struct: struct,
+      project: project,
+      envId: envId,
+      model: model,
+      mconfigParentType: apiMconfig.parentType,
+      mconfigParentId: apiMconfig.parentId,
+      mconfig: this.mconfigsService.apiToTab({ apiMconfig: apiMconfig }),
+      metricsStartDateYYYYMMDD: isDefined(cellMetricsStartDateMs)
+        ? getYYYYMMDDFromEpochUtcByTimezone({
+            timezone: apiMconfig.timezone,
+            secondsEpochUTC: cellMetricsStartDateMs / 1000
+          })
+        : undefined,
+      metricsEndDateYYYYMMDD: isDefined(cellMetricsEndDateMs)
+        ? getYYYYMMDDFromEpochUtcByTimezone({
+            timezone: apiMconfig.timezone,
+            secondsEpochUTC: cellMetricsEndDateMs / 1000
+          })
+        : undefined
+    });
 
-      newMconfig = mqe.newMconfig;
-      newQuery = mqe.newQuery;
-      isError = mqe.isError;
-    } else if (model.type === ModelTypeEnum.Malloy) {
-      let editMalloyQueryResult = await this.malloyService.editMalloyQuery({
-        projectId: projectId,
-        envId: envId,
-        structId: struct.structId,
-        mconfigParentType: apiMconfig.parentType,
-        mconfigParentId: apiMconfig.parentId,
-        user: user,
-        model: model,
-        mconfig: this.mconfigsService.apiToTab({ apiMconfig: apiMconfig }),
-        queryOperations: queryOperations
-      });
-
-      newMconfig = editMalloyQueryResult.newMconfig;
-      newQuery = editMalloyQueryResult.newQuery;
-      isError = editMalloyQueryResult.isError;
-    }
+    let newMconfig = mqe.newMconfig;
+    newQuery = mqe.newQuery;
+    isError = mqe.isError;
 
     await retry(
       async () =>
@@ -361,23 +382,41 @@ export class SuggestDimensionValuesController {
       getRetryOption(this.cs, this.logger)
     );
 
-    let query = await this.db.drizzle.query.queriesTable
-      .findFirst({
-        where: and(
-          eq(queriesTable.queryId, newQuery.queryId),
-          eq(queriesTable.projectId, newQuery.projectId)
-        )
-      })
-      .then(x => this.tabService.queryEntToTab(x));
+    if (isError === false) {
+      await this.runQueriesService.runQueries({
+        user: user,
+        projectId: projectId,
+        repoId: repoId,
+        branchId: branchId,
+        envId: envId,
+        mconfigIds: [newMconfig.mconfigId],
+        poolSize: 1
+      });
+
+      newQuery = await this.queriesService.getQueryCheckExists({
+        queryId: newQuery.queryId,
+        projectId: projectId
+      });
+    }
+
+    if (newQuery.status === QueryStatusEnum.Error) {
+      let payload: ToBackendSuggestDimensionValuesResponsePayload = {
+        matchedValues: [],
+        errorMessage: newQuery.lastErrorMessage ?? 'Suggest Values Error'
+      };
+
+      return payload;
+    }
+
+    let matchedValues: MatchedValue[] = isDefined(newQuery.data)
+      ? newQuery.data.map((row: any) => ({
+          value: `${row[fieldId] ?? ''}`,
+          count: 0
+        }))
+      : [];
 
     let payload: ToBackendSuggestDimensionValuesResponsePayload = {
-      mconfig: this.mconfigsService.tabToApi({
-        mconfig: newMconfig,
-        modelFields: model.fields
-      }),
-      query: this.queriesService.tabToApi({
-        query: isDefined(query) ? query : newQuery
-      })
+      matchedValues: matchedValues
     };
 
     return payload;

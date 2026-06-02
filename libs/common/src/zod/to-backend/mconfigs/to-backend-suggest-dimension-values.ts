@@ -1,7 +1,5 @@
 import { z } from 'zod';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
-import { zMconfigX } from '#common/zod/backend/mconfig-x';
-import { zQuery } from '#common/zod/blockml/query';
 import { zMyResponse } from '#common/zod/to/my-response';
 import { zResponseInfo } from '#common/zod/to/response-info';
 import { zToBackendRequest } from '#common/zod/to-backend/to-backend-request';
@@ -43,8 +41,16 @@ export let zToBackendSuggestDimensionValuesRequest = zToBackendRequest
 
 export let zToBackendSuggestDimensionValuesResponsePayload = z
   .object({
-    mconfig: zMconfigX,
-    query: zQuery
+    matchedValues: z
+      .array(
+        z.object({
+          value: z.string(),
+          count: z.number().int()
+        })
+      )
+      .nullish(),
+    matchedValuesMessage: z.string().nullish(),
+    errorMessage: z.string().nullish()
   })
   .meta({ id: 'ToBackendSuggestDimensionValuesResponsePayload' });
 
