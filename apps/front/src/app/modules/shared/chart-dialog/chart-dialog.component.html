@@ -288,11 +288,18 @@
         [isKeepBackgroundColor]="false"
       ></m-bricks>
     </div>
+
+    <div
+      class="border-s300 ml-10 flex max-h-[150px] min-w-0 flex-1 overflow-auto rounded border bg-white p-3"
+      *ngIf="isGivens === true"
+    >
+      <pre class="text-s1 text-sm leading-6">{{ appliedGivensJson }}</pre>
+    </div>
   </div>
 
   <div
-    class="mt-7 flex cursor-default flex-row items-center justify-start"
-    *ngIf="isShowInit === false && showNav === true"
+    class="mt-7 flex w-full cursor-default flex-row items-center justify-end"
+    *ngIf="isShowInit === false"
   >
     <div
       *ngIf="isData === true && mconfig?.fields?.length > 0"
@@ -310,55 +317,65 @@
       ></ui-switch>
     </div>
 
-    <div class="text-s400 ml-10 select-none text-base font-semibold"
-      >Model:</div
-    >
-
-    <ng-template #templateChartDialogModel>
-      <div *ngIf="isExplorer === false">Explorer role required</div>
-      <div *ngIf="isExplorer === true">No access to model</div>
-    </ng-template>
-
     <div
-      class="ml-2 flex flex-row items-center"
-      [tp]="templateChartDialogModel"
-      [tpIsEnabled]="canAccessModel === false"
+      class="ml-10 cursor-pointer select-none text-lg focus:outline-none"
+      (click)="toggleGivens()"
+      [ngClass]="{
+        'text-s400': isGivens === false,
+        'text-green-600': isGivens === true
+      }"
+      >GIVENS</div
     >
-      <div
-        (click)="goToModel(mconfig.modelId, canAccessModel)"
-        class="group select-none text-base focus:outline-none"
-        [ngClass]="{
-          'hover:text-m500 cursor-pointer': canAccessModel === true,
-          'cursor-default': canAccessModel === false
-        }"
-      >
-        <span class="ml-[5px] font-semibold">{{
-          mconfig?.modelLabel | capitalize
-        }}</span>
 
-        <span
-          class="text-s400 ml-[5px]"
+    <div class="ml-10 flex flex-row items-center">
+      <div class="text-s400 select-none text-base font-semibold">Model:</div>
+
+      <ng-template #templateChartDialogModel>
+        <div *ngIf="isExplorer === false">Explorer role required</div>
+        <div *ngIf="isExplorer === true">No access to model</div>
+      </ng-template>
+
+      <div
+        class="ml-2 flex flex-row items-center"
+        [tp]="templateChartDialogModel"
+        [tpIsEnabled]="canAccessModel === false"
+      >
+        <div
+          (click)="goToModel(mconfig.modelId, canAccessModel)"
+          class="group select-none text-base focus:outline-none"
           [ngClass]="{
-            'group-hover:text-m500 cursor-pointer': canAccessModel === true,
+            'hover:text-m500 cursor-pointer': canAccessModel === true,
             'cursor-default': canAccessModel === false
           }"
-          >- {{ query?.connectionType }}</span
         >
-      </div>
+          <span class="ml-[5px] font-semibold">{{
+            mconfig?.modelLabel | capitalize
+          }}</span>
 
-      <m-lock-closed-icon
-        class="text-s400 mb-1 ml-2"
-        *ngIf="canAccessModel === false"
-      ></m-lock-closed-icon>
+          <span
+            class="text-s400 ml-[5px]"
+            [ngClass]="{
+              'group-hover:text-m500 cursor-pointer': canAccessModel === true,
+              'cursor-default': canAccessModel === false
+            }"
+            >- {{ query?.connectionType }}</span
+          >
+        </div>
+
+        <m-lock-closed-icon
+          class="text-s400 mb-1 ml-2"
+          *ngIf="canAccessModel === false"
+        ></m-lock-closed-icon>
+      </div>
     </div>
 
-    <div class="text-s400 ml-10 select-none text-base font-semibold"
-      >Timezone:</div
-    >
+    <div class="ml-10 flex flex-row items-center">
+      <div class="text-s400 select-none text-base font-semibold">Timezone:</div>
 
-    <div class="text-s400 ml-2 select-none text-base focus:outline-none">{{
-      mconfig?.timezone | capitalize
-    }}</div>
+      <div class="text-s400 ml-2 select-none text-base focus:outline-none">{{
+        mconfig?.timezone | capitalize
+      }}</div>
+    </div>
   </div>
 </div>
 

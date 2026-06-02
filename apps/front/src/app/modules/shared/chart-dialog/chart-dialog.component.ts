@@ -124,6 +124,7 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
 
   isData = true;
   isFormat = true;
+  isGivens = false;
   showNav = false;
 
   checkRunning$: Subscription;
@@ -294,6 +295,16 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
 
   toggleFormat() {
     this.isFormat = !this.isFormat;
+  }
+
+  toggleGivens() {
+    this.isGivens = !this.isGivens;
+  }
+
+  get appliedGivensJson() {
+    let appliedGivens = this.mconfig?.appliedGivens ?? {};
+
+    return JSON.stringify(appliedGivens, null, 2);
   }
 
   explore(event?: MouseEvent) {

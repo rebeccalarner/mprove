@@ -86,6 +86,8 @@ export class ExplorerChartComponent implements OnInit, OnChanges, OnDestroy {
 
   isData = true;
 
+  isGivens = false;
+
   checkRunning$: Subscription;
 
   constructor(
@@ -147,6 +149,16 @@ export class ExplorerChartComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleData() {
     this.isData = !this.isData;
+  }
+
+  toggleGivens() {
+    this.isGivens = !this.isGivens;
+  }
+
+  get appliedGivensJson() {
+    let appliedGivens = this.mconfig?.appliedGivens ?? {};
+
+    return JSON.stringify(appliedGivens, null, 2);
   }
 
   run() {

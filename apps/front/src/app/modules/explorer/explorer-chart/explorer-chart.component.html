@@ -92,7 +92,8 @@
       <div
         *ngIf="
           (isData && mconfig?.fields?.length > 0) ||
-          mconfig?.filters?.length > 0
+          mconfig?.filters?.length > 0 ||
+          isGivens === true
         "
         class="mt-10 flex max-h-[24%] min-h-[24%] flex-row"
       >
@@ -127,6 +128,13 @@
             [isKeepBackgroundColor]="false"
           ></m-bricks>
         </div>
+
+        <div
+          class="border-s300 ml-10 flex max-h-[150px] min-w-0 flex-1 overflow-auto rounded border bg-white p-3"
+          *ngIf="isGivens === true"
+        >
+          <pre class="text-s1 text-sm leading-6">{{ appliedGivensJson }}</pre>
+        </div>
       </div>
 
       <div class="mt-7 flex cursor-default flex-row items-center justify-end">
@@ -146,6 +154,16 @@
               color="#64BD63"
             ></ui-switch>
           </div>
+
+          <div
+            class="ml-10 cursor-pointer select-none text-lg focus:outline-none"
+            (click)="toggleGivens()"
+            [ngClass]="{
+              'text-s400': isGivens === false,
+              'text-green-600': isGivens === true
+            }"
+            >GIVENS</div
+          >
 
           <div
             *ngIf="
