@@ -1729,10 +1729,16 @@ export class ModelsComponent implements OnInit, OnDestroy {
     this.modelsSubscription?.unsubscribe();
     this.modelsSubscription = undefined;
 
+    this.searchSchemaWord = undefined;
+    this.uiQuery.updatePart({ searchSchemaWord: undefined });
+
     return true;
   }
 
   ngOnDestroy() {
+    this.searchSchemaWord = undefined;
+    this.uiQuery.updatePart({ searchSchemaWord: undefined });
+
     this.chartQuery.reset();
     this.modelQuery.reset();
 

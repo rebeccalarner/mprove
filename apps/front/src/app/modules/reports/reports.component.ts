@@ -1249,6 +1249,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.searchMetricsWord = undefined;
+    this.uiQuery.updatePart({ searchMetricsWord: undefined });
+
     this.refreshSubscription?.unsubscribe();
 
     this.stopCheckRunning();
