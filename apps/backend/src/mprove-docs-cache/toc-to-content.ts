@@ -32,16 +32,11 @@ Only project members with "sales" or "marketing" access roles will be able to ac
 If an object has no \`access_roles\` then any project member can access this object. This means that the object is public for all project members.
 
 <Callout>
-  If a user has access to a model, then he also has access to all the charts of
-  this model.
-</Callout>
+  If a user has access to a model, then he also has access to all model's charts.
 
-<Callout>
   A user may have access to the dashboard, but not have access to the models of
   dashboard tiles.
-</Callout>
 
-<Callout>
   A user may have access to the report, but not have access to the models of report rows (metrics).
 </Callout>
 ` },
@@ -2678,6 +2673,20 @@ Row parameter must have **conditions**, **listen** or **fractions**.
 | listen     | string                                       | -       | Specify report parameter to listen to                       |
 | conditions | string []                                    | -       | \`for parameters mapped to Model\` <br/> List of filter expressions |
 | fractions  | [Fraction []](/content/docs/reference/parameters#fraction) | -       | \`for parameters mapped to Store\` <br/> List of fractions          |
+` },
+  { pageId: 'row-level-security', content: `# Row Level Security
+
+Malloy models can have parameters called [Givens](https://docs.malloydata.dev/documentation/experiments/givens).
+
+In Mprove, givens can be defined at a Project level. They override defaults set in Malloy files.
+
+Also, Givens can be assigned to an [Access Role](/content/docs/access-roles).
+
+Each project member can have multiple access roles. Therefore, for each Given, project member can have multiple values to choose from.
+
+User can select values for each Given in "Project" >> "Selected Givens" page.
+
+Selected Givens applied to each user query.
 ` },
   { pageId: 'user-roles', content: `# User Roles
 
