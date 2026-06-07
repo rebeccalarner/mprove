@@ -53,7 +53,7 @@ export function checkTimeframes(
 
       let baseFieldName = sourceExpressionFieldPath?.at(-1);
 
-      if (baseFieldName?.endsWith('_t') === true) {
+      if (!baseFieldName || baseFieldName?.endsWith('_t') === true) {
         return;
       }
 
