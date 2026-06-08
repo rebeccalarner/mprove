@@ -20,6 +20,7 @@ import type { KeyValuePair } from '#common/zod/blockml/key-value-pair';
 import type { Model } from '#common/zod/blockml/model';
 import type { ModelField } from '#common/zod/blockml/model-field';
 import type { ModelNode } from '#common/zod/blockml/model-node';
+import { applyTreeDoubleUnderscore } from './apply-tree-double-underscore';
 import { wrapField } from './wrap-field';
 import { wrapFlatMalloyFieldItem } from './wrap-malloy-field-item';
 // import fse from 'fs-extra';
@@ -53,6 +54,7 @@ export function wrapModels(item: {
     let accessRolesTag: KeyValuePair;
     let labelTag: KeyValuePair;
     let topLabelTag: KeyValuePair;
+    let treeDoubleUnderscore = false;
 
     if (modelType === ModelTypeEnum.Malloy) {
       {
@@ -75,6 +77,9 @@ export function wrapModels(item: {
         labelTag = mproveTags.find(tag => tag.key === ParameterEnum.Label);
         topLabelTag = mproveTags.find(
           tag => tag.key === ParameterEnum.TopLabel
+        );
+        treeDoubleUnderscore = mproveTags.some(
+          tag => tag.key === ParameterEnum.TreeDoubleUnderscore
         );
 
         let flatMalloyFieldItems = (x as FileMod).flatMalloyFieldItems;
@@ -150,6 +155,10 @@ export function wrapModels(item: {
             nodes.push(topNode);
           }
         });
+
+        if (treeDoubleUnderscore === true) {
+          nodes = applyTreeDoubleUnderscore({ nodes: nodes });
+        }
       }
     }
 

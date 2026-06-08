@@ -19,9 +19,42 @@ import { isUndefined } from '#common/functions/is-undefined';
 import type { FileStore } from '#common/zod/blockml/internal/file-store';
 import type { Model } from '#common/zod/blockml/model';
 import type { ModelMetric } from '#common/zod/blockml/model-metric';
+import type { ModelNode } from '#common/zod/blockml/model-node';
 import { log } from '../extra/log';
 
 let func = FuncEnum.CreateModelMetrics;
+
+function findModelNode(item: {
+  nodes: ModelNode[];
+  nodeId: string;
+  parentNode: ModelNode;
+}): { node: ModelNode; parentNode: ModelNode } {
+  let { nodes, nodeId, parentNode } = item;
+
+  let foundNode = nodes.find(node => node.id === nodeId);
+
+  if (isDefined(foundNode)) {
+    return { node: foundNode, parentNode: parentNode };
+  }
+
+  let result: { node: ModelNode; parentNode: ModelNode };
+
+  nodes.forEach(node => {
+    if (isDefined(result)) {
+      return;
+    }
+
+    let children = node.children ?? [];
+
+    result = findModelNode({
+      nodes: children,
+      nodeId: nodeId,
+      parentNode: node
+    });
+  });
+
+  return result;
+}
 
 export function createModelMetrics(
   item: {
@@ -157,12 +190,20 @@ export function createModelMetrics(
               .map(k => capitalizeFirstLetter(k))
               .join(' ');
 
-          let xParentNode =
+          let xTopNode =
             x.malloyFieldPath.length > 0
               ? apiModel.nodes.find(n => n.id === x.malloyFieldPath.join('.'))
               : apiModel.nodes.find(n => n.id === MF);
 
-          let timeNodeLabel: string = xParentNode?.label;
+          let xNodeResult = findModelNode({
+            nodes: apiModel.nodes,
+            nodeId: x.id,
+            parentNode: xTopNode
+          });
+
+          let xParentNode = xNodeResult?.parentNode ?? xTopNode;
+
+          let timeNodeLabel = xParentNode?.label ?? apiModel.label;
 
           let timeLabel = `${timeNodeLabel} ${timeFieldLabel}`;
 
@@ -186,21 +227,27 @@ export function createModelMetrics(
           .forEach(y => {
             let topLabel = apiModel.label;
 
-            let yParentNode =
+            let yTopNode =
               y.malloyFieldPath.length > 0
                 ? apiModel.nodes.find(n => n.id === y.malloyFieldPath.join('.'))
                 : apiModel.nodes.find(n => n.id === MF);
 
-            let yNode = yParentNode.children.find(n => n.id === y.id);
+            let yNodeResult = findModelNode({
+              nodes: apiModel.nodes,
+              nodeId: y.id,
+              parentNode: yTopNode
+            });
 
-            let partNodeLabel = yParentNode.label;
+            let yParentNode = yNodeResult?.parentNode ?? yTopNode;
+
+            let partNodeLabel = yParentNode?.label ?? apiModel.label;
             let partFieldLabel = y.label;
             let partLabel = `${partNodeLabel} ${partFieldLabel}`;
 
             let modelMetric: ModelMetric = {
               metricId: `${apiModel.modelId}.${y.id}.${METRIC_ID_BY}.${tg.timeId}`,
-              filePath: yNode.fieldFilePath,
-              fieldLineNum: yNode.fieldLineNum,
+              filePath: y.fieldFilePath,
+              fieldLineNum: y.fieldLineNum,
               modelId: apiModel.modelId,
               modelType: ModelTypeEnum.Malloy,
               connectionType: apiModel.connectionType,

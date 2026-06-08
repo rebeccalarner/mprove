@@ -40,6 +40,7 @@ export enum ParameterEnum {
   HideFields = 'hide_fields',
   Label = 'label',
   TopLabel = 'top_label',
+  TreeDoubleUnderscore = 'tree_double_underscore',
   Limit = 'limit',
   Listen = 'listen',
   Measure = 'measure',
