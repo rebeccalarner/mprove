@@ -355,7 +355,19 @@ export function wrapModels(item: {
       }
     });
 
-    let sortedNodes = nodes;
+    let sortedNodes = nodes.sort((a, b) => {
+      if (a.id === MF) {
+        return -1;
+      }
+
+      if (b.id === MF) {
+        return 1;
+      }
+
+      return a.label.localeCompare(b.label, undefined, {
+        sensitivity: 'base'
+      });
+    });
 
     if (isDefined(malloyModelDef)) {
       // let strA = JSON.stringify(malloyModelDef);
