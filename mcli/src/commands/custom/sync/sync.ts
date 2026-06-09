@@ -29,15 +29,13 @@ export class SyncCommand extends CustomCommand {
   static paths = [['sync']];
 
   static usage = Command.Usage({
-    description: 'Synchronize uncommitted changes in one direction',
+    description: `Sync uncommitted changes from local repo to server repo OR from server repo to local repo, 
+depending on the "--from-server" option`,
     examples: [
-      [
-        'Apply local uncommitted changes to the server repo',
-        'mprove sync --project-id DXYE72ODCP5LWPWH2EXQ --env prod'
-      ],
+      ['Apply local uncommitted changes to the server repo', 'mprove sync'],
       [
         'Apply server uncommitted changes to the local repo',
-        'mprove sync --project-id DXYE72ODCP5LWPWH2EXQ --env prod --from-server'
+        'mprove sync --from-server'
       ]
     ]
   });
