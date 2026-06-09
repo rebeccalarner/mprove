@@ -1,3 +1,4 @@
+import path from 'node:path';
 import fse from 'fs-extra';
 import pIteration from 'p-iteration';
 import type { StatusResult } from 'simple-git';
@@ -6,7 +7,7 @@ const { forEachSeries } = pIteration;
 
 import type { DiskSyncFile } from '#common/zod/disk/disk-sync-file';
 import { readFileCheckSize } from './read-file-check-size';
-import { resolveRepoFilePath } from './resolve-repo-file-path';
+import { validatePathUnderDir } from './validate-path-under-dir';
 
 let statusOrder = {
   deleted: 1,
@@ -30,9 +31,10 @@ export async function getSyncAppliedChanges(item: {
   ]);
 
   await forEachSeries(deletedFiles, async (deletedFile: DiskSyncFile) => {
-    let filePath = await resolveRepoFilePath({
-      repoDir: repoDir,
-      filePath: deletedFile.path
+    let filePath = validatePathUnderDir({
+      fullPath: path.resolve(repoDir, deletedFile.path),
+      allowedDir: repoDir,
+      displayPath: deletedFile.path
     });
 
     let pathExists = await fse.pathExists(filePath);
@@ -46,9 +48,10 @@ export async function getSyncAppliedChanges(item: {
   });
 
   await forEachSeries(changedFiles, async (changedFile: DiskSyncFile) => {
-    let filePath = await resolveRepoFilePath({
-      repoDir: repoDir,
-      filePath: changedFile.path
+    let filePath = validatePathUnderDir({
+      fullPath: path.resolve(repoDir, changedFile.path),
+      allowedDir: repoDir,
+      displayPath: changedFile.path
     });
 
     let stat: fse.Stats;

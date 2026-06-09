@@ -1,7 +1,7 @@
 import test from 'ava';
 import { ErEnum } from '#common/enums/er.enum';
 import { ServerError } from '#common/models/server-error';
-import { validatePathUnderDir } from '#disk/functions/disk/validate-path-under-dir';
+import { validatePathUnderDir } from '#node-common/functions/validate-path-under-dir';
 
 test('allows path within directory', t => {
   t.notThrows(() => {

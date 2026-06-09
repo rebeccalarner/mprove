@@ -1,3 +1,4 @@
+import path from 'node:path';
 import fse from 'fs-extra';
 import pIteration from 'p-iteration';
 import type { StatusResult } from 'simple-git';
@@ -5,7 +6,7 @@ import type { StatusResult } from 'simple-git';
 const { forEachSeries } = pIteration;
 
 import { createSimpleGit } from './create-simple-git';
-import { resolveRepoFilePath } from './resolve-repo-file-path';
+import { validatePathUnderDir } from './validate-path-under-dir';
 
 export async function resetWorkingTreeToHead(item: {
   repoDir: string;
@@ -20,9 +21,10 @@ export async function resetWorkingTreeToHead(item: {
   await git.reset(['--hard', 'HEAD']);
 
   await forEachSeries(untrackedPaths, async (untrackedPath: string) => {
-    let filePath = await resolveRepoFilePath({
-      repoDir: repoDir,
-      filePath: untrackedPath
+    let filePath = validatePathUnderDir({
+      fullPath: path.resolve(repoDir, untrackedPath),
+      allowedDir: repoDir,
+      displayPath: untrackedPath
     });
 
     await fse.remove(filePath);

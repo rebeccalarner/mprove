@@ -11,12 +11,12 @@ import { DiskConfig } from '#disk/config/disk-config';
 import { ensureDir } from '#disk/functions/disk/ensure-dir';
 import { getNodesAndFiles } from '#disk/functions/disk/get-nodes-and-files';
 import { isPathExist } from '#disk/functions/disk/is-path-exist';
-import { validatePathUnderDir } from '#disk/functions/disk/validate-path-under-dir';
 import { checkoutBranch } from '#disk/functions/git/checkout-branch';
 import { createGit } from '#disk/functions/git/create-git';
 import { getRepoStatus } from '#disk/functions/git/get-repo-status';
 import { DiskTabService } from '#disk/services/disk-tab.service';
 import { RestoreService } from '#disk/services/restore.service';
+import { validatePathUnderDir } from '#node-common/functions/validate-path-under-dir';
 import { zodParseOrThrow } from '#node-common/functions/zod-parse-or-throw';
 
 @Injectable()

@@ -12,7 +12,6 @@ import { DiskConfig } from '#disk/config/disk-config';
 import { getNodesAndFiles } from '#disk/functions/disk/get-nodes-and-files';
 import { isPathExist } from '#disk/functions/disk/is-path-exist';
 import { removePath } from '#disk/functions/disk/remove-path';
-import { validatePathUnderDir } from '#disk/functions/disk/validate-path-under-dir';
 import { addChangesToStage } from '#disk/functions/git/add-changes-to-stage';
 import { checkoutBranch } from '#disk/functions/git/checkout-branch';
 import { commit } from '#disk/functions/git/commit';
@@ -21,6 +20,7 @@ import { getRepoStatus } from '#disk/functions/git/get-repo-status';
 import { pushToRemote } from '#disk/functions/git/push-to-remote';
 import { DiskTabService } from '#disk/services/disk-tab.service';
 import { RestoreService } from '#disk/services/restore.service';
+import { validatePathUnderDir } from '#node-common/functions/validate-path-under-dir';
 import { zodParseOrThrow } from '#node-common/functions/zod-parse-or-throw';
 
 @Injectable()

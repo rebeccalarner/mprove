@@ -1,3 +1,4 @@
+import path from 'node:path';
 import fse from 'fs-extra';
 import pIteration from 'p-iteration';
 
@@ -6,7 +7,7 @@ const { forEachSeries } = pIteration;
 import { ErEnum } from '#common/enums/er.enum';
 import { ServerError } from '#common/models/server-error';
 import type { DiskSyncFile } from '#common/zod/disk/disk-sync-file';
-import { resolveRepoFilePath } from './resolve-repo-file-path';
+import { validatePathUnderDir } from './validate-path-under-dir';
 
 export async function applySyncPayload(item: {
   repoDir: string;
@@ -16,18 +17,20 @@ export async function applySyncPayload(item: {
   let { repoDir, changedFiles, deletedFiles } = item;
 
   await forEachSeries(deletedFiles, async (deletedFile: DiskSyncFile) => {
-    let filePath = await resolveRepoFilePath({
-      repoDir: repoDir,
-      filePath: deletedFile.path
+    let filePath = validatePathUnderDir({
+      fullPath: path.resolve(repoDir, deletedFile.path),
+      allowedDir: repoDir,
+      displayPath: deletedFile.path
     });
 
     await fse.remove(filePath);
   });
 
   await forEachSeries(changedFiles, async (changedFile: DiskSyncFile) => {
-    let filePath = await resolveRepoFilePath({
-      repoDir: repoDir,
-      filePath: changedFile.path
+    let filePath = validatePathUnderDir({
+      fullPath: path.resolve(repoDir, changedFile.path),
+      allowedDir: repoDir,
+      displayPath: changedFile.path
     });
     let stat: fse.Stats | undefined;
 

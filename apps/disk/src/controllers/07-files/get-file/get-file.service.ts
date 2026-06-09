@@ -11,7 +11,6 @@ import { zToDiskGetFileRequest } from '#common/zod/to-disk/07-files/to-disk-get-
 import { DiskConfig } from '#disk/config/disk-config';
 import { getNodesAndFiles } from '#disk/functions/disk/get-nodes-and-files';
 import { isPathExist } from '#disk/functions/disk/is-path-exist';
-import { validatePathUnderDir } from '#disk/functions/disk/validate-path-under-dir';
 import { checkoutBranch } from '#disk/functions/git/checkout-branch';
 import { createGit } from '#disk/functions/git/create-git';
 import { getBaseCommitFileContent } from '#disk/functions/git/get-base-commit-file-content';
@@ -20,6 +19,7 @@ import { getRepoStatus } from '#disk/functions/git/get-repo-status';
 import { DiskTabService } from '#disk/services/disk-tab.service';
 import { RestoreService } from '#disk/services/restore.service';
 import { readFileCheckSize } from '#node-common/functions/read-file-check-size';
+import { validatePathUnderDir } from '#node-common/functions/validate-path-under-dir';
 import { zodParseOrThrow } from '#node-common/functions/zod-parse-or-throw';
 
 @Injectable()
