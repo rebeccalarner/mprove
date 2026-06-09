@@ -29,22 +29,21 @@ export class SyncCommand extends CustomCommand {
   static paths = [['sync']];
 
   static usage = Command.Usage({
-    description:
-      'Synchronize uncommitted changes in one direction, replacing the destination working tree diff from HEAD',
+    description: 'Synchronize uncommitted changes in one direction',
     examples: [
       [
-        'Upload local uncommitted changes to the server working tree',
+        'Apply local uncommitted changes to the server repo',
         'mprove sync --project-id DXYE72ODCP5LWPWH2EXQ --env prod'
       ],
       [
-        'Download server uncommitted changes and overwrite the local working tree',
+        'Apply server uncommitted changes to the local repo',
         'mprove sync --project-id DXYE72ODCP5LWPWH2EXQ --env prod --from-server'
       ]
     ]
   });
 
   projectId = Option.String('--project-id', {
-    description: '(required) Project Id'
+    description: 'Project Id'
   });
 
   env = Option.String('--env', 'prod', {
