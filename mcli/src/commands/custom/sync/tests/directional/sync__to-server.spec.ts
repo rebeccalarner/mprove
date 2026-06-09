@@ -23,252 +23,272 @@ import { prepareTest } from '#mcli/functions/prepare-test';
 import type { CustomContext } from '#mcli/models/custom-command';
 import { SyncCommand } from '../../sync';
 
+let testId = 'mcli_sync__to-server';
+
 test('normal sync uploads local changes and overwrites server changes', async () => {
-  let testId = 'mcli_sync__to-server';
+  let code: number;
   let isPass = false;
+  let parsedOutput: any;
   let context: CustomContext;
+  let secondParsedOutput: any;
 
   await retry(async () => {
-    let item = await prepareSyncTest({ testId: testId });
+    let config = getConfig();
+    let repoPath = `${config.mproveCliTestReposPath}/${testId}`;
+    let orgId = `t${testId}`;
 
-    let {
-      cli,
-      mockContext,
-      config,
-      projectId,
-      repoPath,
-      userId,
-      email,
-      password
-    } = item;
-
-    context = mockContext as any;
-
-    let loginToken = await getTestLoginToken({
-      email: email,
-      password: password,
+    await mreq<ToBackendCloneTestRepoResponse>({
+      pathInfoName: ToBackendRequestInfoNameEnum.ToBackendCloneTestRepo,
+      payload: {
+        orgId: orgId,
+        testId: testId
+      },
       host: config.mproveCliHost
     });
 
-    await saveServerReadme({
-      apiKey: loginToken,
-      host: config.mproveCliHost,
-      projectId: projectId,
-      repoId: userId,
-      content: 'server stale content'
-    });
+    let projectId = makeId();
 
-    await fse.writeFile(`${repoPath}/README.md`, 'local source content');
-    await fse.writeFile(`${repoPath}/sync-local-added.txt`, 'local added');
+    let commandLine = `sync \
+--project-id ${projectId} \
+--env ${PROJECT_ENV_PROD} \
+--local-path ${repoPath} \
+--json \
+--debug`;
 
-    let code = await cli.run(
-      [
-        'sync',
-        '--project-id',
-        projectId,
-        '--env',
-        PROJECT_ENV_PROD,
-        '--local-path',
-        repoPath,
-        '--json',
-        '--debug'
-      ],
-      context
+    let userId = makeId();
+    let email = `${testId}@example.com`;
+    let password = '123123';
+    let apiKey = makeTestApiKey({ testId: testId, userId: userId });
+
+    let projectName = testId;
+
+    try {
+      let { cli, mockContext } = await prepareTest({
+        command: SyncCommand,
+        config: config,
+        deletePack: {
+          emails: [email],
+          orgIds: [orgId],
+          projectIds: [projectId],
+          projectNames: [projectName]
+        },
+        seedPack: {
+          users: [
+            {
+              userId: userId,
+              email: email,
+              password: password,
+              isEmailVerified: true,
+              apiKey: apiKey
+            }
+          ],
+          orgs: [
+            {
+              orgId: orgId,
+              ownerEmail: email,
+              name: testId
+            }
+          ],
+          projects: [
+            {
+              orgId: orgId,
+              projectId: projectId,
+              name: projectName,
+              defaultBranch: BRANCH_MAIN,
+              remoteType: ProjectRemoteTypeEnum.GitClone,
+              gitUrl: config.mproveCliTestDevSourceGitUrl,
+              publicKey: fse
+                .readFileSync(config.mproveCliTestPublicKeyPath)
+                .toString(),
+              privateKeyEncrypted: fse
+                .readFileSync(config.mproveCliTestPrivateKeyEncryptedPath)
+                .toString(),
+              passPhrase: config.mproveCliTestPassPhrase
+            }
+          ],
+          members: [
+            {
+              memberId: userId,
+              email: email,
+              projectId: projectId,
+              isAdmin: true,
+              isEditor: true,
+              isExplorer: true
+            }
+          ],
+          connections: [
+            {
+              projectId: projectId,
+              connectionId: 'c1_postgres',
+              envId: PROJECT_ENV_PROD,
+              type: ConnectionTypeEnum.PostgreSQL,
+              options: {
+                postgres: {
+                  host: 'dwh-postgres',
+                  port: 5436,
+                  database: 'p_db',
+                  username: config.mproveCliTestDwhPostgresUser,
+                  password: config.mproveCliTestDwhPostgresPassword,
+                  isSSL: false
+                }
+              }
+            }
+          ]
+        },
+        apiKey: apiKey
+      });
+
+      context = mockContext as any;
+
+      let loginToken = await getTestLoginToken({
+        email: email,
+        password: password,
+        host: config.mproveCliHost
+      });
+
+      let saveFileReqPayload: ToBackendSaveFileRequestPayload = {
+        projectId: projectId,
+        repoId: userId,
+        branchId: BRANCH_MAIN,
+        envId: PROJECT_ENV_PROD,
+        fileNodeId: `${projectId}/readme.md`,
+        content: 'server stale content'
+      };
+
+      await mreq<ToBackendSaveFileResponse>({
+        apiKey: loginToken,
+        pathInfoName: ToBackendRequestInfoNameEnum.ToBackendSaveFile,
+        payload: saveFileReqPayload,
+        host: config.mproveCliHost
+      });
+
+      await fse.writeFile(`${repoPath}/README.md`, 'local source content');
+      await fse.writeFile(`${repoPath}/sync-local-added.txt`, 'local added');
+      await fse.ensureDir(`${repoPath}/local-folder`);
+      await fse.writeFile(`${repoPath}/local-folder/a.md`, 'local folder file');
+      await fse.move(`${repoPath}/f`, `${repoPath}/f-local-renamed`);
+      await fse.writeFile(
+        `${repoPath}/f-local-renamed/added.md`,
+        'local nested added'
+      );
+      await fse.ensureDir(`${repoPath}/_nogit`);
+      await fse.writeFile(`${repoPath}/_nogit/a.md`, 'ab');
+
+      code = await cli.run(commandLine.split(' '), context);
+
+      let secondContextPack = await prepareTest({
+        command: SyncCommand,
+        config: config,
+        apiKey: apiKey
+      });
+      let secondContext = secondContextPack.mockContext as any;
+      let secondCode = await secondContextPack.cli.run(
+        commandLine.split(' '),
+        secondContext
+      );
+
+      assert.equal(secondCode, 0, 'second sync exits successfully');
+      secondParsedOutput = JSON.parse(secondContext.stdout.toString());
+    } catch (e) {
+      logToConsoleMcli({
+        log: e,
+        logLevel: LogLevelEnum.Error,
+        context: context,
+        isJson: true
+      });
+    }
+
+    try {
+      parsedOutput = JSON.parse(context.stdout.toString());
+    } catch (e) {
+      logToConsoleMcli({
+        log: e,
+        logLevel: LogLevelEnum.Error,
+        context: context,
+        isJson: true
+      });
+    }
+
+    let readmeChange = parsedOutput.debug.devChangesToCommit.find(
+      (x: any) => x.fileName === 'README.md'
     );
-    let parsedOutput = JSON.parse(context.stdout.toString());
+    let localAddedChange = parsedOutput.debug.devChangesToCommit.find(
+      (x: any) => x.fileName === 'sync-local-added.txt'
+    );
+    let localFolderFileChange = parsedOutput.debug.devChangesToCommit.find(
+      (x: any) => x.fileName === 'a.md' && x.parentPath === 'local-folder'
+    );
+    let renamedFolderExistingFileChange =
+      parsedOutput.debug.devChangesToCommit.find(
+        (x: any) => x.fileName === 'r.md' && x.parentPath === 'f-local-renamed'
+      );
+    let renamedFolderAddedFileChange =
+      parsedOutput.debug.devChangesToCommit.find(
+        (x: any) =>
+          x.fileName === 'added.md' && x.parentPath === 'f-local-renamed'
+      );
+    let ignoredFileChange = parsedOutput.debug.devChangesToCommit.find(
+      (x: any) => x.fileName === 'a.md' && x.parentPath === '_nogit'
+    );
 
     assert.equal(code, 0, 'sync exits successfully');
     assert.deepEqual(parsedOutput.appliedChangesOnLocal, []);
     assert.deepEqual(parsedOutput.appliedChangesOnServer, [
+      '(deleted) f/r.md',
       '(modified) README.md',
+      '(new) f-local-renamed/added.md',
+      '(new) f-local-renamed/r.md',
+      '(new) local-folder/a.md',
       '(new) sync-local-added.txt'
     ]);
     assert.equal(parsedOutput.debug.fromServer, false);
-    assert.equal(parsedOutput.debug.lastSyncTime, undefined);
-    assert.equal(parsedOutput.debug.syncTime, undefined);
     assert.equal(
-      hasChangeContent({
-        changes: parsedOutput.debug.devChangesToCommit,
-        fileName: 'README.md',
-        content: 'local source content'
-      }),
-      true,
+      readmeChange?.content,
+      'local source content',
       'server diff contains local readme content'
     );
     assert.equal(
-      hasChangeContent({
-        changes: parsedOutput.debug.devChangesToCommit,
-        fileName: 'sync-local-added.txt',
-        content: 'local added'
-      }),
-      true,
+      localAddedChange?.content,
+      'local added',
       'server diff contains local added file'
     );
+    assert.equal(
+      localFolderFileChange?.content,
+      'local folder file',
+      'server diff contains local new folder file'
+    );
+    assert.equal(
+      renamedFolderExistingFileChange?.content,
+      '# text',
+      'server diff contains renamed folder existing file'
+    );
+    assert.equal(
+      renamedFolderAddedFileChange?.content,
+      'local nested added',
+      'server diff contains renamed folder added file'
+    );
+    assert.equal(
+      ignoredFileChange,
+      undefined,
+      'ignored _nogit file is skipped'
+    );
+    assert.deepEqual(secondParsedOutput.appliedChangesOnLocal, []);
+    assert.deepEqual(secondParsedOutput.appliedChangesOnServer, []);
 
     isPass = true;
   }, MCLI_E2E_RETRY_OPTIONS).catch((er: any) => {
-    logFailure({ context: context, error: er });
+    if (context) {
+      console.log(context.stdout.toString());
+      console.log(context.stderr.toString());
+    }
+
+    logToConsoleMcli({
+      log: er,
+      logLevel: LogLevelEnum.Error,
+      context: undefined,
+      isJson: false
+    });
   });
 
   expect(isPass).toBe(true);
 });
-
-async function prepareSyncTest(item: { testId: string }) {
-  let { testId } = item;
-  let config = getConfig();
-  let repoPath = `${config.mproveCliTestReposPath}/${testId}`;
-  let orgId = `t${testId}`;
-
-  await mreq<ToBackendCloneTestRepoResponse>({
-    pathInfoName: ToBackendRequestInfoNameEnum.ToBackendCloneTestRepo,
-    payload: {
-      orgId: orgId,
-      testId: testId
-    },
-    host: config.mproveCliHost
-  });
-
-  let projectId = makeId();
-  let userId = makeId();
-  let email = `${testId}@example.com`;
-  let password = '123123';
-  let apiKey = makeTestApiKey({ testId: testId, userId: userId });
-  let projectName = testId;
-
-  let { cli, mockContext } = await prepareTest({
-    command: SyncCommand,
-    config: config,
-    deletePack: {
-      emails: [email],
-      orgIds: [orgId],
-      projectIds: [projectId],
-      projectNames: [projectName]
-    },
-    seedPack: {
-      users: [
-        {
-          userId: userId,
-          email: email,
-          password: password,
-          isEmailVerified: true,
-          apiKey: apiKey
-        }
-      ],
-      orgs: [
-        {
-          orgId: orgId,
-          ownerEmail: email,
-          name: testId
-        }
-      ],
-      projects: [
-        {
-          orgId: orgId,
-          projectId: projectId,
-          name: projectName,
-          defaultBranch: BRANCH_MAIN,
-          remoteType: ProjectRemoteTypeEnum.GitClone,
-          gitUrl: config.mproveCliTestDevSourceGitUrl,
-          publicKey: fse
-            .readFileSync(config.mproveCliTestPublicKeyPath)
-            .toString(),
-          privateKeyEncrypted: fse
-            .readFileSync(config.mproveCliTestPrivateKeyEncryptedPath)
-            .toString(),
-          passPhrase: config.mproveCliTestPassPhrase
-        }
-      ],
-      members: [
-        {
-          memberId: userId,
-          email: email,
-          projectId: projectId,
-          isAdmin: true,
-          isEditor: true,
-          isExplorer: true
-        }
-      ],
-      connections: [
-        {
-          projectId: projectId,
-          connectionId: 'c1_postgres',
-          envId: PROJECT_ENV_PROD,
-          type: ConnectionTypeEnum.PostgreSQL,
-          options: {
-            postgres: {
-              host: 'dwh-postgres',
-              port: 5436,
-              database: 'p_db',
-              username: config.mproveCliTestDwhPostgresUser,
-              password: config.mproveCliTestDwhPostgresPassword,
-              isSSL: false
-            }
-          }
-        }
-      ]
-    },
-    apiKey: apiKey
-  });
-
-  return {
-    cli: cli,
-    mockContext: mockContext,
-    config: config,
-    projectId: projectId,
-    repoPath: repoPath,
-    userId: userId,
-    email: email,
-    password: password
-  };
-}
-
-async function saveServerReadme(item: {
-  apiKey: string;
-  host: string;
-  projectId: string;
-  repoId: string;
-  content: string;
-}) {
-  let { apiKey, host, projectId, repoId, content } = item;
-  let payload: ToBackendSaveFileRequestPayload = {
-    projectId: projectId,
-    repoId: repoId,
-    branchId: BRANCH_MAIN,
-    envId: PROJECT_ENV_PROD,
-    fileNodeId: `${projectId}/readme.md`,
-    content: content
-  };
-
-  await mreq<ToBackendSaveFileResponse>({
-    apiKey: apiKey,
-    pathInfoName: ToBackendRequestInfoNameEnum.ToBackendSaveFile,
-    payload: payload,
-    host: host
-  });
-}
-
-function hasChangeContent(item: {
-  changes: any[];
-  fileName: string;
-  content: string;
-}) {
-  let { changes, fileName, content } = item;
-  let change = changes.find(x => x.fileName === fileName);
-
-  return change?.content === content;
-}
-
-function logFailure(item: { context: CustomContext; error: any }) {
-  let { context, error } = item;
-  if (context) {
-    console.log(context.stdout.toString());
-    console.log(context.stderr.toString());
-  }
-
-  logToConsoleMcli({
-    log: error,
-    logLevel: LogLevelEnum.Error,
-    context: undefined,
-    isJson: false
-  });
-}
