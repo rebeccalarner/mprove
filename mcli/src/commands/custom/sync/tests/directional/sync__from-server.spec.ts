@@ -37,7 +37,7 @@ import { SyncCommand } from '../../sync';
 
 let testId = 'mcli_sync__from-server';
 
-test('--from-server downloads server changes and overwrites local changes', async () => {
+test('1', async () => {
   let code: number;
   let isPass = false;
   let parsedOutput: any;

@@ -25,7 +25,7 @@ import { SyncCommand } from '../../sync';
 
 let testId = 'mcli_sync__to-server';
 
-test('normal sync uploads local changes and overwrites server changes', async () => {
+test('1', async () => {
   let code: number;
   let isPass = false;
   let parsedOutput: any;
