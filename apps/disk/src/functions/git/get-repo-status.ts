@@ -21,6 +21,7 @@ export async function getRepoStatus(item: {
   isFetch: boolean;
   isCheckConflicts: boolean;
   addContent?: boolean;
+  expandRenamed?: boolean;
 }): Promise<DiskItemStatus> {
   return await addTraceSpan({
     spanName: 'disk.git.getRepoStatus',
@@ -39,7 +40,8 @@ export async function getRepoStatus(item: {
 
       let changesToCommit: DiskFileChange[] = await getChangesToCommit({
         repoDir: item.repoDir,
-        addContent: item.addContent
+        addContent: item.addContent,
+        expandRenamed: item.expandRenamed
       });
 
       let branchSummary = await git.branch();

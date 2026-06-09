@@ -14,8 +14,9 @@ import { readFileCheckSize } from './read-file-check-size';
 export async function getChangesToCommit(item: {
   repoDir: string;
   addContent?: boolean;
+  expandRenamed?: boolean;
 }) {
-  let { repoDir, addContent } = item;
+  let { repoDir, addContent, expandRenamed } = item;
 
   let git = createSimpleGit({ baseDir: repoDir });
 
@@ -31,10 +32,15 @@ export async function getChangesToCommit(item: {
     ...statusResult.created.map(path => ({ path, type: 'created' as const })),
     ...statusResult.deleted.map(path => ({ path, type: 'deleted' as const })),
     ...statusResult.modified.map(path => ({ path, type: 'modified' as const })),
-    ...statusResult.renamed.flatMap(r => [
-      { path: r.from, type: 'deleted' as const },
-      { path: r.to, type: 'created' as const }
-    ]),
+    ...(expandRenamed === true
+      ? statusResult.renamed.flatMap(r => [
+          { path: r.from, type: 'deleted' as const },
+          { path: r.to, type: 'created' as const }
+        ])
+      : statusResult.renamed.map(r => ({
+          path: r.to,
+          type: 'renamed' as const
+        }))),
     ...statusResult.conflicted.map(path => ({
       path,
       type: 'conflicted' as const
@@ -71,7 +77,9 @@ export async function getChangesToCommit(item: {
             ? FileStatusEnum.Modified
             : file.type === 'conflicted'
               ? FileStatusEnum.Conflicted
-              : undefined;
+              : file.type === 'renamed'
+                ? FileStatusEnum.Renamed
+                : undefined;
 
     let content;
     if (addContent === true && status !== FileStatusEnum.Deleted) {

@@ -192,7 +192,8 @@ export class SyncRepoService {
       git: git,
       isFetch: true,
       isCheckConflicts: true,
-      addContent: true
+      addContent: true,
+      expandRenamed: true
     });
 
     let itemCatalog = <DiskItemCatalog>await getNodesAndFiles({

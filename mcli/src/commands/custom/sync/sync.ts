@@ -186,7 +186,8 @@ export class SyncCommand extends CustomCommand {
 
     let localChangesToCommit = await getChangesToCommit({
       repoDir: repoDir,
-      addContent: true
+      addContent: true,
+      expandRenamed: true
     });
 
     let devChangesToCommit = syncRepoResp.payload.repo.changesToCommit;
