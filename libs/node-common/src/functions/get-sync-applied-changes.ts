@@ -115,6 +115,7 @@ export async function getSyncAppliedChanges(item: {
 
   sortedChanges.sort((a, b) => {
     let statusDiff = statusOrder[a.status] - statusOrder[b.status];
+
     if (statusDiff !== 0) {
       return statusDiff;
     }

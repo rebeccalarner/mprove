@@ -11,6 +11,7 @@ export function validatePathUnderDir(item: {
 
   let resolvedDir = path.resolve(allowedDir);
   let resolvedPath = path.resolve(fullPath);
+
   let isInsideDir =
     resolvedPath === resolvedDir ||
     resolvedPath.startsWith(`${resolvedDir}${path.sep}`);

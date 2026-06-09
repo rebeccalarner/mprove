@@ -104,12 +104,15 @@ export class SyncCommand extends CustomCommand {
     let git = createSimpleGit({ baseDir: repoDir });
 
     let branchSummary = await git.branch();
+
     let currentBranchName = branchSummary.current;
 
     let logResult = await git.log(['-1']);
+
     let lastCommit = logResult.latest?.hash;
 
     let statusResult = await git.status();
+
     let localPayload =
       this.fromServer === true
         ? { changedFiles: [], deletedFiles: [] }
@@ -167,10 +170,12 @@ export class SyncCommand extends CustomCommand {
         deletedFiles: syncRepoResp.payload.deletedFiles,
         statusResult: statusResult
       });
+
       await resetWorkingTreeToHead({
         repoDir: repoDir,
         statusResult: statusResult
       });
+
       await applySyncPayload({
         repoDir: repoDir,
         changedFiles: syncRepoResp.payload.changedFiles,
