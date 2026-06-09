@@ -13,9 +13,9 @@ export let zToDiskSyncRepoRequestPayload = z
     repoId: z.string(),
     branch: z.string(),
     lastCommit: z.string(),
-    lastSyncTime: z.number(),
-    localChangedFiles: z.array(zDiskSyncFile),
-    localDeletedFiles: z.array(zDiskSyncFile)
+    fromServer: z.boolean(),
+    changedFiles: z.array(zDiskSyncFile),
+    deletedFiles: z.array(zDiskSyncFile)
   })
   .meta({ id: 'ToDiskSyncRepoRequestPayload' });
 
@@ -29,8 +29,10 @@ export let zToDiskSyncRepoResponsePayload = z
   .object({
     repo: zRepo,
     files: z.array(zDiskCatalogFile),
-    restChangedFiles: z.array(zDiskSyncFile),
-    restDeletedFiles: z.array(zDiskSyncFile),
+    changedFiles: z.array(zDiskSyncFile),
+    deletedFiles: z.array(zDiskSyncFile),
+    appliedChangesOnLocal: z.array(z.string()),
+    appliedChangesOnServer: z.array(z.string()),
     mproveDir: z.string(),
     devReqReceiveTime: z.number(),
     devRespSentTime: z.number()

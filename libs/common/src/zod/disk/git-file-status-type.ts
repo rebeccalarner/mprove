@@ -1,14 +1,7 @@
 import { z } from 'zod';
 
 export let zGitFileStatusType = z
-  .enum([
-    'not_added',
-    'created',
-    'deleted',
-    'modified',
-    'renamed',
-    'conflicted'
-  ])
+  .enum(['not_added', 'created', 'deleted', 'modified', 'conflicted'])
   .meta({ id: 'GitFileStatusType' });
 
 export type GitFileStatusType = z.infer<typeof zGitFileStatusType>;

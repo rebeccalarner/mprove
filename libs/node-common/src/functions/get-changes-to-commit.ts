@@ -31,10 +31,10 @@ export async function getChangesToCommit(item: {
     ...statusResult.created.map(path => ({ path, type: 'created' as const })),
     ...statusResult.deleted.map(path => ({ path, type: 'deleted' as const })),
     ...statusResult.modified.map(path => ({ path, type: 'modified' as const })),
-    ...statusResult.renamed.map(r => ({
-      path: r.to,
-      type: 'renamed' as const
-    })),
+    ...statusResult.renamed.flatMap(r => [
+      { path: r.from, type: 'deleted' as const },
+      { path: r.to, type: 'created' as const }
+    ]),
     ...statusResult.conflicted.map(path => ({
       path,
       type: 'conflicted' as const
@@ -49,6 +49,7 @@ export async function getChangesToCommit(item: {
       files.push(file);
     }
   });
+  files.sort((a, b) => a.path.localeCompare(b.path));
 
   await forEachSeries(files, async (file: FileWithStatusType) => {
     let path = file.path;
@@ -70,9 +71,7 @@ export async function getChangesToCommit(item: {
             ? FileStatusEnum.Modified
             : file.type === 'conflicted'
               ? FileStatusEnum.Conflicted
-              : file.type === 'renamed'
-                ? FileStatusEnum.Renamed
-                : undefined;
+              : undefined;
 
     let content;
     if (addContent === true && status !== FileStatusEnum.Deleted) {

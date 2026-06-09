@@ -15,9 +15,6 @@ export const MPROVE_CONFIG_NAME = 'mprove';
 
 export const MPROVE_CONFIG_DIR_DOT_SLASH = './';
 
-export const MPROVE_CACHE_DIR = '.mprove';
-export const MPROVE_SYNC_FILENAME = 'sync.json';
-
 export const UTC = 'UTC';
 
 export const MALLOY_FILTER_ANY = 'f``';

@@ -1,33 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import pIteration from 'p-iteration';
-
-const { forEachSeries } = pIteration;
 
 import { ErEnum } from '#common/enums/er.enum';
-import { FileStatusEnum } from '#common/enums/file-status.enum';
-import { isDefined } from '#common/functions/is-defined';
-import { isUndefined } from '#common/functions/is-undefined';
 import { ServerError } from '#common/models/server-error';
 import type { DiskItemCatalog } from '#common/zod/disk/disk-item-catalog';
 import type { DiskItemStatus } from '#common/zod/disk/disk-item-status';
-import type { DiskSyncFile } from '#common/zod/disk/disk-sync-file';
 import type { ProjectLt, ProjectSt } from '#common/zod/st-lt';
 import type { ToDiskSyncRepoResponsePayload } from '#common/zod/to-disk/03-repos/to-disk-sync-repo';
 import { zToDiskSyncRepoRequest } from '#common/zod/to-disk/03-repos/to-disk-sync-repo';
 import { DiskConfig } from '#disk/config/disk-config';
-import { ensureDir } from '#disk/functions/disk/ensure-dir';
 import { getNodesAndFiles } from '#disk/functions/disk/get-nodes-and-files';
-import { isPathExist } from '#disk/functions/disk/is-path-exist';
-import { removePath } from '#disk/functions/disk/remove-path';
-import { writeToFile } from '#disk/functions/disk/write-to-file';
 import { addChangesToStage } from '#disk/functions/git/add-changes-to-stage';
 import { checkoutBranch } from '#disk/functions/git/checkout-branch';
 import { createGit } from '#disk/functions/git/create-git';
 import { getRepoStatus } from '#disk/functions/git/get-repo-status';
 import { DiskTabService } from '#disk/services/disk-tab.service';
 import { RestoreService } from '#disk/services/restore.service';
-import { getSyncFiles } from '#node-common/functions/get-sync-files';
+import { applySyncPayload } from '#node-common/functions/apply-sync-payload';
+import { getSyncAppliedChanges } from '#node-common/functions/get-sync-applied-changes';
+import { getWorkingTreePayload } from '#node-common/functions/get-sync-files';
+import { resetWorkingTreeToHead } from '#node-common/functions/reset-working-tree-to-head';
 import { zodParseOrThrow } from '#node-common/functions/zod-parse-or-throw';
 
 @Injectable()
@@ -56,9 +48,9 @@ export class SyncRepoService {
       repoId,
       branch,
       lastCommit,
-      lastSyncTime,
-      localChangedFiles,
-      localDeletedFiles
+      fromServer,
+      changedFiles,
+      deletedFiles
     } = requestValid.payload;
 
     let projectSt: ProjectSt = this.diskTabService.decrypt<ProjectSt>({
@@ -162,193 +154,36 @@ export class SyncRepoService {
     }
 
     let statusResult = await git.status();
+    let sourceChangedFiles = changedFiles;
+    let sourceDeletedFiles = deletedFiles;
+    let appliedChangesOnServer: string[] = [];
 
-    let { changedFiles, deletedFiles } = await getSyncFiles({
-      repoDir: repoDir,
-      statusResult: statusResult,
-      lastSyncTime: lastSyncTime
-    });
+    if (fromServer === true) {
+      let serverPayload = await getWorkingTreePayload({
+        repoDir: repoDir,
+        statusResult: statusResult
+      });
 
-    let devChangedFiles = changedFiles;
-    let devDeletedFiles = deletedFiles;
-
-    let restChangedFiles: DiskSyncFile[] = devChangedFiles.filter(
-      devChangedFile => {
-        let localDeletedFile = localDeletedFiles.find(
-          x => x.path === devChangedFile.path
-        );
-
-        let localChangedFile = localChangedFiles.find(
-          x => x.path === devChangedFile.path
-        );
-
-        if (
-          isDefined(localChangedFile) &&
-          localChangedFile.modifiedTime > devChangedFile.modifiedTime
-        ) {
-          return false;
-        }
-
-        if (
-          isUndefined(localChangedFile) &&
-          lastSyncTime > 0 &&
-          devChangedFile.modifiedTime < lastSyncTime &&
-          devChangedFile.status === FileStatusEnum.New
-        ) {
-          return false;
-        }
-
-        if (
-          isDefined(localDeletedFile) &&
-          lastSyncTime > 0 &&
-          devChangedFile.modifiedTime < lastSyncTime
-        ) {
-          return false;
-        }
-
-        return true;
-      }
-    );
-
-    let restDeletedFiles: DiskSyncFile[] = devDeletedFiles.filter(
-      devDeletedFile => {
-        let localDeletedFile = localDeletedFiles.find(
-          x => x.path === devDeletedFile.path
-        );
-
-        let localChangedFile = localChangedFiles.find(
-          x => x.path === devDeletedFile.path
-        );
-
-        if (isDefined(localDeletedFile)) {
-          return false;
-        }
-
-        if (lastSyncTime === 0 && isDefined(localChangedFile)) {
-          return false;
-        }
-
-        if (
-          lastSyncTime > 0 &&
-          isDefined(localChangedFile) &&
-          localChangedFile.modifiedTime > lastSyncTime
-        ) {
-          return false;
-        }
-
-        return true;
-      }
-    );
-
-    await forEachSeries(
-      devChangedFiles,
-      async (devChangedFile: DiskSyncFile) => {
-        let filePath = `${repoDir}/${devChangedFile.path}`;
-
-        let localChangedFile = localChangedFiles.find(
-          x => x.path === devChangedFile.path
-        );
-
-        if (
-          lastSyncTime > 0 &&
-          devChangedFile.modifiedTime < lastSyncTime &&
-          isUndefined(localChangedFile) &&
-          devChangedFile.status === FileStatusEnum.New
-        ) {
-          await deleteFile(filePath);
-        }
-      }
-    );
-
-    await forEachSeries(
-      localDeletedFiles,
-      async (localDeletedFile: DiskSyncFile) => {
-        let filePath = `${repoDir}/${localDeletedFile.path}`;
-
-        let devChangedFile = devChangedFiles.find(
-          x => x.path === localDeletedFile.path
-        );
-
-        if (lastSyncTime === 0 && isDefined(devChangedFile)) {
-          return;
-        }
-
-        if (
-          lastSyncTime > 0 &&
-          isDefined(devChangedFile) &&
-          devChangedFile.modifiedTime > lastSyncTime
-        ) {
-          return;
-        }
-
-        await deleteFile(filePath);
-      }
-    );
-
-    await forEachSeries(
-      localChangedFiles,
-      async (localChangedFile: DiskSyncFile) => {
-        let devDeletedFile = devDeletedFiles.find(
-          x => x.path === localChangedFile.path
-        );
-
-        let devChangedFile = devChangedFiles.find(
-          x => x.path === localChangedFile.path
-        );
-
-        if (
-          lastSyncTime > 0 &&
-          localChangedFile.modifiedTime < lastSyncTime &&
-          isUndefined(devChangedFile) &&
-          localChangedFile.status === FileStatusEnum.New
-        ) {
-          let restDeletedFile = restDeletedFiles.find(
-            f => f.path === localChangedFile.path
-          );
-
-          if (isUndefined(restDeletedFile)) {
-            let file: DiskSyncFile = {
-              path: localChangedFile.path,
-              status: undefined,
-              content: undefined,
-              modifiedTime: undefined
-            };
-
-            restDeletedFiles.push(file);
-          }
-
-          return;
-        }
-
-        if (
-          lastSyncTime > 0 &&
-          localChangedFile.modifiedTime < lastSyncTime &&
-          isDefined(devDeletedFile)
-        ) {
-          return;
-        }
-
-        if (
-          isUndefined(devChangedFile) ||
-          localChangedFile.modifiedTime > devChangedFile.modifiedTime
-        ) {
-          let filePath = `${repoDir}/${localChangedFile.path}`;
-
-          let isFileExist = await isPathExist(filePath);
-          if (isFileExist === false) {
-            let parentPath = filePath.split('/').slice(0, -1).join('/');
-            await ensureDir(parentPath);
-          }
-
-          await writeToFile({
-            filePath: filePath,
-            content: localChangedFile.content
-          });
-        }
-      }
-    );
-
-    await addChangesToStage({ repoDir: repoDir });
+      sourceChangedFiles = serverPayload.changedFiles;
+      sourceDeletedFiles = serverPayload.deletedFiles;
+    } else {
+      appliedChangesOnServer = await getSyncAppliedChanges({
+        repoDir: repoDir,
+        changedFiles: changedFiles,
+        deletedFiles: deletedFiles,
+        statusResult: statusResult
+      });
+      await resetWorkingTreeToHead({
+        repoDir: repoDir,
+        statusResult: statusResult
+      });
+      await applySyncPayload({
+        repoDir: repoDir,
+        changedFiles: changedFiles,
+        deletedFiles: deletedFiles
+      });
+      await addChangesToStage({ repoDir: repoDir });
+    }
 
     let {
       repoStatus,
@@ -390,20 +225,15 @@ export class SyncRepoService {
         changesToPush: changesToPush
       },
       files: itemCatalog.files,
-      restChangedFiles: restChangedFiles,
-      restDeletedFiles: restDeletedFiles,
+      changedFiles: fromServer === true ? sourceChangedFiles : [],
+      deletedFiles: fromServer === true ? sourceDeletedFiles : [],
+      appliedChangesOnLocal: [],
+      appliedChangesOnServer: appliedChangesOnServer,
       mproveDir: itemCatalog.mproveDir,
       devReqReceiveTime: devReqReceiveTime,
       devRespSentTime: devRespSentTime
     };
 
     return payload;
-  }
-}
-
-async function deleteFile(filePath: string) {
-  let isFileExist = await isPathExist(filePath);
-  if (isFileExist === true) {
-    await removePath(filePath);
   }
 }

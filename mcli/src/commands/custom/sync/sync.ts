@@ -1,12 +1,6 @@
 import { Command, Option } from 'clipanion';
-import fse from 'fs-extra';
-import pIteration from 'p-iteration';
-
-const { forEachSeries } = pIteration;
 
 import deepEqual from 'fast-deep-equal';
-import { MPROVE_CACHE_DIR, MPROVE_SYNC_FILENAME } from '#common/constants/top';
-import { POSSIBLE_TIME_DIFF_MS } from '#common/constants/top-mcli';
 import { ApiKeyTypeEnum } from '#common/enums/api-key-type.enum';
 import { ErEnum } from '#common/enums/er.enum';
 import { LogLevelEnum } from '#common/enums/log-level.enum';
@@ -15,35 +9,36 @@ import { getBuilderUrl } from '#common/functions/get-builder-url';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
 import { mapBmlErrorsToMproveValidationErrors } from '#common/functions/map-bml-errors-to-mprove-validation-errors';
-import { sleep } from '#common/functions/sleep';
 import { ServerError } from '#common/models/server-error';
-import type { DiskSyncFile } from '#common/zod/disk/disk-sync-file';
-import type { McliSyncConfig } from '#common/zod/mcli/mcli-sync-config';
 import type {
   ToBackendSyncRepoRequestPayload,
   ToBackendSyncRepoResponse
 } from '#common/zod/to-backend/repos/to-backend-sync-repo';
 import { getConfig } from '#mcli/config/get.config';
 import { logToConsoleMcli } from '#mcli/functions/log-to-console-mcli';
-import { makeSyncTime } from '#mcli/functions/make-sync-time';
 import { mreq } from '#mcli/functions/mreq';
-import { writeSyncConfig } from '#mcli/functions/write-sync-config';
 import { CustomCommand } from '#mcli/models/custom-command';
+import { applySyncPayload } from '#node-common/functions/apply-sync-payload';
 import { createSimpleGit } from '#node-common/functions/create-simple-git';
 import { getChangesToCommit } from '#node-common/functions/get-changes-to-commit';
-import { getSyncFiles } from '#node-common/functions/get-sync-files';
-import { readFileCheckSize } from '#node-common/functions/read-file-check-size';
+import { getSyncAppliedChanges } from '#node-common/functions/get-sync-applied-changes';
+import { getWorkingTreePayload } from '#node-common/functions/get-sync-files';
+import { resetWorkingTreeToHead } from '#node-common/functions/reset-working-tree-to-head';
 
 export class SyncCommand extends CustomCommand {
   static paths = [['sync']];
 
   static usage = Command.Usage({
     description:
-      'Synchronize files (uncommitted changes) between Local and Dev repo, validate Mprove Files for selected env',
+      'Synchronize uncommitted changes in one direction, replacing the destination working tree diff from HEAD',
     examples: [
       [
-        'Synchronize files (uncommitted changes) between Local and Dev repo, validate Mprove Files for selected env',
+        'Upload local uncommitted changes to the server working tree',
         'mprove sync --project-id DXYE72ODCP5LWPWH2EXQ --env prod'
+      ],
+      [
+        'Download server uncommitted changes and overwrite the local working tree',
+        'mprove sync --project-id DXYE72ODCP5LWPWH2EXQ --env prod --from-server'
       ]
     ]
   });
@@ -62,9 +57,9 @@ export class SyncCommand extends CustomCommand {
       '(optional, if not specified then the current working directory is used) Absolute path of local git repository'
   });
 
-  firstSync = Option.Boolean('--first-sync', false, {
+  fromServer = Option.Boolean('--from-server', false, {
     description:
-      '(default false) if set, then the previous sync timestamp is ignored'
+      '(default false) if set, then server uncommitted changes overwrite local uncommitted changes'
   });
 
   getRepo = Option.Boolean('--get-repo', false, {
@@ -117,41 +112,16 @@ export class SyncCommand extends CustomCommand {
     let lastCommit = logResult.latest?.hash;
 
     let statusResult = await git.status();
+    let localPayload =
+      this.fromServer === true
+        ? { changedFiles: [], deletedFiles: [] }
+        : await getWorkingTreePayload({
+            repoDir: repoDir,
+            statusResult: statusResult
+          });
 
-    let syncParentPath = `${repoDir}/${MPROVE_CACHE_DIR}`;
-    let syncFilePath = `${syncParentPath}/${MPROVE_SYNC_FILENAME}`;
-
-    if (this.firstSync === true) {
-      await fse.remove(syncFilePath);
-    }
-
-    let isSyncFileExist = await fse.pathExists(syncFilePath);
-
-    let syncFileContent;
-    if (isSyncFileExist === true) {
-      let { content } = await readFileCheckSize({
-        filePath: syncFilePath,
-        getStat: false
-      });
-      syncFileContent = content;
-    }
-
-    let syncConfig: McliSyncConfig = isSyncFileExist
-      ? JSON.parse(syncFileContent)
-      : undefined;
-
-    let lastSyncTime = isDefined(syncConfig?.lastSyncTime)
-      ? Number(syncConfig.lastSyncTime)
-      : 0;
-
-    let { changedFiles, deletedFiles } = await getSyncFiles({
-      repoDir: repoDir,
-      statusResult: statusResult,
-      lastSyncTime: lastSyncTime
-    });
-
-    let localChangedFiles = changedFiles;
-    let localDeletedFiles = deletedFiles;
+    let changedFiles = localPayload.changedFiles;
+    let deletedFiles = localPayload.deletedFiles;
 
     let localReqSentTime = Date.now();
 
@@ -167,9 +137,9 @@ export class SyncCommand extends CustomCommand {
       branchId: currentBranchName,
       envId: this.env,
       lastCommit: lastCommit,
-      lastSyncTime: lastSyncTime,
-      localChangedFiles: localChangedFiles,
-      localDeletedFiles: localDeletedFiles
+      fromServer: this.fromServer,
+      changedFiles: changedFiles,
+      deletedFiles: deletedFiles
     };
 
     let syncRepoResp = await mreq<ToBackendSyncRepoResponse>({
@@ -180,33 +150,26 @@ export class SyncCommand extends CustomCommand {
     });
 
     let localRespReceiveTime = Date.now();
+    let appliedChangesOnLocal = syncRepoResp.payload.appliedChangesOnLocal;
+    let appliedChangesOnServer = syncRepoResp.payload.appliedChangesOnServer;
 
-    await forEachSeries(
-      syncRepoResp.payload.restDeletedFiles,
-      async (x: DiskSyncFile) => {
-        let filePath = `${repoDir}/${x.path}`;
-
-        let isFileExist = await fse.pathExists(filePath);
-        if (isFileExist === true) {
-          await fse.remove(filePath);
-        }
-      }
-    );
-
-    await forEachSeries(
-      syncRepoResp.payload.restChangedFiles,
-      async (x: DiskSyncFile) => {
-        let filePath = `${repoDir}/${x.path}`;
-
-        let isFileExist = await fse.pathExists(filePath);
-        if (isFileExist === false) {
-          let parentPath = filePath.split('/').slice(0, -1).join('/');
-          await fse.ensureDir(parentPath);
-        }
-
-        await fse.writeFile(filePath, x.content);
-      }
-    );
+    if (this.fromServer === true) {
+      appliedChangesOnLocal = await getSyncAppliedChanges({
+        repoDir: repoDir,
+        changedFiles: syncRepoResp.payload.changedFiles,
+        deletedFiles: syncRepoResp.payload.deletedFiles,
+        statusResult: statusResult
+      });
+      await resetWorkingTreeToHead({
+        repoDir: repoDir,
+        statusResult: statusResult
+      });
+      await applySyncPayload({
+        repoDir: repoDir,
+        changedFiles: syncRepoResp.payload.changedFiles,
+        deletedFiles: syncRepoResp.payload.deletedFiles
+      });
+    }
 
     //
 
@@ -216,7 +179,6 @@ export class SyncCommand extends CustomCommand {
     });
 
     let devChangesToCommit = syncRepoResp.payload.repo.changesToCommit;
-
     let syncSuccess = deepEqual(localChangesToCommit, devChangesToCommit);
 
     if (syncSuccess === false) {
@@ -236,15 +198,6 @@ export class SyncCommand extends CustomCommand {
       throw serverError;
     }
 
-    await sleep(POSSIBLE_TIME_DIFF_MS);
-
-    let syncTime = await makeSyncTime({ skipDelay: true });
-
-    let newSyncConfig = await writeSyncConfig({
-      repoPath: repoDir,
-      syncTime: syncTime
-    });
-
     let builderUrl = getBuilderUrl({
       host: this.context.config.mproveCliHost,
       orgId: syncRepoResp.payload.repo.orgId,
@@ -256,6 +209,8 @@ export class SyncCommand extends CustomCommand {
 
     let log: any = {
       message: `Sync completed`,
+      appliedChangesOnLocal: appliedChangesOnLocal,
+      appliedChangesOnServer: appliedChangesOnServer,
       validationErrorsTotal: syncRepoResp.payload.struct.errors.length
     };
 
@@ -280,16 +235,15 @@ export class SyncCommand extends CustomCommand {
 
     if (this.debug === true) {
       log.debug = {
-        localChangedFiles: localChangedFiles,
-        localDeletedFiles: localDeletedFiles,
-        restChangedFiles: syncRepoResp.payload.restChangedFiles,
-        restDeletedFiles: syncRepoResp.payload.restDeletedFiles,
+        fromServer: this.fromServer,
+        changedFiles: changedFiles,
+        deletedFiles: deletedFiles,
+        responseChangedFiles: syncRepoResp.payload.changedFiles,
+        responseDeletedFiles: syncRepoResp.payload.deletedFiles,
         localChangesToCommit: localChangesToCommit,
         devChangesToCommit: devChangesToCommit,
         needValidate: syncRepoResp.payload.needValidate,
         structId: syncRepoResp.payload.struct.structId,
-        lastSyncTime: lastSyncTime,
-        syncTime: newSyncConfig.lastSyncTime,
         reqTimeDiff: syncRepoResp.payload.devReqReceiveTime - localReqSentTime,
         respTimeDiff:
           localRespReceiveTime - syncRepoResp.payload.devRespSentTime

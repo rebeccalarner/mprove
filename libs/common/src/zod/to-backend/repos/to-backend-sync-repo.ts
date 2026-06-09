@@ -14,10 +14,10 @@ export let zToBackendSyncRepoRequestPayload = z
     repoId: z.string(),
     branchId: z.string(),
     lastCommit: z.string(),
-    lastSyncTime: z.number(),
+    fromServer: z.boolean(),
     envId: z.string(),
-    localChangedFiles: z.array(zDiskSyncFile),
-    localDeletedFiles: z.array(zDiskSyncFile)
+    changedFiles: z.array(zDiskSyncFile),
+    deletedFiles: z.array(zDiskSyncFile)
   })
   .meta({ id: 'ToBackendSyncRepoRequestPayload' });
 
@@ -36,8 +36,10 @@ export let zToBackendSyncRepoRequest = zToBackendRequest
 
 export let zToBackendSyncRepoResponsePayload = z
   .object({
-    restChangedFiles: z.array(zDiskSyncFile),
-    restDeletedFiles: z.array(zDiskSyncFile),
+    changedFiles: z.array(zDiskSyncFile),
+    deletedFiles: z.array(zDiskSyncFile),
+    appliedChangesOnLocal: z.array(z.string()),
+    appliedChangesOnServer: z.array(z.string()),
     needValidate: z.boolean(),
     repo: zRepo,
     struct: zStructX,

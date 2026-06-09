@@ -89,10 +89,10 @@ export class SyncRepoController {
       repoId,
       branchId,
       lastCommit,
-      lastSyncTime,
+      fromServer,
       envId,
-      localChangedFiles,
-      localDeletedFiles
+      changedFiles,
+      deletedFiles
     } = body.payload;
 
     await this.sessionsService.checkRepoId({
@@ -145,9 +145,9 @@ export class SyncRepoController {
         repoId: repoId,
         branch: branchId,
         lastCommit: lastCommit,
-        lastSyncTime: lastSyncTime,
-        localChangedFiles: localChangedFiles,
-        localDeletedFiles: localDeletedFiles
+        fromServer: fromServer,
+        changedFiles: changedFiles,
+        deletedFiles: deletedFiles
       }
     };
 
@@ -223,8 +223,10 @@ export class SyncRepoController {
     });
 
     let payload: ToBackendSyncRepoResponsePayload = {
-      restChangedFiles: diskResponse.payload.restChangedFiles,
-      restDeletedFiles: diskResponse.payload.restDeletedFiles,
+      changedFiles: diskResponse.payload.changedFiles,
+      deletedFiles: diskResponse.payload.deletedFiles,
+      appliedChangesOnLocal: diskResponse.payload.appliedChangesOnLocal,
+      appliedChangesOnServer: diskResponse.payload.appliedChangesOnServer,
       struct: this.structsService.tabToApi({
         struct: struct,
         modelPartXs: modelPartXs
