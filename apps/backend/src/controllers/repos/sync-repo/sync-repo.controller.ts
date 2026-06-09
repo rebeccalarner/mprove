@@ -32,7 +32,6 @@ import { BranchesService } from '#backend/services/db/branches.service';
 import { BridgesService } from '#backend/services/db/bridges.service';
 import { EnvsService } from '#backend/services/db/envs.service';
 import { MembersService } from '#backend/services/db/members.service';
-import { ModelsService } from '#backend/services/db/models.service';
 import { ProjectsService } from '#backend/services/db/projects.service';
 import { SessionsService } from '#backend/services/db/sessions.service';
 import { StructsService } from '#backend/services/db/structs.service';
@@ -58,7 +57,6 @@ export class SyncRepoController {
     private tabService: TabService,
     private projectsService: ProjectsService,
     private membersService: MembersService,
-    private modelsService: ModelsService,
     private rpcService: RpcService,
     private structsService: StructsService,
     private branchesService: BranchesService,
@@ -85,6 +83,10 @@ export class SyncRepoController {
   ) {
     let { traceId } = body.info;
     let { projectId, repoId, branchId, lastCommit, envId } = body.payload;
+    let getRepo = body.payload.getRepo === true;
+    let getRepoNodes = body.payload.getRepoNodes === true;
+    let getErrors = body.payload.getErrors === true;
+    let debug = body.payload.debug === true;
 
     await this.sessionsService.checkRepoId({
       repoId: repoId,
@@ -140,6 +142,8 @@ export class SyncRepoController {
           repoId: repoId,
           branch: branchId,
           lastCommit: lastCommit,
+          getRepo: getRepo,
+          getRepoNodes: getRepoNodes,
           changedFiles: body.payload.changedFiles,
           deletedFiles: body.payload.deletedFiles
         }
@@ -156,7 +160,9 @@ export class SyncRepoController {
           baseProject: baseProject,
           repoId: repoId,
           branch: branchId,
-          lastCommit: lastCommit
+          lastCommit: lastCommit,
+          getRepo: getRepo,
+          getRepoNodes: getRepoNodes
         }
       };
     }
@@ -225,20 +231,15 @@ export class SyncRepoController {
       projectId: projectId
     });
 
-    let apiUserMember = this.membersService.tabToApi({ member: userMember });
-
-    let modelPartXs = await this.modelsService.getModelPartXs({
-      structId: struct.structId,
-      apiUserMember: apiUserMember
-    });
-
     let basePayload = {
-      struct: this.structsService.tabToApi({
-        struct: struct,
-        modelPartXs: modelPartXs
-      }),
-      repo: diskResponse.payload.repo,
-      needValidate: currentBridge.needValidate
+      orgId: project.orgId,
+      repoId: repoId,
+      validationErrorsTotal: struct.errors.length,
+      validationErrors: getErrors === true ? struct.errors : undefined,
+      devChangesToCommit: diskResponse.payload.devChangesToCommit,
+      repo: getRepo === true ? diskResponse.payload.repo : undefined,
+      needValidate: debug === true ? currentBridge.needValidate : undefined,
+      structId: debug === true ? struct.structId : undefined
     };
 
     let payload: ToBackendSyncRepoResponsePayload;

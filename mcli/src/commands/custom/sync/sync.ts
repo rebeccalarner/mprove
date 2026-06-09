@@ -138,7 +138,11 @@ export class SyncCommand extends CustomCommand {
         repoId: repoId,
         branchId: currentBranchName,
         envId: this.env,
-        lastCommit: lastCommit
+        lastCommit: lastCommit,
+        getRepo: this.getRepo,
+        getRepoNodes: this.getRepoNodes,
+        getErrors: this.getErrors,
+        debug: this.debug
       };
     } else {
       syncRepoReqPayload = {
@@ -149,7 +153,11 @@ export class SyncCommand extends CustomCommand {
         envId: this.env,
         lastCommit: lastCommit,
         changedFiles: changedFiles,
-        deletedFiles: deletedFiles
+        deletedFiles: deletedFiles,
+        getRepo: this.getRepo,
+        getRepoNodes: this.getRepoNodes,
+        getErrors: this.getErrors,
+        debug: this.debug
       };
     }
 
@@ -193,7 +201,7 @@ export class SyncCommand extends CustomCommand {
       expandRenamed: true
     });
 
-    let devChangesToCommit = syncRepoResp.payload.repo.changesToCommit;
+    let devChangesToCommit = syncRepoResp.payload.devChangesToCommit;
     let syncSuccess = deepEqual(localChangesToCommit, devChangesToCommit);
 
     if (syncSuccess === false) {
@@ -215,9 +223,9 @@ export class SyncCommand extends CustomCommand {
 
     let builderUrl = getBuilderUrl({
       host: this.context.config.mproveCliHost,
-      orgId: syncRepoResp.payload.repo.orgId,
+      orgId: syncRepoResp.payload.orgId,
       projectId: this.projectId,
-      repoId: syncRepoResp.payload.repo.repoId,
+      repoId: syncRepoResp.payload.repoId,
       branch: currentBranchName,
       env: this.env
     });
@@ -226,25 +234,18 @@ export class SyncCommand extends CustomCommand {
       message: `Sync completed`,
       appliedChangesOnLocal: appliedChangesOnLocal,
       appliedChangesOnServer: appliedChangesOnServer,
-      validationErrorsTotal: syncRepoResp.payload.struct.errors.length
+      validationErrorsTotal: syncRepoResp.payload.validationErrorsTotal
     };
 
     if (this.getRepo === true) {
       let repo = syncRepoResp.payload.repo;
-
-      if (this.getRepoNodes === false) {
-        delete repo.nodes;
-      }
-
-      delete repo.changesToCommit;
-      delete repo.changesToPush;
 
       log.repo = repo;
     }
 
     if (this.getErrors === true) {
       log.validationErrors = mapBmlErrorsToMproveValidationErrors({
-        errors: syncRepoResp.payload.struct.errors
+        errors: syncRepoResp.payload.validationErrors ?? []
       });
     }
 
@@ -264,7 +265,7 @@ export class SyncCommand extends CustomCommand {
         localChangesToCommit: localChangesToCommit,
         devChangesToCommit: devChangesToCommit,
         needValidate: syncRepoResp.payload.needValidate,
-        structId: syncRepoResp.payload.struct.structId
+        structId: syncRepoResp.payload.structId
       };
     }
 

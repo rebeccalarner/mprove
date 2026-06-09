@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { zBaseProject } from '#common/zod/backend/base-project';
 import { zDiskCatalogFile } from '#common/zod/disk/disk-catalog-file';
+import { zDiskCatalogNode } from '#common/zod/disk/disk-catalog-node';
+import { zDiskFileChange } from '#common/zod/disk/disk-file-change';
 import { zDiskSyncFile } from '#common/zod/disk/disk-sync-file';
 import { zRepo } from '#common/zod/disk/repo';
 import type { MyResponse } from '#common/zod/to/my-response';
@@ -12,8 +14,17 @@ export let zToDiskSyncRepoBaseRequestPayload = z.object({
   baseProject: zBaseProject,
   repoId: z.string(),
   branch: z.string(),
-  lastCommit: z.string()
+  lastCommit: z.string(),
+  getRepo: z.boolean().nullish(),
+  getRepoNodes: z.boolean().nullish()
 });
+
+export let zToDiskSyncRepoRepo = zRepo
+  .omit({ nodes: true, changesToCommit: true, changesToPush: true })
+  .extend({
+    nodes: z.array(zDiskCatalogNode).nullish()
+  })
+  .meta({ id: 'ToDiskSyncRepoRepo' });
 
 export let zToDiskSyncRepoToServerRequestPayload =
   zToDiskSyncRepoBaseRequestPayload.extend({
@@ -41,9 +52,10 @@ export let zToDiskSyncRepoRequest = zToDiskRequest
   .meta({ id: 'ToDiskSyncRepoRequest' });
 
 export let zToDiskSyncRepoBaseResponsePayload = z.object({
-  repo: zRepo,
   files: z.array(zDiskCatalogFile),
-  mproveDir: z.string()
+  mproveDir: z.string(),
+  devChangesToCommit: z.array(zDiskFileChange),
+  repo: zToDiskSyncRepoRepo.nullish()
 });
 
 export let zToDiskSyncRepoToServerResponsePayload =

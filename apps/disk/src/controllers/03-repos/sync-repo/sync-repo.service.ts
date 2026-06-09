@@ -43,6 +43,8 @@ export class SyncRepoService {
 
     let { orgId, baseProject, repoId, branch, lastCommit, direction } =
       requestValid.payload;
+    let getRepo = requestValid.payload.getRepo === true;
+    let getRepoNodes = requestValid.payload.getRepoNodes === true;
 
     let projectSt: ProjectSt = this.diskTabService.decrypt<ProjectSt>({
       encryptedString: baseProject.st
@@ -178,20 +180,16 @@ export class SyncRepoService {
       await addChangesToStage({ repoDir: repoDir });
     }
 
-    let {
-      repoStatus,
-      currentBranch,
-      conflicts,
-      changesToCommit,
-      changesToPush
-    } = <DiskItemStatus>await getRepoStatus({
+    let { repoStatus, currentBranch, conflicts, changesToCommit } = <
+      DiskItemStatus
+    >await getRepoStatus({
       projectId: projectId,
       projectDir: projectDir,
       repoId: repoId,
       repoDir: repoDir,
       git: git,
       isFetch: true,
-      isCheckConflicts: true,
+      isCheckConflicts: getRepo,
       addContent: true,
       expandRenamed: true
     });
@@ -204,20 +202,24 @@ export class SyncRepoService {
       isRootMproveDir: false
     });
 
+    let repo =
+      getRepo === true
+        ? {
+            orgId: orgId,
+            projectId: projectId,
+            repoId: repoId,
+            repoStatus: repoStatus,
+            currentBranchId: currentBranch,
+            conflicts: conflicts,
+            nodes: getRepoNodes === true ? itemCatalog.nodes : undefined
+          }
+        : undefined;
+
     let basePayload = {
-      repo: {
-        orgId: orgId,
-        projectId: projectId,
-        repoId: repoId,
-        repoStatus: repoStatus,
-        currentBranchId: currentBranch,
-        conflicts: conflicts,
-        nodes: itemCatalog.nodes,
-        changesToCommit: changesToCommit,
-        changesToPush: changesToPush
-      },
       files: itemCatalog.files,
-      mproveDir: itemCatalog.mproveDir
+      mproveDir: itemCatalog.mproveDir,
+      devChangesToCommit: changesToCommit,
+      repo: repo
     };
 
     let payload: ToDiskSyncRepoResponsePayload;

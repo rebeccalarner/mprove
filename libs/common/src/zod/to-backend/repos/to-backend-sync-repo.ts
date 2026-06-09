@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
-import { zStructX } from '#common/zod/backend/struct-x';
+import { zBmlError } from '#common/zod/blockml/bml-error';
+import { zDiskCatalogNode } from '#common/zod/disk/disk-catalog-node';
+import { zDiskFileChange } from '#common/zod/disk/disk-file-change';
 import { zDiskSyncFile } from '#common/zod/disk/disk-sync-file';
 import { zRepo } from '#common/zod/disk/repo';
 import type { MyResponse } from '#common/zod/to/my-response';
@@ -14,8 +16,19 @@ export let zToBackendSyncRepoBaseRequestPayload = z.object({
   repoId: z.string(),
   branchId: z.string(),
   lastCommit: z.string(),
-  envId: z.string()
+  envId: z.string(),
+  getRepo: z.boolean().nullish(),
+  getRepoNodes: z.boolean().nullish(),
+  getErrors: z.boolean().nullish(),
+  debug: z.boolean().nullish()
 });
+
+export let zToBackendSyncRepoRepo = zRepo
+  .omit({ nodes: true, changesToCommit: true, changesToPush: true })
+  .extend({
+    nodes: z.array(zDiskCatalogNode).nullish()
+  })
+  .meta({ id: 'ToBackendSyncRepoRepo' });
 
 export let zToBackendSyncRepoToServerRequestPayload =
   zToBackendSyncRepoBaseRequestPayload.extend({
@@ -50,9 +63,14 @@ export let zToBackendSyncRepoRequest = zToBackendRequest
   .meta({ id: 'ToBackendSyncRepoRequest' });
 
 export let zToBackendSyncRepoBaseResponsePayload = z.object({
-  needValidate: z.boolean(),
-  repo: zRepo,
-  struct: zStructX
+  orgId: z.string(),
+  repoId: z.string(),
+  validationErrorsTotal: z.number(),
+  validationErrors: z.array(zBmlError).nullish(),
+  devChangesToCommit: z.array(zDiskFileChange),
+  repo: zToBackendSyncRepoRepo.nullish(),
+  needValidate: z.boolean().nullish(),
+  structId: z.string().nullish()
 });
 
 export let zToBackendSyncRepoToServerResponsePayload =
