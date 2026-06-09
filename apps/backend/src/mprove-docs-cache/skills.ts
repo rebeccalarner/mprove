@@ -11,9 +11,13 @@ description: Mprove Basics
 Use \`mprove\` CLI for \`sync\` command only. 
 For other tasks, use Mprove MCP tools.
 
-If you changed or created files, run \`mprove sync --env <env-id>\` before calling Mprove MCP tools to:
-- sync uncommitted changes between local repo and backend repo
-- validate (rebuild) Malloy and Mprove files
+When you start to work on session - run \`mprove sync --from-server --env <env-id>\`
+to make the local and server repo state the same by applying SERVER repo state to local repo.
+
+If you created/deleted/changed files, run \`mprove sync --env <env-id>\` to make the local and 
+server repo state the same by applying LOCAL repo state to server repo.
+
+Sync command also validates (rebuilds) Mprove and Malloy files.
 
 If project has no \`mprove.yml\` file - you should setup Mprove project first.
 
@@ -52,8 +56,6 @@ Mprove Reports are much more useful for Metrics (measures + time based dimension
 ## .gitignore Example
 
 \`\`\`
-.mprove/
-
 *.env
 .envrc
 

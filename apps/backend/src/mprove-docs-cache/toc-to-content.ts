@@ -1268,6 +1268,9 @@ This file structure is also easier to maintain.
 Malloy Sources are reusable. Multiple Sources and Queries can reference the same Source.
 
 \`\`\`malloy title="c1_order_items.malloy"
+##! experimental{}
+
+import '../../givens.malloy'
 import './tables/c1_order_items_tx.malloy';
 import './tables/c1_orders_tx.malloy';
 import './tables/c1_users_tx.malloy';
@@ -1277,9 +1280,9 @@ import './tables/c1_products_tx.malloy';
 import './tables/c1_distribution_centers_tx.malloy';
 
 #(mprove) model
-#(mprove) access_roles="sales, marketing"
-#(mprove) label="Order Items (Postgres)"
+#(mprove) label="Order Items"
 #(mprove) top_label="Order Items"
+#(mprove) access_roles="sales, marketing"
 source: c1_order_items is c1_order_items_tx extend {
   join_one: orders is c1_orders_tx on order_id = orders.order_id
   join_one: users is c1_users_tx on orders.user_id = users.user_id
@@ -1291,15 +1294,16 @@ source: c1_order_items is c1_order_items_tx extend {
   measure:
     total_profit is total_sale_price - inventory_items.total_actual_cost
     profit_margin is total_profit / total_sale_price
+
+  where:
+    orders.created_at_ts >= $START_TS AND distribution_centers.distribution_center_id IN $DISTRIBUTION_CENTER_IDS
 }
 \`\`\`
 
 Example of building Metrics that can be used in [Reports](/content/docs/reference/report):
 
 \`\`\`malloy title="tables/c1_orders_tx.malloy"
-##! experimental{sql_functions}
-##! experimental.access_modifiers
-##! experimental { sql_functions virtual_source }
+##! experimental{}
 
 type: c1_orders_type is {
   order_id :: string,
@@ -1343,12 +1347,13 @@ source: c1_orders_tx is c1_orders_table include {
 
 ### Source #(mprove) Tags
 
-| Name         | Type | Default | Description                                                                                                                                                                                                                       |
-| ------------ | ---- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| model        | tag  | -       | If specified, the Malloy source will become available for exploration as an Mprove model.                                                                                                                                         |
-| access_roles | tag  | -       | User roles list separated by comma. If \`access_roles\` tag is set, only users with specified roles will be able to explore the model. If \`access_roles\` tag is not specified, all project users will be able to explore the model. |
-| label        | tag  | -       | Model label in UI                                                                                                                                                                                                                 |
-| top_label    | tag  | -       | Top node label in the Model Schema                                                                                                                                                                                                |
+| Name                   | Type | Default | Description                                                                                                                                                                                                                       |
+| ---------------------- | ---- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| model                  | tag  | -       | If specified, the Malloy source will become available for exploration as an Mprove model.                                                                                                                                         |
+| label                  | tag  | -       | Model label in UI                                                                                                                                                                                                                 |
+| top_label              | tag  | -       | Top node label in the Model Schema                                                                                                                                                                                                |
+| access_roles           | tag  | -       | User roles list separated by comma. If \`access_roles\` tag is set, only users with specified roles will be able to explore the model. If \`access_roles\` tag is not specified, all project users will be able to explore the model. |
+| tree_double_underscore | tag  | -       | If this tag is set, the portion of the field name preceding the double underscore will be used to create a top-level group in the model fields tree in the UI.                                                                    |
 
 ### Dimension #(mprove) Tags
 
