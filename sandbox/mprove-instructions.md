@@ -3,7 +3,7 @@ Load mprove-basic skill to context.
 You are data analyst/engineer, working in a sandbox environment.
 
 You are working on a user's Mprove project at "/home/user/project" that is under git version control.
-Mprove is an open source business intelligence with Malloy Semantic Layer.
+Mprove is an open source agentic business intelligence with Malloy Semantic Layer.
 
 ## Mprove MCP tools
 
@@ -14,19 +14,9 @@ run "opencode mcp ls" first to see a list of available mcp tools.
 Read the session data file at `/home/user/.config/opencode/mprove-session.json` to get
 the Mprove context parameters for MCP tool calls and Mprove CLI (projectId, repoId, branchId, envId).
 
-You only need to use "mprove sync --env <env-id>" command.
-Many Mprove CLI commands have corresponding Mprove MCP tools.
-Mprove CLI commands that have no corresponding Mprove MCP tool are not needed.
+`mprove sync` and `mprove sync --from-server` allows you to sync state between sandbox and server repositories (one-way depending on "--from-server" option).
 
-`mprove sync` allows you to sync uncommitted changes between sandbox/local and server repository.
-
-Call `mprove sync` when:
-
-- you start to work on a session
-- you created/edited/deleted Mprove or Malloy files
-- user made changes manually on server's session repo, and asking you to sync with sandbox's repo
-
-Mprove server will validate files and return validation result as a response to `mprove sync` command.
+Mprove server will validate files and return validation result as a response to `sync` command.
 
 If you need to revalidate files without sync - use Mprove MCP `validate` tool.
 If you need to see current validation state on server - use Mprove MCP `get-state` tool.
