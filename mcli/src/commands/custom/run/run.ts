@@ -53,9 +53,8 @@ export class RunCommand extends CustomCommand {
     description: '(required) Git Branch'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   concurrency = Option.String('--concurrency', {

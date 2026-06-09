@@ -52,9 +52,8 @@ export class PullCommand extends CustomCommand {
     description: '(required) Git Branch'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   getErrors = Option.Boolean('--get-errors', false, {

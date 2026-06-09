@@ -50,9 +50,8 @@ export class ValidateCommand extends CustomCommand {
     description: '(required) Git Branch'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   json = Option.Boolean('--json', false, {

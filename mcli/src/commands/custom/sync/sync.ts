@@ -47,9 +47,8 @@ export class SyncCommand extends CustomCommand {
     description: '(required) Project Id'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   localPath = Option.String('--local-path', {

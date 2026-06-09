@@ -36,9 +36,8 @@ export class GetSampleCommand extends CustomCommand {
     description: '(required) Project Id'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   connectionId = Option.String('--connection-id', {

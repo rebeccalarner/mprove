@@ -34,9 +34,8 @@ export class GetConnectionsListCommand extends CustomCommand {
     description: '(required) Project Id'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   json = Option.Boolean('--json', false, {

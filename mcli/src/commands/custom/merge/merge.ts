@@ -44,9 +44,8 @@ export class MergeCommand extends CustomCommand {
     description: '(required) Their git Branch'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   theirBranchRemote = Option.Boolean('--their-branch-remote', false, {

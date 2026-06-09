@@ -50,9 +50,8 @@ export class GetModelCommand extends CustomCommand {
     description: '(required) Git Branch'
   });
 
-  env = Option.String('--env', {
-    required: true,
-    description: '(required) Environment'
+  env = Option.String('--env', 'prod', {
+    description: '(default "prod") Environment'
   });
 
   modelId = Option.String('--model-id', {
