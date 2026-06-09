@@ -3,22 +3,37 @@ import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-reques
 import { zStructX } from '#common/zod/backend/struct-x';
 import { zDiskSyncFile } from '#common/zod/disk/disk-sync-file';
 import { zRepo } from '#common/zod/disk/repo';
+import type { MyResponse } from '#common/zod/to/my-response';
 import { zMyResponse } from '#common/zod/to/my-response';
 import { zResponseInfo } from '#common/zod/to/response-info';
 import { zToBackendRequest } from '#common/zod/to-backend/to-backend-request';
 import { zToBackendRequestInfo } from '#common/zod/to-backend/to-backend-request-info';
 
-export let zToBackendSyncRepoRequestPayload = z
-  .object({
-    projectId: z.string(),
-    repoId: z.string(),
-    branchId: z.string(),
-    lastCommit: z.string(),
-    fromServer: z.boolean(),
-    envId: z.string(),
+export let zToBackendSyncRepoBaseRequestPayload = z.object({
+  projectId: z.string(),
+  repoId: z.string(),
+  branchId: z.string(),
+  lastCommit: z.string(),
+  envId: z.string()
+});
+
+export let zToBackendSyncRepoToServerRequestPayload =
+  zToBackendSyncRepoBaseRequestPayload.extend({
+    direction: z.literal('to-server'),
     changedFiles: z.array(zDiskSyncFile),
     deletedFiles: z.array(zDiskSyncFile)
-  })
+  });
+
+export let zToBackendSyncRepoFromServerRequestPayload =
+  zToBackendSyncRepoBaseRequestPayload.extend({
+    direction: z.literal('from-server')
+  });
+
+export let zToBackendSyncRepoRequestPayload = z
+  .discriminatedUnion('direction', [
+    zToBackendSyncRepoToServerRequestPayload,
+    zToBackendSyncRepoFromServerRequestPayload
+  ])
   .meta({ id: 'ToBackendSyncRepoRequestPayload' });
 
 export let zToBackendSyncRepoRequestInfo = zToBackendRequestInfo
@@ -34,18 +49,30 @@ export let zToBackendSyncRepoRequest = zToBackendRequest
   })
   .meta({ id: 'ToBackendSyncRepoRequest' });
 
-export let zToBackendSyncRepoResponsePayload = z
-  .object({
+export let zToBackendSyncRepoBaseResponsePayload = z.object({
+  needValidate: z.boolean(),
+  repo: zRepo,
+  struct: zStructX
+});
+
+export let zToBackendSyncRepoToServerResponsePayload =
+  zToBackendSyncRepoBaseResponsePayload.extend({
+    direction: z.literal('to-server'),
+    appliedChangesOnServer: z.array(z.string())
+  });
+
+export let zToBackendSyncRepoFromServerResponsePayload =
+  zToBackendSyncRepoBaseResponsePayload.extend({
+    direction: z.literal('from-server'),
     changedFiles: z.array(zDiskSyncFile),
-    deletedFiles: z.array(zDiskSyncFile),
-    appliedChangesOnLocal: z.array(z.string()),
-    appliedChangesOnServer: z.array(z.string()),
-    needValidate: z.boolean(),
-    repo: zRepo,
-    struct: zStructX,
-    devReqReceiveTime: z.number(),
-    devRespSentTime: z.number()
-  })
+    deletedFiles: z.array(zDiskSyncFile)
+  });
+
+export let zToBackendSyncRepoResponsePayload = z
+  .discriminatedUnion('direction', [
+    zToBackendSyncRepoToServerResponsePayload,
+    zToBackendSyncRepoFromServerResponsePayload
+  ])
   .meta({ id: 'ToBackendSyncRepoResponsePayload' });
 
 export let zToBackendSyncRepoResponseInfo = zResponseInfo
@@ -71,6 +98,6 @@ export type ToBackendSyncRepoRequest = z.infer<
 export type ToBackendSyncRepoResponsePayload = z.infer<
   typeof zToBackendSyncRepoResponsePayload
 >;
-export type ToBackendSyncRepoResponse = z.infer<
-  typeof zToBackendSyncRepoResponse
->;
+export type ToBackendSyncRepoResponse = MyResponse & {
+  payload: ToBackendSyncRepoResponsePayload;
+};

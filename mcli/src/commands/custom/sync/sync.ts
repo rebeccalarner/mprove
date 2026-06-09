@@ -123,24 +123,34 @@ export class SyncCommand extends CustomCommand {
     let changedFiles = localPayload.changedFiles;
     let deletedFiles = localPayload.deletedFiles;
 
-    let localReqSentTime = Date.now();
-
     let apiKey = this.context.config.mproveCliApiKey;
 
     let repoId = apiKey.startsWith(`${ApiKeyTypeEnum.SK}-`)
       ? apiKey.split('-')[2].toLowerCase()
       : apiKey.split('-')[2];
 
-    let syncRepoReqPayload: ToBackendSyncRepoRequestPayload = {
-      projectId: this.projectId,
-      repoId: repoId,
-      branchId: currentBranchName,
-      envId: this.env,
-      lastCommit: lastCommit,
-      fromServer: this.fromServer,
-      changedFiles: changedFiles,
-      deletedFiles: deletedFiles
-    };
+    let syncRepoReqPayload: ToBackendSyncRepoRequestPayload;
+    if (this.fromServer === true) {
+      syncRepoReqPayload = {
+        direction: 'from-server',
+        projectId: this.projectId,
+        repoId: repoId,
+        branchId: currentBranchName,
+        envId: this.env,
+        lastCommit: lastCommit
+      };
+    } else {
+      syncRepoReqPayload = {
+        direction: 'to-server',
+        projectId: this.projectId,
+        repoId: repoId,
+        branchId: currentBranchName,
+        envId: this.env,
+        lastCommit: lastCommit,
+        changedFiles: changedFiles,
+        deletedFiles: deletedFiles
+      };
+    }
 
     let syncRepoResp = await mreq<ToBackendSyncRepoResponse>({
       apiKey: this.context.config.mproveCliApiKey,
@@ -149,11 +159,10 @@ export class SyncCommand extends CustomCommand {
       host: this.context.config.mproveCliHost
     });
 
-    let localRespReceiveTime = Date.now();
-    let appliedChangesOnLocal = syncRepoResp.payload.appliedChangesOnLocal;
-    let appliedChangesOnServer = syncRepoResp.payload.appliedChangesOnServer;
+    let appliedChangesOnLocal: string[] = [];
+    let appliedChangesOnServer: string[] = [];
 
-    if (this.fromServer === true) {
+    if (syncRepoResp.payload.direction === 'from-server') {
       appliedChangesOnLocal = await getSyncAppliedChanges({
         repoDir: repoDir,
         changedFiles: syncRepoResp.payload.changedFiles,
@@ -169,6 +178,8 @@ export class SyncCommand extends CustomCommand {
         changedFiles: syncRepoResp.payload.changedFiles,
         deletedFiles: syncRepoResp.payload.deletedFiles
       });
+    } else {
+      appliedChangesOnServer = syncRepoResp.payload.appliedChangesOnServer;
     }
 
     //
@@ -238,15 +249,18 @@ export class SyncCommand extends CustomCommand {
         fromServer: this.fromServer,
         changedFiles: changedFiles,
         deletedFiles: deletedFiles,
-        responseChangedFiles: syncRepoResp.payload.changedFiles,
-        responseDeletedFiles: syncRepoResp.payload.deletedFiles,
+        responseChangedFiles:
+          syncRepoResp.payload.direction === 'from-server'
+            ? syncRepoResp.payload.changedFiles
+            : [],
+        responseDeletedFiles:
+          syncRepoResp.payload.direction === 'from-server'
+            ? syncRepoResp.payload.deletedFiles
+            : [],
         localChangesToCommit: localChangesToCommit,
         devChangesToCommit: devChangesToCommit,
         needValidate: syncRepoResp.payload.needValidate,
-        structId: syncRepoResp.payload.struct.structId,
-        reqTimeDiff: syncRepoResp.payload.devReqReceiveTime - localReqSentTime,
-        respTimeDiff:
-          localRespReceiveTime - syncRepoResp.payload.devRespSentTime
+        structId: syncRepoResp.payload.struct.structId
       };
     }
 

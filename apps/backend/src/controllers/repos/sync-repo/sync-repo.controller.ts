@@ -84,16 +84,7 @@ export class SyncRepoController {
     @Body() body: ToBackendSyncRepoRequestDto
   ) {
     let { traceId } = body.info;
-    let {
-      projectId,
-      repoId,
-      branchId,
-      lastCommit,
-      fromServer,
-      envId,
-      changedFiles,
-      deletedFiles
-    } = body.payload;
+    let { projectId, repoId, branchId, lastCommit, envId } = body.payload;
 
     await this.sessionsService.checkRepoId({
       repoId: repoId,
@@ -134,22 +125,41 @@ export class SyncRepoController {
       project: project
     });
 
-    let toDiskSyncRepoRequest: ToDiskSyncRepoRequest = {
-      info: {
-        name: ToDiskRequestInfoNameEnum.ToDiskSyncRepo,
-        traceId: body.info.traceId
-      },
-      payload: {
-        orgId: project.orgId,
-        baseProject: baseProject,
-        repoId: repoId,
-        branch: branchId,
-        lastCommit: lastCommit,
-        fromServer: fromServer,
-        changedFiles: changedFiles,
-        deletedFiles: deletedFiles
-      }
-    };
+    let toDiskSyncRepoRequest: ToDiskSyncRepoRequest;
+
+    if (body.payload.direction === 'to-server') {
+      toDiskSyncRepoRequest = {
+        info: {
+          name: ToDiskRequestInfoNameEnum.ToDiskSyncRepo,
+          traceId: body.info.traceId
+        },
+        payload: {
+          direction: 'to-server',
+          orgId: project.orgId,
+          baseProject: baseProject,
+          repoId: repoId,
+          branch: branchId,
+          lastCommit: lastCommit,
+          changedFiles: body.payload.changedFiles,
+          deletedFiles: body.payload.deletedFiles
+        }
+      };
+    } else {
+      toDiskSyncRepoRequest = {
+        info: {
+          name: ToDiskRequestInfoNameEnum.ToDiskSyncRepo,
+          traceId: body.info.traceId
+        },
+        payload: {
+          direction: 'from-server',
+          orgId: project.orgId,
+          baseProject: baseProject,
+          repoId: repoId,
+          branch: branchId,
+          lastCommit: lastCommit
+        }
+      };
+    }
 
     let diskResponse = await this.rpcService.sendToDisk<ToDiskSyncRepoResponse>(
       {
@@ -222,20 +232,30 @@ export class SyncRepoController {
       apiUserMember: apiUserMember
     });
 
-    let payload: ToBackendSyncRepoResponsePayload = {
-      changedFiles: diskResponse.payload.changedFiles,
-      deletedFiles: diskResponse.payload.deletedFiles,
-      appliedChangesOnLocal: diskResponse.payload.appliedChangesOnLocal,
-      appliedChangesOnServer: diskResponse.payload.appliedChangesOnServer,
+    let basePayload = {
       struct: this.structsService.tabToApi({
         struct: struct,
         modelPartXs: modelPartXs
       }),
       repo: diskResponse.payload.repo,
-      needValidate: currentBridge.needValidate,
-      devReqReceiveTime: diskResponse.payload.devReqReceiveTime,
-      devRespSentTime: diskResponse.payload.devRespSentTime
+      needValidate: currentBridge.needValidate
     };
+
+    let payload: ToBackendSyncRepoResponsePayload;
+    if (diskResponse.payload.direction === 'from-server') {
+      payload = {
+        ...basePayload,
+        direction: 'from-server',
+        changedFiles: diskResponse.payload.changedFiles,
+        deletedFiles: diskResponse.payload.deletedFiles
+      };
+    } else {
+      payload = {
+        ...basePayload,
+        direction: 'to-server',
+        appliedChangesOnServer: diskResponse.payload.appliedChangesOnServer
+      };
+    }
 
     return payload;
   }

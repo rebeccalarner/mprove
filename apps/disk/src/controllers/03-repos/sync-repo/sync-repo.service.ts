@@ -5,6 +5,7 @@ import { ErEnum } from '#common/enums/er.enum';
 import { ServerError } from '#common/models/server-error';
 import type { DiskItemCatalog } from '#common/zod/disk/disk-item-catalog';
 import type { DiskItemStatus } from '#common/zod/disk/disk-item-status';
+import type { DiskSyncFile } from '#common/zod/disk/disk-sync-file';
 import type { ProjectLt, ProjectSt } from '#common/zod/st-lt';
 import type { ToDiskSyncRepoResponsePayload } from '#common/zod/to-disk/03-repos/to-disk-sync-repo';
 import { zToDiskSyncRepoRequest } from '#common/zod/to-disk/03-repos/to-disk-sync-repo';
@@ -32,8 +33,6 @@ export class SyncRepoService {
   ) {}
 
   async process(request: any) {
-    let devReqReceiveTime = Date.now();
-
     let requestValid = zodParseOrThrow({
       schema: zToDiskSyncRepoRequest,
       object: request,
@@ -42,16 +41,8 @@ export class SyncRepoService {
       logger: this.logger
     });
 
-    let {
-      orgId,
-      baseProject,
-      repoId,
-      branch,
-      lastCommit,
-      fromServer,
-      changedFiles,
-      deletedFiles
-    } = requestValid.payload;
+    let { orgId, baseProject, repoId, branch, lastCommit, direction } =
+      requestValid.payload;
 
     let projectSt: ProjectSt = this.diskTabService.decrypt<ProjectSt>({
       encryptedString: baseProject.st
@@ -154,11 +145,11 @@ export class SyncRepoService {
     }
 
     let statusResult = await git.status();
-    let sourceChangedFiles = changedFiles;
-    let sourceDeletedFiles = deletedFiles;
+    let sourceChangedFiles: DiskSyncFile[] = [];
+    let sourceDeletedFiles: DiskSyncFile[] = [];
     let appliedChangesOnServer: string[] = [];
 
-    if (fromServer === true) {
+    if (requestValid.payload.direction === 'from-server') {
       let serverPayload = await getWorkingTreePayload({
         repoDir: repoDir,
         statusResult: statusResult
@@ -167,10 +158,12 @@ export class SyncRepoService {
       sourceChangedFiles = serverPayload.changedFiles;
       sourceDeletedFiles = serverPayload.deletedFiles;
     } else {
+      sourceChangedFiles = requestValid.payload.changedFiles;
+      sourceDeletedFiles = requestValid.payload.deletedFiles;
       appliedChangesOnServer = await getSyncAppliedChanges({
         repoDir: repoDir,
-        changedFiles: changedFiles,
-        deletedFiles: deletedFiles,
+        changedFiles: sourceChangedFiles,
+        deletedFiles: sourceDeletedFiles,
         statusResult: statusResult
       });
       await resetWorkingTreeToHead({
@@ -179,8 +172,8 @@ export class SyncRepoService {
       });
       await applySyncPayload({
         repoDir: repoDir,
-        changedFiles: changedFiles,
-        deletedFiles: deletedFiles
+        changedFiles: sourceChangedFiles,
+        deletedFiles: sourceDeletedFiles
       });
       await addChangesToStage({ repoDir: repoDir });
     }
@@ -210,9 +203,7 @@ export class SyncRepoService {
       isRootMproveDir: false
     });
 
-    let devRespSentTime = Date.now();
-
-    let payload: ToDiskSyncRepoResponsePayload = {
+    let basePayload = {
       repo: {
         orgId: orgId,
         projectId: projectId,
@@ -225,14 +216,24 @@ export class SyncRepoService {
         changesToPush: changesToPush
       },
       files: itemCatalog.files,
-      changedFiles: fromServer === true ? sourceChangedFiles : [],
-      deletedFiles: fromServer === true ? sourceDeletedFiles : [],
-      appliedChangesOnLocal: [],
-      appliedChangesOnServer: appliedChangesOnServer,
-      mproveDir: itemCatalog.mproveDir,
-      devReqReceiveTime: devReqReceiveTime,
-      devRespSentTime: devRespSentTime
+      mproveDir: itemCatalog.mproveDir
     };
+
+    let payload: ToDiskSyncRepoResponsePayload;
+    if (requestValid.payload.direction === 'from-server') {
+      payload = {
+        ...basePayload,
+        direction: 'from-server',
+        changedFiles: sourceChangedFiles,
+        deletedFiles: sourceDeletedFiles
+      };
+    } else {
+      payload = {
+        ...basePayload,
+        direction: 'to-server',
+        appliedChangesOnServer: appliedChangesOnServer
+      };
+    }
 
     return payload;
   }
