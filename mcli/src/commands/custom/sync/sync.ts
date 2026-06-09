@@ -29,12 +29,11 @@ export class SyncCommand extends CustomCommand {
   static paths = [['sync']];
 
   static usage = Command.Usage({
-    description: `Sync uncommitted changes from local repo to server repo OR from server repo to local repo, 
-depending on the "--from-server" option`,
+    description: `Overwrite SERVER repo state using local repo state and vice versa, depending on the "--from-server" option`,
     examples: [
-      ['Apply local uncommitted changes to the server repo', 'mprove sync'],
+      ['Apply LOCAL uncommitted repo state to the server repo', 'mprove sync'],
       [
-        'Apply server uncommitted changes to the local repo',
+        'Apply SERVER uncommitted repo state to the local repo',
         'mprove sync --from-server'
       ]
     ]
