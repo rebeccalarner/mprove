@@ -106,3 +106,13 @@ update templateId (5 places)
 (scripts/helm-package-mprove.sh)
 (scripts/helm-push-mprove.sh)
 (manually create Mprove release and tag)
+
+# manual cli release
+
+update env tag
+pnpm version-write
+pnpm inst
+scripts/dev/build-mprove-cli-release.sh
+(manual) create github release and upload files
+scripts/dev/release-homebrew-mprove.sh
+(manual) get output formula file and commit/push on homebrew-mprove repo
