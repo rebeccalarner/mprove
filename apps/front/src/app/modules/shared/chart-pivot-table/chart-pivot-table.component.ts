@@ -67,14 +67,6 @@ export class ChartPivotTableComponent implements OnChanges {
 
   private makeGridConfig(): GridConfig<PivotTableRow> {
     return {
-      shell: {
-        header: {
-          visible: this.chart.pivotShowMenu === true
-        },
-        toolPanel: {
-          initialState: 'closed'
-        }
-      },
       columns: this.mconfigFields.map(field => ({
         field: field.id,
         header: field.groupLabel
@@ -84,6 +76,14 @@ export class ChartPivotTableComponent implements OnChanges {
         resizable: true
       })),
       features: {
+        shell: {
+          header: {
+            visible: this.chart.pivotShowMenu === true
+          },
+          toolPanel: {
+            initialState: 'closed'
+          }
+        },
         pivot: {
           rowGroupFields: this.chart.pivotRows || [],
           columnGroupFields: this.chart.pivotColumns || [],
