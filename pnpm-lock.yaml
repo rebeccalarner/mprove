@@ -273,6 +273,12 @@ catalogs:
     '@tailwindcss/typography':
       specifier: 0.5.9
       version: 0.5.9
+    '@toolbox-web/grid':
+      specifier: 2.17.1
+      version: 2.17.1
+    '@toolbox-web/grid-angular':
+      specifier: 1.9.0
+      version: 1.9.0
     '@tweenjs/tween.js':
       specifier: 18.6.4
       version: 18.6.4
@@ -1571,6 +1577,12 @@ importers:
       '@replit/codemirror-indentation-markers':
         specifier: 'catalog:'
         version: 6.5.3(@codemirror/language@6.11.3)(@codemirror/state@6.5.2)(@codemirror/view@6.36.7)
+      '@toolbox-web/grid':
+        specifier: 'catalog:'
+        version: 2.17.1
+      '@toolbox-web/grid-angular':
+        specifier: 'catalog:'
+        version: 1.9.0(@angular/core@21.2.6(@angular/compiler@21.2.6)(rxjs@7.8.1)(zone.js@0.16.0))(@toolbox-web/grid@2.17.1)
       '@tweenjs/tween.js':
         specifier: 'catalog:'
         version: 18.6.4
@@ -6649,6 +6661,15 @@ packages:
 
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
+
+  '@toolbox-web/grid-angular@1.9.0':
+    resolution: {integrity: sha512-pbLQyN1qV5ar/O77g40HN0ieVaKzQORq9j0kwK8sVPuAlXAOVO9d0abfqrnEl08DGJy9pOCu+HEAJ0pigqsoHQ==}
+    peerDependencies:
+      '@angular/core': '>=17.0.0'
+      '@toolbox-web/grid': '>=1.0.0'
+
+  '@toolbox-web/grid@2.17.1':
+    resolution: {integrity: sha512-uEmsMz82BEypUcBfRUktKAoBJKGO73rRivO4IS3rgJk9nwKjXRJ+22cDdXBRHo9BqOb7kyYuYNFFT54MHjuq7g==}
 
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
@@ -19025,6 +19046,14 @@ snapshots:
       - supports-color
 
   '@tokenizer/token@0.3.0': {}
+
+  '@toolbox-web/grid-angular@1.9.0(@angular/core@21.2.6(@angular/compiler@21.2.6)(rxjs@7.8.1)(zone.js@0.16.0))(@toolbox-web/grid@2.17.1)':
+    dependencies:
+      '@angular/core': 21.2.6(@angular/compiler@21.2.6)(rxjs@7.8.1)(zone.js@0.16.0)
+      '@toolbox-web/grid': 2.17.1
+      tslib: 2.7.0
+
+  '@toolbox-web/grid@2.17.1': {}
 
   '@tootallnate/once@2.0.0': {}
 

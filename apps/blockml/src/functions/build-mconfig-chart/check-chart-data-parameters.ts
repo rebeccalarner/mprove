@@ -103,6 +103,28 @@ export function checkChartDataParameters<T extends dcType>(
       }
 
       if (
+        tile.type === ChartTypeEnum.PivotTable &&
+        (isUndefined(tile.data) || isUndefined(tile.data.pivot_values))
+      ) {
+        item.errors.push(
+          new BmError({
+            title: ErTitleEnum.TILE_DATA_MISSING_PIVOT_VALUES,
+            message:
+              `tile of type "${tile.type}" must have ` +
+              `"${ParameterEnum.PivotValues}" parameter in "${ParameterEnum.Data}"`,
+            lines: [
+              {
+                line: tile.data_line_num,
+                name: x.fileName,
+                path: x.filePath
+              }
+            ]
+          })
+        );
+        return;
+      }
+
+      if (
         [ChartTypeEnum.Pie, ChartTypeEnum.Single].indexOf(tile.type) > -1 &&
         tile.data.y_fields.length > 1
       ) {
@@ -272,6 +294,191 @@ export function checkChartDataParameters<T extends dcType>(
             return;
           }
         }
+      }
+
+      if (isDefined(tile.data.pivot_rows)) {
+        tile.data.pivot_rows.forEach(element => {
+          if (tile.select.indexOf(element) < 0) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.TILE_DATA_WRONG_PIVOT_ROWS_ELEMENT,
+                message:
+                  `found element "${element}" that is not ` +
+                  `listed in "${ParameterEnum.Select}"`,
+                lines: [
+                  {
+                    line: tile.data.pivot_rows_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          let field =
+            apiModel.type === ModelTypeEnum.Store
+              ? store.fields.find(sField => sField.name === element)
+              : apiModel.type === ModelTypeEnum.Malloy
+                ? apiModel.fields.find(modelField => modelField.id === element)
+                : undefined;
+
+          if (field.fieldClass !== FieldClassEnum.Dimension) {
+            item.errors.push(
+              new BmError({
+                title:
+                  ErTitleEnum.TILE_DATA_WRONG_PIVOT_ROWS_ELEMENT_FIELD_CLASS,
+                message: `"${ParameterEnum.PivotRows}" elements must be Dimensions`,
+                lines: [
+                  {
+                    line: tile.data.pivot_rows_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+        });
+      }
+
+      if (isDefined(tile.data.pivot_columns)) {
+        tile.data.pivot_columns.forEach(element => {
+          if (tile.select.indexOf(element) < 0) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.TILE_DATA_WRONG_PIVOT_COLUMNS_ELEMENT,
+                message:
+                  `found element "${element}" that is not ` +
+                  `listed in "${ParameterEnum.Select}"`,
+                lines: [
+                  {
+                    line: tile.data.pivot_columns_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          if (tile.data.pivot_rows?.indexOf(element) > -1) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.TILE_DATA_DUPLICATE_PIVOT_COLUMNS_ELEMENT,
+                message: `"${ParameterEnum.PivotColumns}" elements cannot also be used in "${ParameterEnum.PivotRows}"`,
+                lines: [
+                  {
+                    line: tile.data.pivot_columns_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          let field =
+            apiModel.type === ModelTypeEnum.Store
+              ? store.fields.find(sField => sField.name === element)
+              : apiModel.type === ModelTypeEnum.Malloy
+                ? apiModel.fields.find(modelField => modelField.id === element)
+                : undefined;
+
+          if (field.fieldClass !== FieldClassEnum.Dimension) {
+            item.errors.push(
+              new BmError({
+                title:
+                  ErTitleEnum.TILE_DATA_WRONG_PIVOT_COLUMNS_ELEMENT_FIELD_CLASS,
+                message: `"${ParameterEnum.PivotColumns}" elements must be Dimensions`,
+                lines: [
+                  {
+                    line: tile.data.pivot_columns_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+        });
+      }
+
+      if (isDefined(tile.data.pivot_values)) {
+        tile.data.pivot_values.forEach(element => {
+          if (isUndefined(element.field)) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.TILE_DATA_PIVOT_VALUES_ELEMENT_MISSING_FIELD,
+                message: `"${ParameterEnum.Field}" is required inside "${ParameterEnum.PivotValues}" element`,
+                lines: [
+                  {
+                    line: tile.data.pivot_values_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          if (tile.select.indexOf(element.field) < 0) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.TILE_DATA_WRONG_PIVOT_VALUES_ELEMENT_FIELD,
+                message:
+                  `found element "${element.field}" that is not ` +
+                  `listed in "${ParameterEnum.Select}"`,
+                lines: [
+                  {
+                    line:
+                      element.field_line_num || tile.data.pivot_values_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          //   let field =
+          //     apiModel.type === ModelTypeEnum.Store
+          //       ? store.fields.find(sField => sField.name === element.field)
+          //       : apiModel.type === ModelTypeEnum.Malloy
+          //         ? apiModel.fields.find(
+          //             modelField => modelField.id === element.field
+          //           )
+          //         : undefined;
+
+          //   if (
+          //     element.aggregate !== 'count' &&
+          //     field.result !== FieldResultEnum.Number
+          //   ) {
+          //     item.errors.push(
+          //       new BmError({
+          //         title:
+          //           ErTitleEnum.TILE_DATA_WRONG_PIVOT_VALUES_ELEMENT_FIELD_RESULT,
+          //         message: `"${ParameterEnum.Field}" inside "${ParameterEnum.PivotValues}" must have result type number unless aggregate is count`,
+          //         lines: [
+          //           {
+          //             line:
+          //               element.field_line_num || tile.data.pivot_values_line_num,
+          //             name: x.fileName,
+          //             path: x.filePath
+          //           }
+          //         ]
+          //       })
+          //     );
+          //     return;
+          //   }
+        });
       }
 
       if (isDefined(tile.data.y_fields)) {

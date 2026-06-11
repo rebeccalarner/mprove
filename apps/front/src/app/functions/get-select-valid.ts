@@ -55,8 +55,62 @@ export function getSelectValid(item: {
       x.fieldClass === FieldClassEnum.Calculation
   );
 
+  let pivotRows = chart.pivotRows || [];
+  let pivotColumns = chart.pivotColumns || [];
+  let pivotValues = chart.pivotValues || [];
+  let pivotGroupFields = [...pivotRows, ...pivotColumns];
+
   if (chart.type === ChartTypeEnum.Table) {
     //
+  } else if (chart.type === ChartTypeEnum.PivotTable) {
+    let selectedPivotGroupFields = mconfigFields.filter(
+      field => pivotGroupFields.indexOf(field.id) > -1
+    );
+
+    let duplicatedPivotGroupFields = pivotRows.filter(
+      fieldId => pivotColumns.indexOf(fieldId) > -1
+    );
+
+    let pivotValueFields = mconfigFields.filter(
+      field => pivotValues.map(value => value.field).indexOf(field.id) > -1
+    );
+
+    let invalidPivotValueFields = pivotValueFields.filter(field => {
+      let pivotValue = pivotValues.find(value => value.field === field.id);
+
+      return (
+        pivotValue?.aggFunc !== 'count' &&
+        field.result !== FieldResultEnum.Number
+      );
+    });
+
+    if (pivotRows.length === 0 && pivotColumns.length === 0) {
+      isSelectValid = false;
+      errorMessage = 'Row or Column must be selected for this chart type';
+    } else if (selectedPivotGroupFields.length !== pivotGroupFields.length) {
+      isSelectValid = false;
+      errorMessage = 'Pivot group fields must be selected fields';
+    } else if (
+      selectedPivotGroupFields.filter(
+        field => field.fieldClass !== FieldClassEnum.Dimension
+      ).length > 0
+    ) {
+      isSelectValid = false;
+      errorMessage = 'Pivot group fields must be Dimensions';
+    } else if (duplicatedPivotGroupFields.length > 0) {
+      isSelectValid = false;
+      errorMessage = 'Pivot row and column groups cannot use the same field';
+    } else if (pivotValues.length === 0) {
+      isSelectValid = false;
+      errorMessage = 'Pivot Value field must be selected for this chart type';
+    } else if (pivotValueFields.length !== pivotValues.length) {
+      isSelectValid = false;
+      errorMessage = 'Pivot Value fields must be selected fields';
+    } else if (invalidPivotValueFields.length > 0) {
+      isSelectValid = false;
+      errorMessage =
+        'Pivot Value fields must be numeric unless aggregate is count';
+    }
   } else if (chart.type === ChartTypeEnum.Single) {
     if (selectedDimensions.length > 0) {
       isSelectValid = false;

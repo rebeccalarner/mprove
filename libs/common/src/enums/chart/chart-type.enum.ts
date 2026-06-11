@@ -4,5 +4,6 @@ export enum ChartTypeEnum {
   Bar = 'bar',
   Scatter = 'scatter',
   Pie = 'pie',
-  Single = 'single'
+  Single = 'single',
+  PivotTable = 'pivot_table'
 }

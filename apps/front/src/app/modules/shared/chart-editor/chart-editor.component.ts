@@ -16,6 +16,7 @@ import {
 import { UI_CHART_TYPES } from '#common/constants/ui-chart-types';
 import { ChangeTypeEnum } from '#common/enums/change-type.enum';
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
+import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { ModelTypeEnum } from '#common/enums/model-type.enum';
@@ -72,6 +73,26 @@ export class ChartEditorComponent implements OnChanges {
   chartTypeEnum = ChartTypeEnum;
   chartTypeEnumTable = ChartTypeEnum.Table;
   chartTypeEnumSingle = ChartTypeEnum.Single;
+  chartTypeEnumPivotTable = ChartTypeEnum.PivotTable;
+
+  pivotAggList = [
+    PivotAggEnum.Sum,
+    PivotAggEnum.Avg,
+    PivotAggEnum.Count,
+    PivotAggEnum.Min,
+    PivotAggEnum.Max,
+    PivotAggEnum.First,
+    PivotAggEnum.Last
+  ];
+
+  pivotThemeList = [
+    { value: 'standard', label: 'Standard' },
+    { value: 'material', label: 'Material' },
+    { value: 'bootstrap', label: 'Bootstrap' },
+    { value: 'vibrant', label: 'Vibrant' },
+    { value: 'contrast', label: 'Contrast' },
+    { value: 'large', label: 'Large' }
+  ];
 
   fieldResultEnum = FieldResultEnum;
 
@@ -146,12 +167,15 @@ export class ChartEditorComponent implements OnChanges {
   });
 
   chartOptionsIsExpanded = false;
+
   xAxisIsExpanded: boolean; // initial set in ngOnChanges
   yAxisIsExpanded = true;
   seriesToggleExpandList: string[] = [];
   yAxisToggleExpandList: number[] = [];
 
   yAxisIndexList: number[] = [];
+
+  isDebugPivot = true;
 
   constructor(
     private fb: FormBuilder,
@@ -438,6 +462,88 @@ export class ChartEditorComponent implements OnChanges {
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
   }
 
+  pivotRowsIsChecked(id: string) {
+    return (this.chart.pivotRows || []).findIndex(x => x === id) > -1;
+  }
+
+  pivotRowsOnClick(id: string) {
+    let pivotRows = this.chart.pivotRows || [];
+    let index = pivotRows.findIndex(x => x === id);
+
+    let newPivotRows =
+      index > -1
+        ? [...pivotRows.slice(0, index), ...pivotRows.slice(index + 1)]
+        : [...pivotRows, id];
+
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotRows: newPivotRows,
+      pivotColumns: (this.chart.pivotColumns || []).filter(x => x !== id)
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
+  }
+
+  pivotColumnsIsChecked(id: string) {
+    return (this.chart.pivotColumns || []).findIndex(x => x === id) > -1;
+  }
+
+  pivotColumnsOnClick(id: string) {
+    let pivotColumns = this.chart.pivotColumns || [];
+    let index = pivotColumns.findIndex(x => x === id);
+
+    let newPivotColumns =
+      index > -1
+        ? [...pivotColumns.slice(0, index), ...pivotColumns.slice(index + 1)]
+        : [...pivotColumns, id];
+
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotRows: (this.chart.pivotRows || []).filter(x => x !== id),
+      pivotColumns: newPivotColumns
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
+  }
+
+  pivotValuesIsChecked(id: string) {
+    return (this.chart.pivotValues || []).findIndex(x => x.field === id) > -1;
+  }
+
+  pivotValuesOnClick(id: string) {
+    let pivotValues = this.chart.pivotValues || [];
+    let index = pivotValues.findIndex(x => x.field === id);
+
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotValues:
+        index > -1
+          ? [...pivotValues.slice(0, index), ...pivotValues.slice(index + 1)]
+          : [
+              ...pivotValues,
+              { field: id, aggFunc: PivotAggEnum.Sum, label: undefined }
+            ]
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
+  }
+
+  pivotValueAggChange(id: string, aggFunc: PivotAggEnum) {
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotValues: (this.chart.pivotValues || []).map(pivotValue =>
+        pivotValue.field === id
+          ? Object.assign({}, pivotValue, { aggFunc: aggFunc })
+          : pivotValue
+      )
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
+  }
+
+  getPivotValueAgg(id: string) {
+    return (
+      (this.chart.pivotValues || []).find(pivotValue => pivotValue.field === id)
+        ?.aggFunc || PivotAggEnum.Sum
+    );
+  }
+
   yFieldChange() {
     let yField = this.yFieldForm.controls['yField'].value;
 
@@ -483,6 +589,48 @@ export class ChartEditorComponent implements OnChanges {
   toggleFormat() {
     let newChart: MconfigChart = <MconfigChart>{
       format: !this.chart.format
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
+  }
+
+  togglePivotShowTotals() {
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotShowTotals: !this.chart.pivotShowTotals
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
+  }
+
+  togglePivotShowGrandTotal() {
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotShowGrandTotal: !this.chart.pivotShowGrandTotal
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
+  }
+
+  togglePivotDefaultExpanded() {
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotDefaultExpanded: !this.chart.pivotDefaultExpanded
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
+  }
+
+  togglePivotShowMenu() {
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotShowMenu: !this.chart.pivotShowMenu
+    };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
+  }
+
+  pivotThemeChange(event: Event) {
+    let pivotTheme = (event.target as HTMLSelectElement).value;
+
+    let newChart: MconfigChart = <MconfigChart>{
+      pivotTheme: pivotTheme
     };
 
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });

@@ -186,6 +186,7 @@ export class ModelsComponent implements OnInit, OnDestroy {
   chartTypeEnumBar = ChartTypeEnum.Bar;
   chartTypeEnumScatter = ChartTypeEnum.Scatter;
   chartTypeEnumPie = ChartTypeEnum.Pie;
+  chartTypeEnumPivotTable = ChartTypeEnum.PivotTable;
 
   lastUrl: string;
 
@@ -335,8 +336,9 @@ export class ModelsComponent implements OnInit, OnDestroy {
     })
   );
 
-  filtersIsExpanded = false;
   chartIsExpanded = true;
+  filtersIsExpanded = false;
+  dataIsExpanded = true;
 
   mconfig: MconfigX;
   query: Query;
@@ -569,6 +571,11 @@ export class ModelsComponent implements OnInit, OnDestroy {
       label: 'Pie',
       value: ChartTypeEnum.Pie,
       iconPath: 'assets/charts/pie.svg'
+    },
+    {
+      label: 'Pivot Table',
+      value: ChartTypeEnum.PivotTable,
+      iconPath: 'assets/charts/table.svg'
     }
   ];
 
@@ -954,7 +961,9 @@ export class ModelsComponent implements OnInit, OnDestroy {
     this.chartIsExpanded = !this.chartIsExpanded;
   }
 
-  toggleDataPanel() {}
+  toggleDataPanel() {
+    this.dataIsExpanded = !this.dataIsExpanded;
+  }
 
   goToEditFile() {
     this.uiQuery.updatePart({ secondFileNodeId: undefined });

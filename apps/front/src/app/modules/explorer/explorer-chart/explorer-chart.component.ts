@@ -45,6 +45,7 @@ import type { ChartViewComponent } from '../../shared/chart-view/chart-view.comp
 })
 export class ExplorerChartComponent implements OnInit, OnChanges, OnDestroy {
   chartTypeEnumTable = ChartTypeEnum.Table;
+  chartTypeEnumPivotTable = ChartTypeEnum.PivotTable;
   chartTypeEnumSingle = ChartTypeEnum.Single;
   chartTypeEnumLine = ChartTypeEnum.Line;
   chartTypeEnumScatter = ChartTypeEnum.Scatter;
@@ -107,7 +108,9 @@ export class ExplorerChartComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.mconfig) {
-      this.isData = this.mconfig?.chart.type !== ChartTypeEnum.Table;
+      this.isData =
+        this.mconfig?.chart.type !== ChartTypeEnum.Table &&
+        this.mconfig?.chart.type !== ChartTypeEnum.PivotTable;
     }
 
     if (changes.query || changes.mconfig) {

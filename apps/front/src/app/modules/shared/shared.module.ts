@@ -4,6 +4,9 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { TippyDirective } from '@ngneat/helipopper';
+import '@toolbox-web/grid-angular/features/shell';
+import '@toolbox-web/grid-angular/features/pivot';
+import { Grid } from '@toolbox-web/grid-angular';
 import { ColorSketchModule } from 'ngx-color/sketch';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { NgScrollbarModule } from 'ngx-scrollbar';
@@ -18,6 +21,7 @@ import { ChartBoxComponent } from './chart-box/chart-box.component';
 import { ChartEditorComponent } from './chart-editor/chart-editor.component';
 import { ChartEditorSeriesElementComponent } from './chart-editor-series-element/chart-editor-series-element.component';
 import { ChartEditorYAxisElementComponent } from './chart-editor-y-axis-element/chart-editor-y-axis-element.component';
+import { ChartPivotTableComponent } from './chart-pivot-table/chart-pivot-table.component';
 import { ChartSaveAsDialogComponent } from './chart-save-as-dialog/chart-save-as-dialog.component';
 import { ChartSingleComponent } from './chart-single/chart-single.component';
 import { ChartTableComponent } from './chart-table/chart-table.component';
@@ -48,6 +52,7 @@ import { ChartBarIconComponent } from './icons/1-chart-icons/chart-bar-icon/char
 import { ChartIconComponent } from './icons/1-chart-icons/chart-icon/chart-icon.component';
 import { ChartLineIconComponent } from './icons/1-chart-icons/chart-line-icon/chart-line-icon.component';
 import { ChartPieIconComponent } from './icons/1-chart-icons/chart-pie-icon/chart-pie-icon.component';
+import { ChartPivotTableIconComponent } from './icons/1-chart-icons/chart-pivot-table-icon/chart-pivot-table-icon.component';
 import { ChartScatterIconComponent } from './icons/1-chart-icons/chart-scatter-icon/chart-scatter-icon.component';
 import { ChartSingleIconComponent } from './icons/1-chart-icons/chart-single-icon/chart-single-icon.component';
 import { ChartTableIconComponent } from './icons/1-chart-icons/chart-table-icon/chart-table-icon.component';
@@ -222,6 +227,7 @@ let sharedComponents = [
   FractionTsComponent,
   ChartTableComponent,
   ChartSingleComponent,
+  ChartPivotTableComponent,
   ChartViewComponent,
   ChartBoxComponent,
   DashboardTileChartComponent,
@@ -271,6 +277,7 @@ let sharedComponents = [
   ChartBarIconComponent,
   ChartScatterIconComponent,
   ChartPieIconComponent,
+  ChartPivotTableIconComponent,
   ChartSingleIconComponent,
   LeftPanelIconComponent,
   RightPanelIconComponent,
@@ -308,6 +315,7 @@ let sharedComponents = [
     ColorSketchModule,
     NgxSpinnerModule,
     TippyDirective,
+    Grid,
     UiSwitchModule,
     NgScrollbarModule,
     NgxEchartsModule.forRoot({

@@ -318,7 +318,8 @@ export const CHART_TYPE_VALUES = [
   ChartTypeEnum.Bar,
   ChartTypeEnum.Scatter,
   ChartTypeEnum.Single,
-  ChartTypeEnum.Pie
+  ChartTypeEnum.Pie,
+  ChartTypeEnum.PivotTable
 ];
 
 export const Y_FIELDS_CHART_TYPE_VALUES = [

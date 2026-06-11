@@ -3,6 +3,7 @@ import {
   DEFAULT_CHART_Y_AXIS
 } from '#common/constants/mconfig-chart';
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
+import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { makeCopy } from '#common/functions/make-copy';
 import { toBooleanFromLowercaseString } from '#common/functions/to-boolean-from-lowercase-string';
@@ -85,11 +86,25 @@ export function wrapMconfigChart(item: {
     xField: data?.x_field,
     yFields: data?.y_fields || [],
     multiField: data?.multi_field,
+    pivotRows: data?.pivot_rows || [],
+    pivotColumns: data?.pivot_columns || [],
+    pivotValues: (data?.pivot_values || []).map(pivotValue => ({
+      field: pivotValue.field,
+      aggFunc: isDefined(pivotValue.aggregate)
+        ? pivotValue.aggregate
+        : PivotAggEnum.Sum,
+      label: pivotValue.label
+    })),
 
     // options
     format: isDefined(options?.format)
       ? toBooleanFromLowercaseString(options?.format)
       : DEFAULT_CHART.format,
+    pivotShowTotals: DEFAULT_CHART.pivotShowTotals,
+    pivotShowGrandTotal: DEFAULT_CHART.pivotShowGrandTotal,
+    pivotDefaultExpanded: DEFAULT_CHART.pivotDefaultExpanded,
+    pivotShowMenu: DEFAULT_CHART.pivotShowMenu,
+    pivotTheme: DEFAULT_CHART.pivotTheme,
     xAxis: xAxis,
     yAxis: yAxis,
     series: series

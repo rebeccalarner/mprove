@@ -66,9 +66,12 @@
           #chartView
           *ngIf="!!qData && !!mconfig?.mconfigId"
           [ngClass]="{
-            'w-full pt-3': mconfig?.chart.type === chartTypeEnumTable,
+            'w-full pt-3':
+              mconfig?.chart.type === chartTypeEnumTable ||
+              mconfig?.chart.type === chartTypeEnumPivotTable,
             'border-s300 aspect-[3/1] w-2/3 border pb-6 pt-5':
-              mconfig?.chart.type !== chartTypeEnumTable,
+              mconfig?.chart.type !== chartTypeEnumTable &&
+              mconfig?.chart.type !== chartTypeEnumPivotTable,
             'max-w-max':
               mconfig?.chart.type === chartTypeEnumTable &&
               isSelectValid === true &&

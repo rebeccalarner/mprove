@@ -17,7 +17,10 @@ export function setChartSeries<T extends Mconfig>(item: { mconfig: T }) {
   let series = makeCopy(mconfig.chart.series);
   let sortedSeries: MconfigChartSeries[] = [];
 
-  if (mconfig.chart.type !== ChartTypeEnum.Table) {
+  if (
+    mconfig.chart.type !== ChartTypeEnum.Table &&
+    mconfig.chart.type !== ChartTypeEnum.PivotTable
+  ) {
     series = series.filter(
       s => mconfig.chart.yFields.indexOf(s.dataField) > -1
     );

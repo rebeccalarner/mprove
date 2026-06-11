@@ -40,6 +40,11 @@
                 "output": "/assets/vizdom"
               },
               {
+                "glob": "dg-theme-*.css",
+                "input": "node_modules/@toolbox-web/grid/themes",
+                "output": "/assets/toolbox-grid-themes"
+              },
+              {
                 "glob": "**/markdown.tmLanguage.json",
                 "input": "node_modules/shiki/languages",
                 "output": "/assets/shiki/languages"

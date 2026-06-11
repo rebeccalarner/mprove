@@ -57,7 +57,9 @@
           #chartView
           *ngIf="!!qData && !!mconfig?.mconfigId"
           [ngClass]="{
-            'pt-3': mconfig?.chart.type === chartTypeEnumTable,
+            'pt-3':
+              mconfig?.chart.type === chartTypeEnumTable ||
+              mconfig?.chart.type === chartTypeEnumPivotTable,
             'max-w-max':
               mconfig?.chart.type === chartTypeEnumTable &&
               isSelectValid === true &&

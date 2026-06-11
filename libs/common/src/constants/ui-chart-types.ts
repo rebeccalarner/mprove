@@ -15,10 +15,14 @@ export const UI_CHART_TYPES = {
   yFields: [ChartTypeEnum.Line, ChartTypeEnum.Bar, ChartTypeEnum.Scatter],
   nullableMultiField: [ChartTypeEnum.Scatter],
   multiField: [ChartTypeEnum.Line, ChartTypeEnum.Bar, ChartTypeEnum.Scatter],
+  pivotRows: [ChartTypeEnum.PivotTable],
+  pivotColumns: [ChartTypeEnum.PivotTable],
+  pivotValues: [ChartTypeEnum.PivotTable],
   //
   // options
   //
-  format: [ChartTypeEnum.Table],
+  format: [ChartTypeEnum.Table, ChartTypeEnum.PivotTable],
+  pivot: [ChartTypeEnum.PivotTable],
   xAxisGroup: [ChartTypeEnum.Line, ChartTypeEnum.Bar, ChartTypeEnum.Scatter],
   xAxis: {
     scale: [ChartTypeEnum.Line, ChartTypeEnum.Bar, ChartTypeEnum.Scatter]

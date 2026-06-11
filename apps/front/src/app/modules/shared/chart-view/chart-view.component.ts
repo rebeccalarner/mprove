@@ -164,9 +164,12 @@ export class ChartViewComponent implements OnChanges {
     });
 
     this.isSelectValid =
-      [ChartTypeEnum.Table, ChartTypeEnum.Single, ...this.eChartsTypes].indexOf(
-        this.chart.type
-      ) > -1
+      [
+        ChartTypeEnum.Table,
+        ChartTypeEnum.Single,
+        ChartTypeEnum.PivotTable,
+        ...this.eChartsTypes
+      ].indexOf(this.chart.type) > -1
         ? checkSelectResult.isSelectValid
         : false;
 

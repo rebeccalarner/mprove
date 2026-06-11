@@ -57,6 +57,8 @@
     "@opentelemetry/sdk-trace-web": "catalog:",
     "@opentelemetry/semantic-conventions": "catalog:",
     "@replit/codemirror-indentation-markers": "catalog:",
+    "@toolbox-web/grid": "catalog:",
+    "@toolbox-web/grid-angular": "catalog:",
     "@tweenjs/tween.js": "catalog:",
     "@vaadin/date-picker": "catalog:",
     "@vaadin/time-picker": "catalog:",

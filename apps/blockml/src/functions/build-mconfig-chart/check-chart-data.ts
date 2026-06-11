@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { BlockmlConfig } from '#blockml/config/blockml-config';
 import { BmError } from '#blockml/models/bm-error';
 import { LINE_NUM } from '#common/constants/top-blockml';
+import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
 import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { CallerEnum } from '#common/enums/special/caller.enum';
 import { ErTitleEnum } from '#common/enums/special/er-title.enum';
@@ -37,17 +38,24 @@ export function checkChartData<T extends dcType>(
         return;
       }
 
-      Object.keys(tile.data)
-        .filter(k => !k.match(MyRegex.ENDS_WITH_LINE_NUM()))
-        .forEach(parameter => {
-          if (
-            [
+      let allowedParameters =
+        tile.type === ChartTypeEnum.PivotTable
+          ? [
+              ParameterEnum.PivotRows.toString(),
+              ParameterEnum.PivotColumns.toString(),
+              ParameterEnum.PivotValues.toString()
+            ]
+          : [
               ParameterEnum.XField.toString(),
               ParameterEnum.YFields.toString(),
               ParameterEnum.SizeField.toString(),
               ParameterEnum.MultiField.toString()
-            ].indexOf(parameter) < 0
-          ) {
+            ];
+
+      Object.keys(tile.data)
+        .filter(k => !k.match(MyRegex.ENDS_WITH_LINE_NUM()))
+        .forEach(parameter => {
+          if (allowedParameters.indexOf(parameter) < 0) {
             item.errors.push(
               new BmError({
                 title: ErTitleEnum.TILE_DATA_UNKNOWN_PARAMETER,
@@ -70,7 +78,12 @@ export function checkChartData<T extends dcType>(
 
           if (
             Array.isArray(tile.data[parameter as keyof FileChartData] as any) &&
-            [ParameterEnum.YFields.toString()].indexOf(parameter) < 0
+            [
+              ParameterEnum.YFields.toString(),
+              ParameterEnum.PivotRows.toString(),
+              ParameterEnum.PivotColumns.toString(),
+              ParameterEnum.PivotValues.toString()
+            ].indexOf(parameter) < 0
           ) {
             item.errors.push(
               new BmError({

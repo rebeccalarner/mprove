@@ -774,6 +774,10 @@
                       <m-chart-pie-icon
                         *ngIf="c.chartType === chartTypeEnumPie"
                       ></m-chart-pie-icon>
+
+                      <m-chart-pivot-table-icon
+                        *ngIf="c.chartType === chartTypeEnumPivotTable"
+                      ></m-chart-pivot-table-icon>
                     </div>
 
                     <div
@@ -872,7 +876,7 @@
         </div>
 
         <div
-          class="ml-6 flex min-w-[2px] flex-grow flex-col space-y-2"
+          class="ml-6 flex min-h-0 min-w-[2px] flex-grow flex-col space-y-2"
           *ngIf="
             lastUrl !== pathModels &&
             lastUrl !== pathChartsList &&
@@ -880,9 +884,12 @@
           "
         >
           <div
-            class="bg-m0 w-full rounded shadow"
+            class="bg-m0 min-h-0 w-full rounded shadow"
             [ngClass]="{
-              'h-[45%]': chartIsExpanded
+              'h-[45%] flex-shrink-0':
+                chartIsExpanded === true && dataIsExpanded === true,
+              'flex-1': chartIsExpanded === true && dataIsExpanded === false,
+              'flex-shrink-0': chartIsExpanded === false
             }"
           >
             <div class="flex h-full flex-col">
@@ -1006,6 +1013,17 @@
                   *ngIf="mconfig?.select.length > 0"
                   class="flex w-1/3 flex-shrink-0 flex-row items-center justify-end space-x-5 pr-4"
                 >
+                  <m-chart-pivot-table-icon
+                    class="h-6 w-6 cursor-pointer"
+                    [ngClass]="{
+                      'text-m500':
+                        mconfig.chart?.type === chartTypeEnumPivotTable,
+                      'text-s500':
+                        mconfig.chart?.type !== chartTypeEnumPivotTable
+                    }"
+                    (click)="chartTypeChange(chartTypeEnumPivotTable)"
+                  ></m-chart-pivot-table-icon>
+
                   <m-chart-table-icon
                     class="h-6 w-6 cursor-pointer"
                     [ngClass]="{
@@ -1184,7 +1202,7 @@
             </div>
           </div>
 
-          <div class="w-full">
+          <div class="w-full flex-shrink-0">
             <div class="flex flex-col">
               <div class="mr-5 flex flex-shrink-0 flex-grow flex-row">
                 <div
@@ -1277,7 +1295,13 @@
             </div>
           </div>
 
-          <div class="bg-m0 w-full flex-1 rounded shadow">
+          <div
+            class="bg-m0 w-full rounded shadow"
+            [ngClass]="{
+              'min-h-0 flex-1': dataIsExpanded === true,
+              'h-[84px] flex-shrink-0': dataIsExpanded === false
+            }"
+          >
             <div class="flex h-full flex-col">
               <div
                 class="bg-m0 flex h-[84px] flex-shrink-0 flex-row items-center"
@@ -1286,9 +1310,9 @@
                   <m-panel-title
                     class="mb-1"
                     [title]="'Data'"
-                    [isExpanded]="true"
+                    [isExpanded]="dataIsExpanded"
                     (toggleEvent)="toggleDataPanel()"
-                    [showToggle]="false"
+                    [showToggle]="true"
                   ></m-panel-title>
 
                   <div
@@ -1697,12 +1721,18 @@
                 </div>
               </div>
 
-              <div class="divide-s300 mx-5 flex flex-col divide-y">
+              <div
+                *ngIf="dataIsExpanded"
+                class="divide-s300 mx-5 flex flex-col divide-y"
+              >
                 <div class="flex flex-row"></div>
                 <div class="flex flex-row"></div>
               </div>
 
-              <div class="mx-5 mb-0 mt-0 flex h-2 flex-grow">
+              <div
+                *ngIf="dataIsExpanded"
+                class="mx-5 mb-0 mt-0 flex h-2 flex-grow"
+              >
                 <!-- <div
                   *ngIf="mconfig?.select.length === 0"
                   class="text-s1 flex h-full w-full select-none items-center justify-center text-xl"

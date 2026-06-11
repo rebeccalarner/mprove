@@ -1,4 +1,5 @@
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
+import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import type { Mconfig } from '#common/zod/blockml/mconfig';
@@ -64,6 +65,32 @@ export function setChartFields<T extends Mconfig>(item: {
       ...selectedMCsResultIsNotNumber
     ];
 
+    let pivotRows =
+      mconfig.chart.pivotRows?.length > 0 &&
+      mconfig.chart.pivotRows.every(x => mconfig.select.includes(x))
+        ? mconfig.chart.pivotRows
+        : selectedDimensions.length > 0
+          ? [selectedDimensions[0]]
+          : [];
+
+    let pivotColumns =
+      mconfig.chart.pivotColumns?.length > 0 &&
+      mconfig.chart.pivotColumns.every(x => mconfig.select.includes(x))
+        ? mconfig.chart.pivotColumns.filter(x => pivotRows.indexOf(x) < 0)
+        : selectedDimensions.length > 1
+          ? [selectedDimensions.filter(x => pivotRows.indexOf(x) < 0)[0]]
+          : [];
+
+    let pivotValues =
+      mconfig.chart.pivotValues?.length > 0 &&
+      mconfig.chart.pivotValues.every(x => mconfig.select.includes(x.field))
+        ? mconfig.chart.pivotValues
+        : selectedMCsResultIsNumber.map(field => ({
+            field: field,
+            aggFunc: PivotAggEnum.Sum,
+            label: undefined as string | undefined
+          }));
+
     let xField =
       isDefined(mconfig.chart.xField) &&
       mconfig.select.indexOf(mconfig.chart.xField) > -1
@@ -107,7 +134,10 @@ export function setChartFields<T extends Mconfig>(item: {
       xField: xField,
       yFields: yFields,
       multiField: multiField,
-      sizeField: sizeField
+      sizeField: sizeField,
+      pivotRows: pivotRows,
+      pivotColumns: pivotColumns,
+      pivotValues: pivotValues
     });
 
     mconfig = setChartSeries({ mconfig: mconfig });

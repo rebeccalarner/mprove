@@ -118,6 +118,7 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
   isRunButtonPressed = false;
 
   chartTypeEnumTable = ChartTypeEnum.Table;
+  chartTypeEnumPivotTable = ChartTypeEnum.PivotTable;
   chartTypeEnumLine = ChartTypeEnum.Line;
   chartTypeEnumScatter = ChartTypeEnum.Scatter;
   chartTypeEnumBar = ChartTypeEnum.Bar;

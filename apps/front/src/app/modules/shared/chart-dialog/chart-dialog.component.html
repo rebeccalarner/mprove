@@ -206,17 +206,21 @@
     class="flex h-full w-full flex-grow flex-row overflow-auto"
     [ngClass]="{
       'justify-center':
-        mconfig?.chart.type !== chartTypeEnumTable ||
+        (mconfig?.chart.type !== chartTypeEnumTable &&
+          mconfig?.chart.type !== chartTypeEnumPivotTable) ||
         query?.lastCompleteTs <= 1,
       'justify-start':
-        query?.lastCompleteTs > 1 && mconfig?.chart.type === chartTypeEnumTable
+        query?.lastCompleteTs > 1 &&
+        (mconfig?.chart.type === chartTypeEnumTable ||
+          mconfig?.chart.type === chartTypeEnumPivotTable)
     }"
   >
     <m-chart-view
       class="h-full w-full overflow-auto rounded pb-6 pt-5"
       [ngClass]="{
         'border-s300 aspect-[3/1] border':
-          mconfig?.chart.type !== chartTypeEnumTable
+          mconfig?.chart.type !== chartTypeEnumTable &&
+          mconfig?.chart.type !== chartTypeEnumPivotTable
       }"
       [modelType]="mconfig?.modelType"
       [mconfigFields]="mconfig?.fields"

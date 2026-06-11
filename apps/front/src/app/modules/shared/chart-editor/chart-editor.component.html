@@ -393,6 +393,90 @@
 
   <div
     *ngIf="
+      isReport === false && uiChartTypes.pivotValues.indexOf(chart.type) > -1
+    "
+    class="mb-5 ml-2 flex flex-col items-start"
+  >
+    <!-- <div
+      class="text-s500 flex h-9 select-none items-center text-base font-semibold"
+      >Values</div
+    > -->
+
+    <div class="ml-2 mt-2 flex flex-col items-start space-y-4">
+      <div
+        *ngFor="let column of numbersMeasuresAndCalculations"
+        class="flex flex-row items-center"
+      >
+        <button
+          class="border-m600 text-m0 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded border-2 focus:outline-none"
+          [ngClass]="{ 'bg-m600': pivotValuesIsChecked(column.id) }"
+          (click)="pivotValuesOnClick(column.id)"
+        >
+          <m-check-icon *ngIf="pivotValuesIsChecked(column.id)"></m-check-icon>
+        </button>
+
+        <m-field-label
+          [column]="column"
+          class="ml-3 flex text-sm"
+        ></m-field-label>
+
+        <select
+          *ngIf="pivotValuesIsChecked(column.id)"
+          class="form-select border-s300 ml-5 h-9 rounded text-sm"
+          [ngModel]="getPivotValueAgg(column.id)"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="pivotValueAggChange(column.id, $event)"
+        >
+          <option *ngFor="let agg of pivotAggList" [value]="agg">
+            {{ agg }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="
+      isReport === false && uiChartTypes.pivotRows.indexOf(chart.type) > -1
+    "
+    class="mb-5 ml-2 flex flex-col items-start"
+  >
+    <div class="ml-2 mt-2 flex flex-col items-start space-y-4">
+      <div
+        class="text-s400 flex w-full select-none flex-row text-xs font-semibold uppercase tracking-wide"
+      >
+        <div class="mr-5 min-w-[220px]">Dimensions</div>
+        <div class="mr-5 w-12 text-center">Row</div>
+        <div class="w-16 text-center">Column</div>
+      </div>
+
+      <div *ngFor="let column of dimensions" class="flex flex-row items-center">
+        <m-field-label
+          [column]="column"
+          class="mr-5 flex min-w-[220px] text-sm"
+        ></m-field-label>
+
+        <button
+          class="border-m600 text-m0 mr-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded border-2 focus:outline-none"
+          [ngClass]="{ 'bg-m600': pivotRowsIsChecked(column.id) }"
+          (click)="pivotRowsOnClick(column.id)"
+        >
+          <m-check-icon *ngIf="pivotRowsIsChecked(column.id)"></m-check-icon>
+        </button>
+
+        <button
+          class="border-m600 text-m0 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded border-2 focus:outline-none"
+          [ngClass]="{ 'bg-m600': pivotColumnsIsChecked(column.id) }"
+          (click)="pivotColumnsOnClick(column.id)"
+        >
+          <m-check-icon *ngIf="pivotColumnsIsChecked(column.id)"></m-check-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="
       isReport === false &&
       [chartTypeEnumTable, chartTypeEnumSingle].indexOf(chart?.type) < 0
     "
@@ -414,6 +498,88 @@
     class="text-s500 mt-5 flex h-12 select-none flex-row items-start justify-start pl-2 pr-5 font-semibold"
   >
     <div> CHART OPTIONS </div>
+  </div>
+
+  <div
+    *ngIf="
+      isDebugPivot === true &&
+      chartOptionsIsExpanded === true &&
+      uiChartTypes.pivot.indexOf(chart.type) > -1
+    "
+    class="flex flex-col pl-5"
+  >
+    <div
+      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
+      (click)="togglePivotShowTotals()"
+    >
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >Show Totals</div
+      >
+      <ui-switch
+        class="ml-5"
+        [checked]="chart.pivotShowTotals === true"
+      ></ui-switch>
+    </div>
+
+    <div
+      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
+      (click)="togglePivotShowGrandTotal()"
+    >
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >Show Grand Total</div
+      >
+      <ui-switch
+        class="ml-5"
+        [checked]="chart.pivotShowGrandTotal === true"
+      ></ui-switch>
+    </div>
+
+    <div
+      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
+      (click)="togglePivotDefaultExpanded()"
+    >
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >Default Expanded</div
+      >
+      <ui-switch
+        class="ml-5"
+        [checked]="chart.pivotDefaultExpanded === true"
+      ></ui-switch>
+    </div>
+
+    <div
+      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
+      (click)="togglePivotShowMenu()"
+    >
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >Show Menu</div
+      >
+      <ui-switch
+        class="ml-5"
+        [checked]="chart.pivotShowMenu === true"
+      ></ui-switch>
+    </div>
+
+    <div class="mb-5 ml-[32px] flex flex-row items-center">
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >Theme</div
+      >
+
+      <select
+        class="form-select border-s300 ml-5 h-9 rounded text-sm"
+        [value]="chart.pivotTheme || 'standard'"
+        (change)="pivotThemeChange($event)"
+      >
+        <option *ngFor="let theme of pivotThemeList" [value]="theme.value">
+          {{ theme.label }}
+        </option>
+      </select>
+    </div>
   </div>
 
   <div

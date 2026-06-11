@@ -35,6 +35,7 @@ import { ChartViewComponent } from '../chart-view/chart-view.component';
 })
 export class DashboardTileChartComponent implements OnInit, OnChanges {
   chartTypeEnumTable = ChartTypeEnum.Table;
+  chartTypeEnumPivotTable = ChartTypeEnum.PivotTable;
   chartTypeEnumSingle = ChartTypeEnum.Single;
 
   queryStatusEnum = QueryStatusEnum;

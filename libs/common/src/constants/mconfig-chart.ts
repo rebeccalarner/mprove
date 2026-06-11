@@ -48,8 +48,16 @@ export const DEFAULT_CHART: MconfigChart = {
   xField: null,
   yFields: [],
   multiField: null,
+  pivotRows: [],
+  pivotColumns: [],
+  pivotValues: [],
 
   format: true,
+  pivotShowTotals: false,
+  pivotShowGrandTotal: false,
+  pivotDefaultExpanded: false,
+  pivotShowMenu: false,
+  pivotTheme: 'standard',
 
   xAxis: DEFAULT_CHART_X_AXIS,
 
