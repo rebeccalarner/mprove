@@ -10,6 +10,8 @@
   stroke-linejoin="round"
   class="lucide lucide-table2-icon lucide-table-2"
 >
+  <path fill="#727273" stroke="none" d="M9 3h10a2 2 0 0 1 2 2v4H9z" />
+  <path fill="#727273" stroke="none" d="M3 9h6v12H5a2 2 0 0 1-2-2z" />
   <path
     d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"
   />
