@@ -548,6 +548,11 @@ export class ModelsComponent implements OnInit, OnDestroy {
       iconPath: 'assets/charts/table.svg'
     },
     {
+      label: 'Pivot Table',
+      value: ChartTypeEnum.PivotTable,
+      iconPath: 'assets/charts/pivot_table.svg'
+    },
+    {
       label: 'Line',
       value: ChartTypeEnum.Line,
       iconPath: 'assets/charts/line.svg'
@@ -571,11 +576,6 @@ export class ModelsComponent implements OnInit, OnDestroy {
       label: 'Pie',
       value: ChartTypeEnum.Pie,
       iconPath: 'assets/charts/pie.svg'
-    },
-    {
-      label: 'Pivot Table',
-      value: ChartTypeEnum.PivotTable,
-      iconPath: 'assets/charts/table.svg'
     }
   ];
 
