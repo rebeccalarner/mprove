@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { TippyDirective } from '@ngneat/helipopper';
 import '@toolbox-web/grid-angular/features/shell';
+import '@toolbox-web/grid-angular/features/multi-sort';
 import '@toolbox-web/grid-angular/features/pivot';
 import { Grid } from '@toolbox-web/grid-angular';
 import { ColorSketchModule } from 'ngx-color/sketch';

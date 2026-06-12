@@ -490,6 +490,10 @@ export class ChartPivotTableComponent implements OnChanges {
             initialState: 'closed'
           }
         },
+        multiSort: {
+          maxSortColumns: 1,
+          showSortIndex: false
+        },
         pivot: {
           rowGroupFields: this.chart.pivotRows || [],
           columnGroupFields: this.chart.pivotColumns || [],
