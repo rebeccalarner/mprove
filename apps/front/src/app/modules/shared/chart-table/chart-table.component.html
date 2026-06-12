@@ -1,61 +1,66 @@
-<table>
-  <thead>
-    <tr>
-      <th
-        class="border-m0 group max-w-[350px] border-4 p-0 align-top"
-        [ngClass]="{
-          'min-w-[200px]': isTableHeaderWide === false,
-          'min-w-[240px]': isTableHeaderWide === true,
-          'bg-m150': column.fieldClass === fieldClassDimension,
-          'bg-g2':
-            column.fieldClass === fieldClassMeasure ||
-            column.fieldClass === fieldClassCalculation
-        }"
-        *ngFor="let column of mconfigFields; let columnIndex = index"
-      >
-        <div
-          class="flex flex-col items-start justify-center overflow-hidden text-clip px-5 py-2"
-        >
-          <div class="flex select-none flex-col items-start justify-center">
-            <div class="truncate text-sm font-normal">{{
-              column.topLabel | capitalize
-            }}</div>
-
-            <div class="flex flex-row text-left font-semibold">
-              <div *ngIf="column.groupLabel"
-                >{{ column.groupLabel | capitalize }} -
-                {{ column.label | capitalize }}</div
-              >
-
-              <div *ngIf="!column.groupLabel">{{
-                column.label | capitalize
-              }}</div>
-            </div>
-          </div>
-        </div>
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <ng-container *ngFor="let row of qData; let i = index">
-      <tr data-cy="chartTableRow">
-        <td
-          data-cy="chartTableCell"
-          *ngFor="let column of mconfigFields"
-          class="max-w-[350px] truncate px-5"
+<div
+  class="thin-scrollbar h-full w-full overflow-auto [scrollbar-gutter:stable]"
+>
+  <table class="border-separate border-spacing-0">
+    <thead>
+      <tr>
+        <th
+          class="group sticky top-0 z-10 max-w-[350px] border-b border-r border-t border-gray-300 p-0 align-top first:border-l"
           [ngClass]="{
             'min-w-[200px]': isTableHeaderWide === false,
             'min-w-[240px]': isTableHeaderWide === true,
-            'bg-s100': (i + 1) % 2 === 0,
-            'text-right': column.result === fieldResultNumber
+            'bg-m150': column.fieldClass === fieldClassDimension,
+            'bg-g2':
+              column.fieldClass === fieldClassMeasure ||
+              column.fieldClass === fieldClassCalculation
           }"
+          *ngFor="let column of mconfigFields; let columnIndex = index"
         >
-          {{
-            isFormat === true ? row[column.id]?.valueFmt : row[column.id]?.value
-          }}
-        </td>
+          <div
+            class="flex flex-col items-start justify-center overflow-hidden text-clip px-5 py-2"
+          >
+            <div class="flex select-none flex-col items-start justify-center">
+              <div class="truncate text-sm font-normal">{{
+                column.topLabel | capitalize
+              }}</div>
+
+              <div class="flex flex-row text-left font-semibold">
+                <div *ngIf="column.groupLabel"
+                  >{{ column.groupLabel | capitalize }} -
+                  {{ column.label | capitalize }}</div
+                >
+
+                <div *ngIf="!column.groupLabel">{{
+                  column.label | capitalize
+                }}</div>
+              </div>
+            </div>
+          </div>
+        </th>
       </tr>
-    </ng-container>
-  </tbody>
-</table>
+    </thead>
+
+    <tbody>
+      <ng-container *ngFor="let row of qData; let i = index">
+        <tr data-cy="chartTableRow">
+          <td
+            data-cy="chartTableCell"
+            *ngFor="let column of mconfigFields"
+            class="font-ms text-s2 max-w-[350px] truncate border-b border-r border-[#e5e7eb] px-5 text-base first:border-l"
+            [ngClass]="{
+              'min-w-[200px]': isTableHeaderWide === false,
+              'min-w-[240px]': isTableHeaderWide === true,
+              'text-right': column.result === fieldResultNumber
+            }"
+          >
+            {{
+              isFormat === true
+                ? row[column.id]?.valueFmt
+                : row[column.id]?.value
+            }}
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

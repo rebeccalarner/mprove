@@ -75,33 +75,24 @@
     ></m-chart-box>
   </div>
 
-  <ng-scrollbar
-    [orientation]="'auto'"
-    [visibility]="'hover'"
-    [appearance]="'compact'"
-    [ngClass]="{
-      'h-full':
-        queryStatus !== queryStatusEnum.Error &&
-        isSelectValid === true &&
-        chart.type === chartTypeEnum.Table &&
-        chart.isValid === true &&
-        qData?.length > 0
-    }"
+  <div
+    class="h-full"
+    *ngIf="
+      queryStatus !== queryStatusEnum.Error &&
+      isSelectValid === true &&
+      chart.type === chartTypeEnum.Table &&
+      chart.isValid === true &&
+      qData?.length > 0
+    "
   >
     <m-chart-table
-      *ngIf="
-        queryStatus !== queryStatusEnum.Error &&
-        isSelectValid === true &&
-        chart.type === chartTypeEnum.Table &&
-        chart.isValid === true &&
-        qData?.length > 0
-      "
+      class="block h-full w-full"
       [isFormat]="chart.format === false ? false : true"
       [isTableHeaderWide]="isTableHeaderWide"
       [qData]="qData"
       [mconfigFields]="mconfigFields"
     ></m-chart-table>
-  </ng-scrollbar>
+  </div>
 
   <m-chart-pivot-table
     *ngIf="
