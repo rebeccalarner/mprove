@@ -244,9 +244,7 @@
     <m-chart-view
       class="h-full w-full overflow-auto rounded"
       [ngClass]="{
-        'pt-3':
-          mconfig?.chart.type === chartTypeEnumTable ||
-          mconfig?.chart.type === chartTypeEnumPivotTable,
+        'pt-3': mconfig?.chart.type === chartTypeEnumTable,
         'max-w-max':
           (mconfig?.chart.type === chartTypeEnumTable ||
             mconfig?.chart.type === chartTypeEnumPivotTable) &&
@@ -255,9 +253,7 @@
         'border-s300 aspect-[3/1] border':
           mconfig?.chart.type !== chartTypeEnumTable &&
           mconfig?.chart.type !== chartTypeEnumPivotTable,
-        'pb-6 pt-5':
-          mconfig?.chart.type !== chartTypeEnumTable &&
-          mconfig?.chart.type !== chartTypeEnumPivotTable
+        'pb-6 pt-5': mconfig?.chart.type !== chartTypeEnumTable
       }"
       [modelType]="mconfig?.modelType"
       [mconfigFields]="mconfig?.fields"
