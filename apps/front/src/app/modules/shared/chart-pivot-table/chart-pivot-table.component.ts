@@ -6,7 +6,11 @@ import {
   OnChanges,
   Output
 } from '@angular/core';
-import { BaseGridPlugin, type ColumnConfig } from '@toolbox-web/grid';
+import {
+  BaseGridPlugin,
+  type ColumnConfig,
+  type HeaderClickEvent
+} from '@toolbox-web/grid';
 import type { GridConfig } from '@toolbox-web/grid-angular';
 import {
   DEFAULT_PIVOT_COLUMNS_WIDTH,
@@ -332,6 +336,201 @@ class PivotAlwaysExpandedPlugin extends BaseGridPlugin<{ enabled: boolean }> {
   }
 }
 
+class PivotDescFirstSortPlugin extends BaseGridPlugin {
+  static override readonly manifest = {
+    hookPriority: { onHeaderClick: -20 }
+  };
+
+  readonly name = 'mprovePivotDescFirstSort';
+
+  override onHeaderClick(event: HeaderClickEvent) {
+    let field = event.field;
+    let isPivotField = this.isPivotField({ field: field });
+
+    if (!isPivotField) {
+      return false;
+    }
+
+    let sortModel = this.getSortModel();
+    let existingSort = sortModel.find(sort => sort.field === field);
+    let nextSortModel: Array<{ field: string; direction: 'asc' | 'desc' }>;
+
+    if (!existingSort) {
+      nextSortModel = [{ field: field, direction: 'desc' }];
+    } else if (existingSort.direction === 'desc') {
+      nextSortModel = [{ field: field, direction: 'asc' }];
+    } else {
+      nextSortModel = [];
+    }
+
+    this.grid?.query?.('sort:set-model', nextSortModel);
+
+    return true;
+  }
+
+  private getSortModel() {
+    let results = this.grid?.query?.('sort:get-model', null);
+    let firstResult = Array.isArray(results) ? results[0] : [];
+
+    return Array.isArray(firstResult)
+      ? (firstResult as Array<{ field: string; direction: 'asc' | 'desc' }>)
+      : [];
+  }
+
+  private isPivotField(item: { field: string }) {
+    let { field } = item;
+
+    return (
+      field === '__pivotLabel' ||
+      field === '__pivotTotal' ||
+      field.includes('|')
+    );
+  }
+}
+
+class PivotEmptyLastSortPlugin extends BaseGridPlugin {
+  static override readonly manifest = {
+    hookPriority: { processRows: 200 }
+  };
+
+  readonly name = 'mprovePivotEmptyLastSort';
+
+  override processRows(rows: readonly PivotTableRow[]): PivotTableRow[] {
+    let sortModel = this.getSortModel();
+    let activeSort = sortModel[0];
+
+    if (!activeSort || !this.isPivotField({ field: activeSort.field })) {
+      return [...rows];
+    }
+
+    return this.sortRowsAtDepth({
+      rows: [...rows],
+      depth: 0,
+      field: activeSort.field,
+      direction: activeSort.direction
+    });
+  }
+
+  private sortRowsAtDepth(item: {
+    rows: PivotTableRow[];
+    depth: number;
+    field: string;
+    direction: 'asc' | 'desc';
+  }) {
+    let { rows, depth, field, direction } = item;
+    let blocks: PivotTableRow[][] = [];
+    let index = 0;
+
+    while (index < rows.length) {
+      let row = rows[index];
+      let rowDepth = this.getRowDepth({ row: row });
+
+      if (rowDepth !== depth) {
+        blocks.push([row]);
+        index += 1;
+        continue;
+      }
+
+      let blockEnd = index + 1;
+
+      while (
+        blockEnd < rows.length &&
+        this.getRowDepth({ row: rows[blockEnd] }) > depth
+      ) {
+        blockEnd += 1;
+      }
+
+      let block = rows.slice(index, blockEnd);
+      let children = block.slice(1);
+
+      if (children.length > 0) {
+        block = [
+          block[0],
+          ...this.sortRowsAtDepth({
+            rows: children,
+            depth: depth + 1,
+            field: field,
+            direction: direction
+          })
+        ];
+      }
+
+      blocks.push(block);
+      index = blockEnd;
+    }
+
+    return blocks
+      .sort((a, b) =>
+        this.compareRows({
+          a: a[0],
+          b: b[0],
+          field: field,
+          direction: direction
+        })
+      )
+      .flat();
+  }
+
+  private compareRows(item: {
+    a: PivotTableRow;
+    b: PivotTableRow;
+    field: string;
+    direction: 'asc' | 'desc';
+  }) {
+    let { a, b, field, direction } = item;
+    let aValue = a[field];
+    let bValue = b[field];
+    let aIsEmpty = aValue === null || aValue === undefined || aValue === '';
+    let bIsEmpty = bValue === null || bValue === undefined || bValue === '';
+
+    if (aIsEmpty && bIsEmpty) {
+      return 0;
+    }
+
+    if (aIsEmpty) {
+      return 1;
+    }
+
+    if (bIsEmpty) {
+      return -1;
+    }
+
+    let directionMultiplier = direction === 'desc' ? -1 : 1;
+
+    return aValue > bValue
+      ? directionMultiplier
+      : aValue < bValue
+        ? -directionMultiplier
+        : 0;
+  }
+
+  private getSortModel() {
+    let results = this.grid?.query?.('sort:get-model', null);
+    let firstResult = Array.isArray(results) ? results[0] : [];
+
+    return Array.isArray(firstResult)
+      ? (firstResult as Array<{ field: string; direction: 'asc' | 'desc' }>)
+      : [];
+  }
+
+  private getRowDepth(item: { row: PivotTableRow }) {
+    let { row } = item;
+    let depth = row.__pivotDepth;
+
+    return typeof depth === 'number' ? depth : 0;
+  }
+
+  private isPivotField(item: { field: string }) {
+    let { field } = item;
+
+    return (
+      field === '__pivotLabel' ||
+      field === '__pivotTotal' ||
+      field.includes('|')
+    );
+  }
+}
+
 @Component({
   standalone: false,
   selector: 'm-chart-pivot-table',
@@ -451,6 +650,11 @@ export class ChartPivotTableComponent implements OnChanges {
 
   private makeGridConfig(): GridConfig<PivotTableRow> {
     return {
+      icons: {
+        sortAsc: this.makeSortIcon({ desc: false }),
+        sortDesc: this.makeSortIcon({ desc: true }),
+        sortNone: this.makeSortIcon({ desc: true })
+      },
       columns: this.mconfigFields.map(field => ({
         field: field.id,
         header: field.groupLabel
@@ -479,7 +683,9 @@ export class ChartPivotTableComponent implements OnChanges {
         }),
         new PivotAlwaysExpandedPlugin({
           enabled: (this.chart.pivotRows || []).length > 1
-        })
+        }),
+        new PivotDescFirstSortPlugin(),
+        new PivotEmptyLastSortPlugin()
       ],
       features: {
         shell: {
@@ -511,6 +717,23 @@ export class ChartPivotTableComponent implements OnChanges {
         }
       }
     };
+  }
+
+  private makeSortIcon(item: { desc: boolean }) {
+    let { desc } = item;
+    let transform = desc ? 'rotate(90deg) scaleX(-1)' : 'rotate(90deg)';
+
+    return `
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        style="height: 20px; width: 20px; transform: ${transform};"
+      >
+        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+      </svg>
+    `;
   }
 
   private makeMeasureHeaderItems() {
@@ -750,6 +973,30 @@ export class ChartPivotTableComponent implements OnChanges {
         font-size: 16px;
         padding-top: 8px;
         padding-bottom: 8px;
+      }
+
+      .header-row .cell .sort-indicator {
+        align-items: center;
+        color: #64748b;
+        display: inline-flex;
+        height: 32px;
+        justify-content: center;
+        margin-left: 8px;
+        opacity: 0.8;
+        width: 32px;
+      }
+
+      .header-row .cell[aria-sort='none'] .sort-indicator {
+        opacity: 0;
+      }
+
+      .header-row .cell[aria-sort='none']:hover .sort-indicator {
+        opacity: 0.8;
+      }
+
+      .header-row .cell[aria-sort='ascending'] .sort-indicator,
+      .header-row .cell[aria-sort='descending'] .sort-indicator {
+        color: #3b82f6;
       }
 
       .header-row .cell:first-child,
