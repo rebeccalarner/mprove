@@ -1,6 +1,17 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  Output
+} from '@angular/core';
 import { BaseGridPlugin, type ColumnConfig } from '@toolbox-web/grid';
 import type { GridConfig } from '@toolbox-web/grid-angular';
+import {
+  DEFAULT_PIVOT_COLUMNS_WIDTH,
+  DEFAULT_PIVOT_FIRST_COLUMN_WIDTH
+} from '#common/constants/mconfig-chart';
 import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
@@ -11,6 +22,11 @@ import { DataService, type QDataRow } from '#front/app/services/data.service';
 
 interface PivotTableRow {
   [key: string]: string | number | null;
+}
+
+interface PivotColumnResizeDetail {
+  field: string;
+  width: number;
 }
 
 interface PivotHeaderPart {
@@ -30,6 +46,8 @@ interface PivotFieldHeader {
 
 class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
   hasColumnDimensions: boolean;
+  valueColumnsWidth: number;
+  firstColumnWidth: number;
   measureHeaders: Record<string, PivotFieldHeader>;
   measureLabels: Record<string, string>;
   pivotColumnOrder: Record<string, number>;
@@ -43,24 +61,19 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
   readonly name = 'mprovePivotGeneratedHeader';
 
   override processColumns(columns: readonly ColumnConfig[]): ColumnConfig[] {
-    let pivotMeasureCount = this.config.pivotValueFields.length;
-
     let processedColumns = columns.map(column => {
       if (column.field === '__pivotLabel') {
-        let width = this.estimateRowGroupHeaderWidth();
-
         return {
           ...column,
-          __originalWidth: width,
+          __originalWidth: this.config.firstColumnWidth,
           header: this.makeRowGroupHeaderText(),
           headerLabelRenderer: () => this.makeRowGroupHeaderLabel(),
-          width: width
+          width: this.config.firstColumnWidth
         };
       }
 
       let header = this.makePivotColumnHeader({
-        column: column,
-        pivotMeasureCount: pivotMeasureCount
+        column: column
       });
 
       if (!header) {
@@ -69,14 +82,13 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
 
       return {
         ...column,
-        __originalWidth: header.width,
+        __originalWidth: this.config.valueColumnsWidth,
         header: header.text,
         headerLabelRenderer: () =>
           this.makePivotColumnHeaderLabel({
-            header: header,
-            pivotMeasureCount: pivotMeasureCount
+            header: header
           }),
-        width: header.width
+        width: this.config.valueColumnsWidth
       };
     });
 
@@ -141,11 +153,8 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
     );
   }
 
-  private makePivotColumnHeader(item: {
-    column: ColumnConfig;
-    pivotMeasureCount: number;
-  }) {
-    let { column, pivotMeasureCount } = item;
+  private makePivotColumnHeader(item: { column: ColumnConfig }) {
+    let { column } = item;
     let fieldParts = column.field.split('|');
     let valueField = fieldParts[fieldParts.length - 1];
     let isPivotValueColumn =
@@ -163,19 +172,12 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
         measurePrefix.length > 0
           ? `${measurePrefix.join(' ')}\n${measureLabel}`
           : measureLabel;
-      let width = this.estimateHeaderWidth({
-        dimensionLabels: [],
-        measureLabel: measureLabel,
-        measurePrefix: measurePrefix,
-        pivotMeasureCount: 1
-      });
 
       return {
         dimensionLabels: [] as string[],
         measureLabel: measureLabel,
         measurePrefix: measurePrefix,
-        text: text,
-        width: width
+        text: text
       };
     }
 
@@ -185,58 +187,13 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
 
     let dimensionLabels = fieldParts.slice(0, -1);
     let text = [measureLabel, ...dimensionLabels].join('\n');
-    let width = this.estimateHeaderWidth({
-      dimensionLabels: dimensionLabels,
-      measureLabel: measureLabel,
-      measurePrefix: [],
-      pivotMeasureCount: pivotMeasureCount
-    });
 
     return {
       dimensionLabels: dimensionLabels,
       measureLabel: measureLabel,
       measurePrefix: [],
-      text: text,
-      width: width
+      text: text
     };
-  }
-
-  private estimateHeaderWidth(item: {
-    dimensionLabels: string[];
-    measureLabel: string;
-    measurePrefix: string[];
-    pivotMeasureCount: number;
-  }) {
-    let { dimensionLabels, measureLabel, measurePrefix, pivotMeasureCount } =
-      item;
-    let labels =
-      pivotMeasureCount > 1 || dimensionLabels.length > 0
-        ? [measureLabel, ...dimensionLabels]
-        : [...measurePrefix, ...dimensionLabels, measureLabel];
-    let longestLabel = labels.reduce(
-      (longest, label) => (label.length > longest.length ? label : longest),
-      ''
-    );
-
-    return Math.max(96, longestLabel.length * 8 + 48);
-  }
-
-  private estimateRowGroupHeaderWidth() {
-    let longestLabel = this.config.rowHeaders.reduce((longest, rowHeader) => {
-      let labels =
-        this.config.rowHeaders.length === 1
-          ? [rowHeader.prefix.join(' '), rowHeader.label]
-          : [[...rowHeader.prefix, rowHeader.label].join(' ')];
-      let label = labels.reduce(
-        (longestLine, line) =>
-          line.length > longestLine.length ? line : longestLine,
-        ''
-      );
-
-      return label.length > longest.length ? label : longest;
-    }, '');
-
-    return Math.max(200, longestLabel.length * 8 + 56);
   }
 
   private makePivotColumnHeaderLabel(item: {
@@ -245,11 +202,9 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
       measureLabel: string;
       measurePrefix: string[];
       text: string;
-      width: number;
     };
-    pivotMeasureCount: number;
   }) {
-    let { header, pivotMeasureCount } = item;
+    let { header } = item;
 
     let container = document.createElement('span');
     container.className = 'm-pivot-generated-header';
@@ -405,6 +360,7 @@ class PivotHideGroupTotalsPlugin extends BaseGridPlugin<{ enabled: boolean }> {
 })
 export class ChartPivotTableComponent implements OnChanges {
   private static themeLinkId = 'mprove-toolbox-grid-theme';
+  private pendingColumnResizeDetail: PivotColumnResizeDetail | undefined;
 
   @Input()
   chart: MconfigChart;
@@ -414,6 +370,9 @@ export class ChartPivotTableComponent implements OnChanges {
 
   @Input()
   qData: QDataRow[];
+
+  @Output()
+  chartPartChange = new EventEmitter<MconfigChart>();
 
   rows: PivotTableRow[] = [];
   gridConfig: GridConfig<PivotTableRow>;
@@ -429,6 +388,11 @@ export class ChartPivotTableComponent implements OnChanges {
     private structQuery: StructQuery
   ) {}
 
+  @HostListener('document:mouseup')
+  onDocumentMouseUp() {
+    this.applyPendingColumnResize();
+  }
+
   ngOnChanges() {
     this.rows = this.makeRows();
     this.measureHeaderItems = this.makeMeasureHeaderItems();
@@ -443,6 +407,41 @@ export class ChartPivotTableComponent implements OnChanges {
     this.gridConfig = this.makeGridConfig();
     this.customStyles = this.makeCustomStyles();
     this.setThemeStylesheet();
+  }
+
+  pivotColumnResize(event: Event) {
+    let detail = (event as CustomEvent<PivotColumnResizeDetail>).detail;
+
+    if (!detail?.field || !Number.isFinite(detail.width)) {
+      return;
+    }
+
+    this.pendingColumnResizeDetail = {
+      field: detail.field,
+      width: Math.round(detail.width)
+    };
+  }
+
+  private applyPendingColumnResize() {
+    if (!this.pendingColumnResizeDetail) {
+      return;
+    }
+
+    let { field, width } = this.pendingColumnResizeDetail;
+    this.pendingColumnResizeDetail = undefined;
+
+    if (field === '__pivotLabel') {
+      this.chart.firstColumnWidth = width;
+      this.gridConfig = this.makeGridConfig();
+      this.chartPartChange.emit(<MconfigChart>{ firstColumnWidth: width });
+      return;
+    }
+
+    if (this.isPivotValueColumn({ field: field })) {
+      this.chart.valueColumnsWidth = width;
+      this.gridConfig = this.makeGridConfig();
+      this.chartPartChange.emit(<MconfigChart>{ valueColumnsWidth: width });
+    }
   }
 
   private makeRows() {
@@ -479,6 +478,8 @@ export class ChartPivotTableComponent implements OnChanges {
       plugins: [
         new PivotGeneratedHeaderPlugin({
           hasColumnDimensions: this.hasColumnDimensions(),
+          valueColumnsWidth: this.getPivotValueColumnsWidth(),
+          firstColumnWidth: this.getPivotFirstColumnWidth(),
           measureHeaders: this.makePivotMeasureHeaders(),
           measureLabels: this.makePivotMeasureLabels(),
           pivotColumnOrder: this.makePivotColumnOrder(),
@@ -617,6 +618,26 @@ export class ChartPivotTableComponent implements OnChanges {
 
   private hasColumnDimensions() {
     return (this.chart.pivotColumns || []).length > 0;
+  }
+
+  private isPivotValueColumn(item: { field: string }) {
+    let { field } = item;
+    let fieldParts = field.split('|');
+    let valueField = fieldParts[fieldParts.length - 1];
+
+    return (
+      (this.chart.pivotValues || [])
+        .map(pivotValue => pivotValue.field)
+        .indexOf(valueField) > -1
+    );
+  }
+
+  private getPivotFirstColumnWidth() {
+    return this.chart.firstColumnWidth || DEFAULT_PIVOT_FIRST_COLUMN_WIDTH;
+  }
+
+  private getPivotValueColumnsWidth() {
+    return this.chart.valueColumnsWidth || DEFAULT_PIVOT_COLUMNS_WIDTH;
   }
 
   private makePivotColumnOrder() {

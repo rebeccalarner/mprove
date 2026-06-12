@@ -62,6 +62,7 @@ import type { ChartX } from '#common/zod/backend/chart-x';
 import type { MconfigX } from '#common/zod/backend/mconfig-x';
 import type { ModelX } from '#common/zod/backend/model-x';
 import type { QueryEstimate } from '#common/zod/backend/query-estimate';
+import type { MconfigChart } from '#common/zod/blockml/mconfig-chart';
 import type { ModelField } from '#common/zod/blockml/model-field';
 import type { ModelFieldY } from '#common/zod/blockml/model-field-y';
 import type { Query } from '#common/zod/blockml/query';
@@ -1302,6 +1303,30 @@ export class ModelsComponent implements OnInit, OnDestroy {
     newMconfig.chart.title = chartTitle;
 
     // query not changed
+    if (this.model.type === ModelTypeEnum.Malloy) {
+      this.chartService.editChart({
+        mconfig: newMconfig,
+        isDraft: this.chart.draft,
+        chartId: this.chart.chartId,
+        queryOperation: {
+          type: QueryOperationTypeEnum.Get,
+          timezone: newMconfig.timezone
+        }
+      });
+    } else {
+      this.chartService.editChart({
+        mconfig: newMconfig,
+        isDraft: this.chart.draft,
+        chartId: this.chart.chartId
+      });
+    }
+  }
+
+  updateChartPart(item: { chartPart: MconfigChart }) {
+    let { chartPart } = item;
+    let newMconfig = this.structService.makeMconfig();
+    newMconfig.chart = Object.assign({}, newMconfig.chart, chartPart);
+
     if (this.model.type === ModelTypeEnum.Malloy) {
       this.chartService.editChart({
         mconfig: newMconfig,

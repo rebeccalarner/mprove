@@ -28,6 +28,20 @@ export function toFileChartOptions(item: {
         : undefined;
   }
 
+  if (UI_CHART_TYPES.pivot.indexOf(chart.type) > -1) {
+    options.first_column_width =
+      isDefined(chart.firstColumnWidth) &&
+      chart.firstColumnWidth !== DEFAULT_CHART.firstColumnWidth
+        ? (chart.firstColumnWidth as unknown as string)
+        : undefined;
+
+    options.value_columns_width =
+      isDefined(chart.valueColumnsWidth) &&
+      chart.valueColumnsWidth !== DEFAULT_CHART.valueColumnsWidth
+        ? (chart.valueColumnsWidth as unknown as string)
+        : undefined;
+  }
+
   // series
 
   let partSeries: FileChartOptionsSeriesElement[] = [];

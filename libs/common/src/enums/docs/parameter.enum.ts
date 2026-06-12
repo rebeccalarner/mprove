@@ -118,6 +118,8 @@ export enum ParameterEnum {
   DefaultExpanded = 'default_expanded',
   ShowMenu = 'show_menu',
   Theme = 'theme',
+  FirstColumnWidth = 'first_column_width',
+  ValueColumnsWidth = 'value_columns_width',
   XAxis = 'x_axis',
   YAxis = 'y_axis',
   Series = 'series',

@@ -1174,6 +1174,9 @@
                         [isStoreModel]="mconfig.modelType === modelTypeStore"
                         [queryStatus]="query.status"
                         [chartInstanceId]="'model-chart'"
+                        (chartPartChange)="
+                          updateChartPart({ chartPart: $event })
+                        "
                       ></m-chart-view>
                     </div>
                   </div>

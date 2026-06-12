@@ -46,6 +46,8 @@ export function checkChartOptionsParameters<T extends drcType>(
           if (
             [
               ParameterEnum.Format.toString(),
+              ParameterEnum.FirstColumnWidth.toString(),
+              ParameterEnum.ValueColumnsWidth.toString(),
               ParameterEnum.XAxis.toString(),
               ParameterEnum.YAxis.toString(),
               ParameterEnum.Series.toString()
@@ -142,6 +144,31 @@ export function checkChartOptionsParameters<T extends drcType>(
           }
 
           if (
+            [
+              ParameterEnum.FirstColumnWidth.toString(),
+              ParameterEnum.ValueColumnsWidth.toString()
+            ].indexOf(parameter) > -1 &&
+            tileWithType.type !== ChartTypeEnum.PivotTable
+          ) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.OPTIONS_UNKNOWN_PARAMETER,
+                message: `parameter "${parameter}" can be used only inside options for pivot table charts`,
+                lines: [
+                  {
+                    line: tile.options[
+                      (parameter + LINE_NUM) as keyof FileChartOptions
+                    ] as number,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          if (
             [ParameterEnum.Format.toString()].indexOf(parameter) > -1 &&
             !(tile.options[parameter as keyof FileChartOptions] as any)
               .toString()
@@ -153,6 +180,36 @@ export function checkChartOptionsParameters<T extends drcType>(
                 message:
                   `parameter "${parameter}" value must be ` +
                   '"true" or "false" if specified',
+                lines: [
+                  {
+                    line: tile.options[
+                      (parameter + LINE_NUM) as keyof FileChartOptions
+                    ] as number,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          if (
+            [
+              ParameterEnum.FirstColumnWidth.toString(),
+              ParameterEnum.ValueColumnsWidth.toString()
+            ].indexOf(parameter) > -1 &&
+            (!(tile.options[parameter as keyof FileChartOptions] as any)
+              .toString()
+              .match(MyRegex.CAPTURE_DIGITS_START_TO_END_G()) ||
+              Number(tile.options[parameter as keyof FileChartOptions]) <= 0)
+          ) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.OPTIONS_WRONG_PARAMETER_VALUE,
+                message:
+                  `parameter "${parameter}" value must be ` +
+                  'a positive integer if specified',
                 lines: [
                   {
                     line: tile.options[

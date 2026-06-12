@@ -686,8 +686,7 @@
   <div
     *ngIf="
       isReport === false &&
-      [chartTypeEnumTable, chartTypeEnumSingle].indexOf(chart?.type) < 0 &&
-      (uiChartTypes.pivot.indexOf(chart.type) < 0 || isDebugPivot === true)
+      [chartTypeEnumTable, chartTypeEnumSingle].indexOf(chart?.type) < 0
     "
     class="text-s500 mt-7 flex h-12 cursor-pointer select-none flex-row items-start justify-start pr-5 font-semibold"
     (click)="toggleChartOptions()"
@@ -711,13 +710,15 @@
 
   <div
     *ngIf="
-      isDebugPivot === true &&
       chartOptionsIsExpanded === true &&
       uiChartTypes.pivot.indexOf(chart.type) > -1
     "
     class="flex flex-col pl-5"
   >
-    <div class="mb-5 ml-[32px] flex flex-row items-center">
+    <div
+      *ngIf="isDebugPivot === true"
+      class="mb-5 ml-[32px] flex flex-row items-center"
+    >
       <div
         class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
         >Theme</div
@@ -732,6 +733,48 @@
           {{ theme.label }}
         </option>
       </select>
+    </div>
+
+    <div class="mb-5 ml-[32px] flex flex-row items-center">
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >First column width</div
+      >
+
+      <input
+        class="border-s300 ml-5 h-9 w-24 rounded border px-2 text-sm"
+        type="number"
+        min="1"
+        step="1"
+        [value]="chart.firstColumnWidth || defaultPivotFirstColumnWidth"
+        (change)="
+          pivotWidthChange({
+            event: $event,
+            field: 'firstColumnWidth'
+          })
+        "
+      />
+    </div>
+
+    <div class="mb-5 ml-[32px] flex flex-row items-center">
+      <div
+        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
+        >Value columns width</div
+      >
+
+      <input
+        class="border-s300 ml-5 h-9 w-24 rounded border px-2 text-sm"
+        type="number"
+        min="1"
+        step="1"
+        [value]="chart.valueColumnsWidth || defaultPivotColumnsWidth"
+        (change)="
+          pivotWidthChange({
+            event: $event,
+            field: 'valueColumnsWidth'
+          })
+        "
+      />
     </div>
   </div>
 

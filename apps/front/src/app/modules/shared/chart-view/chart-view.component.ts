@@ -1,8 +1,10 @@
 import {
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
+  Output,
   SimpleChanges
 } from '@angular/core';
 import {
@@ -90,6 +92,9 @@ export class ChartViewComponent implements OnChanges {
 
   @Input()
   queryStatus: QueryStatusEnum;
+
+  @Output()
+  chartPartChange = new EventEmitter<MconfigChart>();
 
   echartsInstance: any;
 

@@ -106,6 +106,7 @@
     [qData]="qData"
     [mconfigFields]="mconfigFields"
     [chart]="chart"
+    (chartPartChange)="chartPartChange.emit($event)"
   ></m-chart-pivot-table>
 
   <m-chart-single

@@ -101,6 +101,12 @@ export function wrapMconfigChart(item: {
           ? toBooleanFromLowercaseString(options?.format)
           : DEFAULT_CHART.format,
     pivotTheme: DEFAULT_CHART.pivotTheme,
+    firstColumnWidth: isDefined(options?.first_column_width)
+      ? Number(options.first_column_width)
+      : DEFAULT_CHART.firstColumnWidth,
+    valueColumnsWidth: isDefined(options?.value_columns_width)
+      ? Number(options.value_columns_width)
+      : DEFAULT_CHART.valueColumnsWidth,
     xAxis: xAxis,
     yAxis: yAxis,
     series: series

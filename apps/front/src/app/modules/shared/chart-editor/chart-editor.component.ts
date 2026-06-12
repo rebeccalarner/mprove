@@ -10,7 +10,11 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { DEFAULT_CHART_Y_AXIS } from '#common/constants/mconfig-chart';
+import {
+  DEFAULT_CHART_Y_AXIS,
+  DEFAULT_PIVOT_COLUMNS_WIDTH,
+  DEFAULT_PIVOT_FIRST_COLUMN_WIDTH
+} from '#common/constants/mconfig-chart';
 import {
   EMPTY_MCONFIG_FIELD,
   FORMAT_NUMBER_EXAMPLES
@@ -95,6 +99,9 @@ export class ChartEditorComponent implements OnChanges {
     { value: 'contrast', label: 'Contrast' },
     { value: 'large', label: 'Large' }
   ];
+
+  defaultPivotFirstColumnWidth = DEFAULT_PIVOT_FIRST_COLUMN_WIDTH;
+  defaultPivotColumnsWidth = DEFAULT_PIVOT_COLUMNS_WIDTH;
 
   fieldResultEnum = FieldResultEnum;
 
@@ -672,6 +679,23 @@ export class ChartEditorComponent implements OnChanges {
     let newChart: MconfigChart = <MconfigChart>{
       pivotTheme: pivotTheme
     };
+
+    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
+  }
+
+  pivotWidthChange(item: {
+    event: Event;
+    field: 'firstColumnWidth' | 'valueColumnsWidth';
+  }) {
+    let { event, field } = item;
+    let value = Number((event.target as HTMLInputElement).value);
+
+    if (!Number.isFinite(value) || value < 1) {
+      return;
+    }
+
+    let newChart: MconfigChart = <MconfigChart>{};
+    newChart[field] = Math.round(value);
 
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
   }

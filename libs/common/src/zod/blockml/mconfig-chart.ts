@@ -19,6 +19,8 @@ export let zMconfigChart = z
     pivotValues: z.array(zMconfigChartPivotValue).nullish(),
     format: z.boolean().nullish(),
     pivotTheme: z.string().nullish(),
+    firstColumnWidth: z.number().nullish(),
+    valueColumnsWidth: z.number().nullish(),
     xAxis: zMconfigChartXAxis,
     yAxis: z.array(zMconfigChartYAxis),
     series: z.array(zMconfigChartSeries)
