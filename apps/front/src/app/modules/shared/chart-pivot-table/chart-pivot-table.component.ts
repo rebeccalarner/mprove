@@ -728,6 +728,17 @@ export class ChartPivotTableComponent implements OnChanges {
         --tbw-grid-font-family: 'Montserrat', sans-serif;
       }
 
+      .tbw-grid-root,
+      .header-row .cell,
+      .data-grid-row .cell,
+      .pivot-group-row .cell,
+      .pivot-leaf-row .cell,
+      .pivot-grand-total-row .cell,
+      .pivot-label,
+      .pivot-count {
+        font-family: 'Montserrat', sans-serif;
+      }
+
       .header-row .cell,
       .data-grid-row .cell {
         border-right: 1px solid var(--tbw-color-border, #d1d5db);
