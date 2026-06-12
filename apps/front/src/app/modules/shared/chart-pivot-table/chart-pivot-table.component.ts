@@ -663,8 +663,8 @@ export class ChartPivotTableComponent implements OnChanges {
 
       .faux-vscroll {
         background: transparent !important;
-        height: calc(100% - 56px);
-        margin-top: 56px;
+        height: calc(100% - 62px);
+        margin-top: 62px;
         width: 8px;
       }
 

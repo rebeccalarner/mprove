@@ -65,21 +65,26 @@ export function setChartFields<T extends Mconfig>(item: {
       ...selectedMCsResultIsNotNumber
     ];
 
-    let pivotRows =
-      mconfig.chart.pivotRows?.length > 0 &&
-      mconfig.chart.pivotRows.every(x => mconfig.select.includes(x))
-        ? mconfig.chart.pivotRows
-        : selectedDimensions.length > 0
-          ? [selectedDimensions[0]]
-          : [];
+    let pivotRows = (mconfig.chart.pivotRows || []).filter(
+      x => mconfig.select.includes(x) && selectedDimensions.indexOf(x) > -1
+    );
 
-    let pivotColumns =
-      mconfig.chart.pivotColumns?.length > 0 &&
-      mconfig.chart.pivotColumns.every(x => mconfig.select.includes(x))
-        ? mconfig.chart.pivotColumns.filter(x => pivotRows.indexOf(x) < 0)
-        : selectedDimensions.length > 1
-          ? [selectedDimensions.filter(x => pivotRows.indexOf(x) < 0)[0]]
-          : [];
+    let pivotColumns = (mconfig.chart.pivotColumns || []).filter(
+      x =>
+        mconfig.select.includes(x) &&
+        selectedDimensions.indexOf(x) > -1 &&
+        pivotRows.indexOf(x) < 0
+    );
+
+    selectedDimensions
+      .filter(x => pivotRows.indexOf(x) < 0 && pivotColumns.indexOf(x) < 0)
+      .forEach(fieldId => {
+        if (pivotColumns.length === 0) {
+          pivotColumns = [...pivotColumns, fieldId];
+        } else {
+          pivotRows = [...pivotRows, fieldId];
+        }
+      });
 
     let pivotValues =
       mconfig.chart.pivotValues?.length > 0 &&
