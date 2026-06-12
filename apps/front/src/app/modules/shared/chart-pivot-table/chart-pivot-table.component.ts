@@ -629,6 +629,13 @@ export class ChartPivotTableComponent implements OnChanges {
         border-top: 1px solid var(--tbw-color-border, #d1d5db);
       }
 
+      .pivot-group-row .cell:not(:first-child),
+      .pivot-leaf-row .cell:not(:first-child),
+      .pivot-grand-total-row .cell:not(:first-child) {
+        justify-content: flex-end;
+        text-align: right;
+      }
+
       .header,
       .pivot-group-row,
       .pivot-group-row:hover {
