@@ -31,6 +31,7 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
   hasColumnDimensions: boolean;
   measureHeaders: Record<string, PivotFieldHeader>;
   measureLabels: Record<string, string>;
+  pivotColumnOrder: Record<string, number>;
   pivotValueFields: string[];
   rowHeaders: PivotFieldHeader[];
 }> {
@@ -43,7 +44,7 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
   override processColumns(columns: readonly ColumnConfig[]): ColumnConfig[] {
     let pivotMeasureCount = this.config.pivotValueFields.length;
 
-    return columns.map(column => {
+    let processedColumns = columns.map(column => {
       if (column.field === '__pivotLabel') {
         let width = this.estimateRowGroupHeaderWidth();
 
@@ -77,6 +78,66 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
         width: header.width
       };
     });
+
+    return this.sortPivotValueColumns({ columns: processedColumns });
+  }
+
+  private sortPivotValueColumns(item: { columns: ColumnConfig[] }) {
+    let { columns } = item;
+
+    if (!this.config.hasColumnDimensions) {
+      return columns;
+    }
+
+    return [...columns].sort((a, b) => {
+      let aOrder = this.getPivotValueColumnOrder({ column: a });
+      let bOrder = this.getPivotValueColumnOrder({ column: b });
+
+      if (aOrder === bOrder) {
+        return (
+          this.getPivotValueFieldOrder({ column: a }) -
+          this.getPivotValueFieldOrder({ column: b })
+        );
+      }
+
+      return aOrder - bOrder;
+    });
+  }
+
+  private getPivotValueFieldOrder(item: { column: ColumnConfig }) {
+    let { column } = item;
+    let fieldParts = column.field.split('|');
+    let valueField = fieldParts[fieldParts.length - 1];
+    let order = this.config.pivotValueFields.indexOf(valueField);
+
+    return order === -1 ? 0 : order;
+  }
+
+  private getPivotValueColumnOrder(item: { column: ColumnConfig }) {
+    let { column } = item;
+
+    if (column.field === '__pivotLabel') {
+      return Number.NEGATIVE_INFINITY;
+    }
+
+    if (column.field === '__pivotTotal') {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    let fieldParts = column.field.split('|');
+    let valueField = fieldParts[fieldParts.length - 1];
+    let isPivotValueColumn =
+      this.config.pivotValueFields.indexOf(valueField) > -1;
+
+    if (!isPivotValueColumn || fieldParts.length < 2) {
+      return Number.POSITIVE_INFINITY - 1;
+    }
+
+    let columnKey = fieldParts.slice(0, -1).join('|');
+
+    return (
+      this.config.pivotColumnOrder[columnKey] ?? Number.POSITIVE_INFINITY - 1
+    );
   }
 
   private makePivotColumnHeader(item: {
@@ -419,6 +480,7 @@ export class ChartPivotTableComponent implements OnChanges {
           hasColumnDimensions: this.hasColumnDimensions(),
           measureHeaders: this.makePivotMeasureHeaders(),
           measureLabels: this.makePivotMeasureLabels(),
+          pivotColumnOrder: this.makePivotColumnOrder(),
           pivotValueFields: (this.chart.pivotValues || []).map(
             pivotValue => pivotValue.field
           ),
@@ -554,6 +616,27 @@ export class ChartPivotTableComponent implements OnChanges {
 
   private hasColumnDimensions() {
     return (this.chart.pivotColumns || []).length > 0;
+  }
+
+  private makePivotColumnOrder() {
+    let order: Record<string, number> = {};
+    let pivotColumns = this.chart.pivotColumns || [];
+
+    if (pivotColumns.length === 0) {
+      return order;
+    }
+
+    this.rows.forEach(row => {
+      let columnKey = pivotColumns
+        .map(fieldId => String(row[fieldId] ?? ''))
+        .join('|');
+
+      if (order[columnKey] === undefined) {
+        order[columnKey] = Object.keys(order).length;
+      }
+    });
+
+    return order;
   }
 
   private getPivotFieldPrefixes(item: { fieldId: string }) {
