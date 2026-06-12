@@ -688,7 +688,7 @@
       isReport === false &&
       [chartTypeEnumTable, chartTypeEnumSingle].indexOf(chart?.type) < 0
     "
-    class="text-s500 mt-7 flex h-12 cursor-pointer select-none flex-row items-start justify-start pr-5 font-semibold"
+    class="text-s500 mt-7 flex h-12 w-fit cursor-pointer select-none flex-row items-start justify-start pr-5 font-semibold"
     (click)="toggleChartOptions()"
   >
     <m-chevron-right-icon
@@ -743,9 +743,9 @@
 
       <input
         class="border-s300 ml-5 h-9 w-24 rounded border px-2 text-sm"
-        type="number"
-        min="1"
-        step="1"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
         [value]="chart.firstColumnWidth || defaultPivotFirstColumnWidth"
         (change)="
           pivotWidthChange({
@@ -764,9 +764,9 @@
 
       <input
         class="border-s300 ml-5 h-9 w-24 rounded border px-2 text-sm"
-        type="number"
-        min="1"
-        step="1"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
         [value]="chart.valueColumnsWidth || defaultPivotColumnsWidth"
         (change)="
           pivotWidthChange({
