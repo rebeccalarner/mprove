@@ -257,7 +257,9 @@ export class ChartSaveAsDialogComponent implements OnInit {
   }
 
   save() {
-    if (this.titleForm.controls['title'].valid) {
+    let saveDisabled = this.isSaveDisabled();
+
+    if (this.titleForm.controls['title'].valid && saveDisabled === false) {
       let newTitle = this.titleForm.controls['title'].value;
 
       if (this.chartSaveAs === ChartSaveAsEnum.NEW_CHART) {
@@ -271,6 +273,25 @@ export class ChartSaveAsDialogComponent implements OnInit {
         this.saveAsTile({ newTitle: newTitle });
       }
     }
+  }
+
+  isSaveDisabled() {
+    let titleInvalid = this.titleForm.controls['title'].invalid;
+    let dashboardNotSelected = this.selectedDashboardId === undefined;
+    let dashboardNotLoaded = this.selectedDashboardLoaded === false;
+    let tileNotSelected = this.selectedTileTitle === undefined;
+    let replaceExistingTile =
+      this.tileSaveAs === TileSaveAsEnum.REPLACE_EXISTING_TILE;
+    let tileOfDashboard =
+      this.chartSaveAs === ChartSaveAsEnum.TILE_OF_DASHBOARD;
+
+    return (
+      titleInvalid ||
+      (tileOfDashboard &&
+        (dashboardNotSelected ||
+          dashboardNotLoaded ||
+          (replaceExistingTile && tileNotSelected)))
+    );
   }
 
   newChartOnClick() {
@@ -295,6 +316,7 @@ export class ChartSaveAsDialogComponent implements OnInit {
 
   selectedDashboardChange() {
     this.selectedTileTitle = undefined;
+    this.selectedDashboard = undefined;
     this.setSelectedDashboard();
     this.makePath();
     this.titleForm.get('title').updateValueAndValidity();
@@ -320,12 +342,14 @@ export class ChartSaveAsDialogComponent implements OnInit {
 
     this.spinner.show(this.selectedDashboardSpinnerName);
 
+    let selectedDashboardId = this.selectedDashboardId;
+
     let payload: ToBackendGetDashboardRequestPayload = {
       projectId: nav.projectId,
       repoId: nav.repoId,
       branchId: nav.branchId,
       envId: nav.envId,
-      dashboardId: this.selectedDashboardId,
+      dashboardId: selectedDashboardId,
       timezone: 'UTC'
     };
 
@@ -336,10 +360,18 @@ export class ChartSaveAsDialogComponent implements OnInit {
       })
       .pipe(
         tap((resp: ToBackendGetDashboardResponse) => {
-          if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
+          let isSelectedDashboard =
+            selectedDashboardId === this.selectedDashboardId;
+
+          if (
+            resp.info?.status === ResponseInfoStatusEnum.Ok &&
+            isSelectedDashboard
+          ) {
             this.selectedDashboard = resp.payload.dashboard;
 
             this.selectedDashboardLoaded = true;
+
+            this.titleForm.get('title').updateValueAndValidity();
 
             this.spinner.hide(this.selectedDashboardSpinnerName);
 

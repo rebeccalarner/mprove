@@ -305,23 +305,11 @@
       class="bg-m600 text-m0 w-28 rounded py-3 text-base font-medium focus:outline-none"
       type="button"
       [ngClass]="{
-        'bg-m600':
-          chartSaveAs === chartSaveAsEnum.NEW_CHART ||
-          (!!selectedDashboardId &&
-            (tileSaveAs === tileSaveAsEnum.NEW_TILE || !!selectedTileTitle)),
-        'bg-s400 cursor-default':
-          chartSaveAs === chartSaveAsEnum.TILE_OF_DASHBOARD &&
-          (selectedDashboardId === undefined ||
-            (tileSaveAs === tileSaveAsEnum.REPLACE_EXISTING_TILE &&
-              selectedTileTitle === undefined))
+        'bg-m600': isSaveDisabled() === false,
+        'bg-s400 cursor-default': isSaveDisabled() === true
       }"
       (click)="save()"
-      [disabled]="
-        chartSaveAs === chartSaveAsEnum.TILE_OF_DASHBOARD &&
-        (selectedDashboardId === undefined ||
-          (tileSaveAs === tileSaveAsEnum.REPLACE_EXISTING_TILE &&
-            selectedTileTitle === undefined))
-      "
+      [disabled]="isSaveDisabled()"
       >Save</button
     >
 
