@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { BlockmlConfig } from '#blockml/config/blockml-config';
 import { BmError } from '#blockml/models/bm-error';
 import { LINE_NUM } from '#common/constants/top-blockml';
+import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
 import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { CallerEnum } from '#common/enums/special/caller.enum';
 import { ErTitleEnum } from '#common/enums/special/er-title.enum';
@@ -33,6 +34,8 @@ export function checkChartOptionsParameters<T extends drcType>(
     let errorsOnStart = item.errors.length;
 
     x.tiles.forEach(tile => {
+      let tileWithType = tile as { type?: ChartTypeEnum };
+
       if (isUndefined(tile.options)) {
         return;
       }
@@ -102,6 +105,28 @@ export function checkChartOptionsParameters<T extends drcType>(
               new BmError({
                 title: ErTitleEnum.OPTIONS_UNEXPECTED_DICTIONARY,
                 message: `parameter "${parameter}" cannot be a dictionary`,
+                lines: [
+                  {
+                    line: tile.options[
+                      (parameter + LINE_NUM) as keyof FileChartOptions
+                    ] as number,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          if (
+            [ParameterEnum.Format.toString()].indexOf(parameter) > -1 &&
+            tileWithType.type === ChartTypeEnum.PivotTable
+          ) {
+            item.errors.push(
+              new BmError({
+                title: ErTitleEnum.OPTIONS_UNKNOWN_PARAMETER,
+                message: `parameter "${parameter}" cannot be used inside options for pivot table charts`,
                 lines: [
                   {
                     line: tile.options[

@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { BaseGridPlugin, type ColumnConfig } from '@toolbox-web/grid';
 import type { GridConfig } from '@toolbox-web/grid-angular';
+import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import type { MconfigField } from '#common/zod/backend/mconfig-field';
 import type { MconfigChart } from '#common/zod/blockml/mconfig-chart';
@@ -352,9 +353,6 @@ export class ChartPivotTableComponent implements OnChanges {
   @Input()
   qData: QDataRow[];
 
-  @Input()
-  isFormat: boolean;
-
   rows: PivotTableRow[] = [];
   gridConfig: GridConfig<PivotTableRow>;
   customStyles: string;
@@ -394,10 +392,12 @@ export class ChartPivotTableComponent implements OnChanges {
 
       this.mconfigFields.forEach(field => {
         let cell = row[field.id];
+        let formattedValue = cell?.valueFmt ?? cell?.value;
+
         pivotRow[field.id] =
-          pivotValueFieldIds.indexOf(field.id) > -1 || this.isFormat === false
+          pivotValueFieldIds.indexOf(field.id) > -1
             ? Number(cell?.value)
-            : cell?.valueFmt;
+            : formattedValue;
       });
 
       return pivotRow;
@@ -566,19 +566,26 @@ export class ChartPivotTableComponent implements OnChanges {
   }
 
   private formatPivotValue(fieldId: string, value: number) {
-    if (this.isFormat === false) {
-      return `${value}`;
-    }
-
     let field = this.mconfigFields.find(
       mconfigField => mconfigField.id === fieldId
     );
     let struct = this.structQuery.getValue();
+    let fieldThousandsSeparatorTag = field?.mproveTags?.find(
+      tag => tag.key === ParameterEnum.ThousandsSeparator
+    );
+    let thousandsSeparator =
+      fieldThousandsSeparatorTag?.value ??
+      struct.mproveConfig.thousandsSeparator;
+    let formatNumber =
+      field?.formatNumber || struct.mproveConfig.formatNumber || undefined;
+
+    if (!formatNumber) {
+      return Number(value).toLocaleString().split(',').join(thousandsSeparator);
+    }
 
     return this.dataService.d3FormatValue({
       value: value,
-      formatNumber:
-        field?.formatNumber || struct.mproveConfig.formatNumber || undefined,
+      formatNumber: formatNumber,
       fieldResult: FieldResultEnum.Number,
       currencyPrefix:
         field?.currencyPrefix ||
@@ -588,7 +595,7 @@ export class ChartPivotTableComponent implements OnChanges {
         field?.currencySuffix ||
         struct.mproveConfig.currencySuffix ||
         undefined,
-      thousandsSeparator: struct.mproveConfig.thousandsSeparator
+      thousandsSeparator: thousandsSeparator
     });
   }
 

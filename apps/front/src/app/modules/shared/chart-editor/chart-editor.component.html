@@ -224,7 +224,7 @@
           [cdkDropListData]="pivotValueColumns"
           [style.height]="pivotValuesListHeight"
           (cdkDropListDropped)="pivotValuesDrop({ event: $event })"
-          class="border-s300 mt-1 flex w-max min-w-[220px] flex-col items-stretch space-y-1 rounded border p-2"
+          class="border-s300 mt-1 flex min-h-[50px] w-max min-w-[220px] flex-col items-stretch space-y-1 rounded border p-2"
         >
           <div
             *ngFor="let column of pivotValueColumns"

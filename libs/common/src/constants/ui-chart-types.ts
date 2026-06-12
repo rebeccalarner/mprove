@@ -21,7 +21,7 @@ export const UI_CHART_TYPES = {
   //
   // options
   //
-  format: [ChartTypeEnum.Table, ChartTypeEnum.PivotTable],
+  format: [ChartTypeEnum.Table],
   pivot: [ChartTypeEnum.PivotTable],
   xAxisGroup: [ChartTypeEnum.Line, ChartTypeEnum.Bar, ChartTypeEnum.Scatter],
   xAxis: {

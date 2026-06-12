@@ -97,9 +97,12 @@ export function wrapMconfigChart(item: {
     })),
 
     // options
-    format: isDefined(options?.format)
-      ? toBooleanFromLowercaseString(options?.format)
-      : DEFAULT_CHART.format,
+    format:
+      type === ChartTypeEnum.PivotTable
+        ? true
+        : isDefined(options?.format)
+          ? toBooleanFromLowercaseString(options?.format)
+          : DEFAULT_CHART.format,
     pivotTheme: DEFAULT_CHART.pivotTheme,
     xAxis: xAxis,
     yAxis: yAxis,
