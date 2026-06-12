@@ -44,6 +44,13 @@ interface PivotFieldHeader {
   prefix: string[];
 }
 
+interface PivotValueFormatMetadata {
+  currencyPrefix: string | undefined;
+  currencySuffix: string | undefined;
+  formatNumber: string | undefined;
+  thousandsSeparator: string;
+}
+
 class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
   hasColumnDimensions: boolean;
   valueColumnsWidth: number;
@@ -325,34 +332,6 @@ class PivotAlwaysExpandedPlugin extends BaseGridPlugin<{ enabled: boolean }> {
   }
 }
 
-class PivotHideGroupTotalsPlugin extends BaseGridPlugin<{ enabled: boolean }> {
-  static override readonly manifest = {
-    hookPriority: { afterRender: 100 }
-  };
-
-  readonly name = 'mprovePivotHideGroupTotals';
-
-  override afterRender() {
-    if (!this.config.enabled) {
-      return;
-    }
-
-    let gridElement = this.grid as unknown as HTMLElement;
-
-    gridElement.querySelectorAll('.pivot-group-row').forEach(rowElement => {
-      rowElement.querySelectorAll('.pivot-count').forEach(countElement => {
-        countElement.textContent = '';
-      });
-
-      rowElement.querySelectorAll('.cell').forEach((cellElement, cellIndex) => {
-        if (cellIndex > 0) {
-          cellElement.textContent = '';
-        }
-      });
-    });
-  }
-}
-
 @Component({
   standalone: false,
   selector: 'm-chart-pivot-table',
@@ -361,6 +340,14 @@ class PivotHideGroupTotalsPlugin extends BaseGridPlugin<{ enabled: boolean }> {
 export class ChartPivotTableComponent implements OnChanges {
   private static themeLinkId = 'mprove-toolbox-grid-theme';
   private pendingColumnResizeDetail: PivotColumnResizeDetail | undefined;
+  private mconfigFieldById = new Map<string, MconfigField>();
+  private pivotValueFieldIds: string[] = [];
+  private pivotValueFieldIdSet = new Set<string>();
+  private pivotValueFormatMetadataByFieldId = new Map<
+    string,
+    PivotValueFormatMetadata
+  >();
+  private formattedPivotValueCache = new Map<string, string>();
 
   @Input()
   chart: MconfigChart;
@@ -394,6 +381,7 @@ export class ChartPivotTableComponent implements OnChanges {
   }
 
   ngOnChanges() {
+    this.preparePivotCaches();
     this.rows = this.makeRows();
     this.measureHeaderItems = this.makeMeasureHeaderItems();
     this.measureListHeader = this.measureHeaderItems
@@ -447,18 +435,14 @@ export class ChartPivotTableComponent implements OnChanges {
   private makeRows() {
     return (this.qData || []).map(row => {
       let pivotRow: PivotTableRow = {};
-      let pivotValueFieldIds = (this.chart.pivotValues || []).map(
-        pivotValue => pivotValue.field
-      );
 
       this.mconfigFields.forEach(field => {
         let cell = row[field.id];
         let formattedValue = cell?.valueFmt ?? cell?.value;
 
-        pivotRow[field.id] =
-          pivotValueFieldIds.indexOf(field.id) > -1
-            ? Number(cell?.value)
-            : formattedValue;
+        pivotRow[field.id] = this.pivotValueFieldIdSet.has(field.id)
+          ? Number(cell?.value)
+          : formattedValue;
       });
 
       return pivotRow;
@@ -483,22 +467,15 @@ export class ChartPivotTableComponent implements OnChanges {
           measureHeaders: this.makePivotMeasureHeaders(),
           measureLabels: this.makePivotMeasureLabels(),
           pivotColumnOrder: this.makePivotColumnOrder(),
-          pivotValueFields: (this.chart.pivotValues || []).map(
-            pivotValue => pivotValue.field
-          ),
+          pivotValueFields: this.pivotValueFieldIds,
           rowHeaders: (this.chart.pivotRows || []).map(fieldId => {
-            let field = this.mconfigFields.find(
-              mconfigField => mconfigField.id === fieldId
-            );
+            let field = this.mconfigFieldById.get(fieldId);
 
             return {
               label: field?.label || fieldId,
               prefix: this.getPivotFieldPrefixes({ fieldId: fieldId })
             };
           })
-        }),
-        new PivotHideGroupTotalsPlugin({
-          enabled: (this.chart.pivotRows || []).length > 1
         }),
         new PivotAlwaysExpandedPlugin({
           enabled: (this.chart.pivotRows || []).length > 1
@@ -535,9 +512,7 @@ export class ChartPivotTableComponent implements OnChanges {
   private makeMeasureHeaderItems() {
     return (this.chart.pivotValues || [])
       .map(pivotValue => {
-        let field = this.mconfigFields.find(
-          mconfigField => mconfigField.id === pivotValue.field
-        );
+        let field = this.mconfigFieldById.get(pivotValue.field);
         let name = pivotValue.label || field?.label || pivotValue.field;
         let prefixes = field ? [field.topLabel, field.groupLabel] : [];
         let parts = [
@@ -558,9 +533,7 @@ export class ChartPivotTableComponent implements OnChanges {
   private makeDimensionHeaderItems() {
     return (this.chart.pivotColumns || [])
       .map(fieldId => {
-        let field = this.mconfigFields.find(
-          mconfigField => mconfigField.id === fieldId
-        );
+        let field = this.mconfigFieldById.get(fieldId);
 
         if (!field) {
           return {
@@ -588,9 +561,7 @@ export class ChartPivotTableComponent implements OnChanges {
     let labels: Record<string, string> = {};
 
     (this.chart.pivotValues || []).forEach(pivotValue => {
-      let field = this.mconfigFields.find(
-        mconfigField => mconfigField.id === pivotValue.field
-      );
+      let field = this.mconfigFieldById.get(pivotValue.field);
 
       labels[pivotValue.field] =
         pivotValue.label || field?.label || pivotValue.field;
@@ -603,9 +574,7 @@ export class ChartPivotTableComponent implements OnChanges {
     let headers: Record<string, PivotFieldHeader> = {};
 
     (this.chart.pivotValues || []).forEach(pivotValue => {
-      let field = this.mconfigFields.find(
-        mconfigField => mconfigField.id === pivotValue.field
-      );
+      let field = this.mconfigFieldById.get(pivotValue.field);
 
       headers[pivotValue.field] = {
         label: pivotValue.label || field?.label || pivotValue.field,
@@ -625,11 +594,7 @@ export class ChartPivotTableComponent implements OnChanges {
     let fieldParts = field.split('|');
     let valueField = fieldParts[fieldParts.length - 1];
 
-    return (
-      (this.chart.pivotValues || [])
-        .map(pivotValue => pivotValue.field)
-        .indexOf(valueField) > -1
-    );
+    return this.pivotValueFieldIdSet.has(valueField);
   }
 
   private getPivotFirstColumnWidth() {
@@ -663,45 +628,92 @@ export class ChartPivotTableComponent implements OnChanges {
 
   private getPivotFieldPrefixes(item: { fieldId: string }) {
     let { fieldId } = item;
-    let field = this.mconfigFields.find(
-      mconfigField => mconfigField.id === fieldId
-    );
+    let field = this.mconfigFieldById.get(fieldId);
 
     return [field?.topLabel, field?.groupLabel].filter(label => !!label);
   }
 
-  private formatPivotValue(fieldId: string, value: number) {
-    let field = this.mconfigFields.find(
-      mconfigField => mconfigField.id === fieldId
+  private preparePivotCaches() {
+    this.mconfigFieldById = new Map<string, MconfigField>();
+    this.pivotValueFieldIds = (this.chart.pivotValues || []).map(
+      pivotValue => pivotValue.field
     );
-    let struct = this.structQuery.getValue();
-    let fieldThousandsSeparatorTag = field?.mproveTags?.find(
-      tag => tag.key === ParameterEnum.ThousandsSeparator
-    );
-    let thousandsSeparator =
-      fieldThousandsSeparatorTag?.value ??
-      struct.mproveConfig.thousandsSeparator;
-    let formatNumber =
-      field?.formatNumber || struct.mproveConfig.formatNumber || undefined;
+    this.pivotValueFieldIdSet = new Set(this.pivotValueFieldIds);
+    this.pivotValueFormatMetadataByFieldId = new Map<
+      string,
+      PivotValueFormatMetadata
+    >();
+    this.formattedPivotValueCache = new Map<string, string>();
 
-    if (!formatNumber) {
-      return Number(value).toLocaleString().split(',').join(thousandsSeparator);
+    (this.mconfigFields || []).forEach(field => {
+      this.mconfigFieldById.set(field.id, field);
+    });
+
+    let struct = this.structQuery.getValue();
+
+    this.pivotValueFieldIds.forEach(fieldId => {
+      let field = this.mconfigFieldById.get(fieldId);
+      let fieldThousandsSeparatorTag = field?.mproveTags?.find(
+        tag => tag.key === ParameterEnum.ThousandsSeparator
+      );
+      let thousandsSeparator =
+        fieldThousandsSeparatorTag?.value ??
+        struct.mproveConfig.thousandsSeparator;
+      let formatNumber =
+        field?.formatNumber || struct.mproveConfig.formatNumber || undefined;
+
+      this.pivotValueFormatMetadataByFieldId.set(fieldId, {
+        currencyPrefix:
+          field?.currencyPrefix ||
+          struct.mproveConfig.currencyPrefix ||
+          undefined,
+        currencySuffix:
+          field?.currencySuffix ||
+          struct.mproveConfig.currencySuffix ||
+          undefined,
+        formatNumber: formatNumber,
+        thousandsSeparator: thousandsSeparator
+      });
+    });
+  }
+
+  private formatPivotValue(fieldId: string, value: number) {
+    let cacheKey = `${fieldId}::${value}`;
+    let cachedValue = this.formattedPivotValueCache.get(cacheKey);
+
+    if (cachedValue !== undefined) {
+      return cachedValue;
     }
 
-    return this.dataService.d3FormatValue({
+    let metadata = this.pivotValueFormatMetadataByFieldId.get(fieldId);
+
+    if (!metadata) {
+      return String(value);
+    }
+
+    if (!metadata.formatNumber) {
+      let formattedValue = Number(value)
+        .toLocaleString()
+        .split(',')
+        .join(metadata.thousandsSeparator);
+
+      this.formattedPivotValueCache.set(cacheKey, formattedValue);
+
+      return formattedValue;
+    }
+
+    let formattedValue = this.dataService.d3FormatValue({
       value: value,
-      formatNumber: formatNumber,
+      formatNumber: metadata.formatNumber,
       fieldResult: FieldResultEnum.Number,
-      currencyPrefix:
-        field?.currencyPrefix ||
-        struct.mproveConfig.currencyPrefix ||
-        undefined,
-      currencySuffix:
-        field?.currencySuffix ||
-        struct.mproveConfig.currencySuffix ||
-        undefined,
-      thousandsSeparator: thousandsSeparator
+      currencyPrefix: metadata.currencyPrefix,
+      currencySuffix: metadata.currencySuffix,
+      thousandsSeparator: metadata.thousandsSeparator
     });
+
+    this.formattedPivotValueCache.set(cacheKey, formattedValue);
+
+    return formattedValue;
   }
 
   private makeCustomStyles() {

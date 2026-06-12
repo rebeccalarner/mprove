@@ -97,6 +97,18 @@
               >
             </div>
 
+            <button
+              class="text-s1 flex h-10 w-[90px] select-none items-center justify-center text-left text-base focus:outline-none"
+              [ngClass]="{
+                'text-s400 cursor-default':
+                  !nav || !nav.projectId || needSave === true,
+                'font-semibold': isReportsRouteActive === true
+              }"
+              (click)="navigateReports()"
+              [disabled]="!nav || !nav.projectId || needSave === true"
+              >Reports</button
+            >
+
             <div
               tp="Explorer role required"
               [tpIsEnabled]="member.isExplorer === false"
@@ -132,18 +144,6 @@
               (click)="navigateDashboards()"
               [disabled]="!nav || !nav.projectId || needSave === true"
               >Dashboards</button
-            >
-
-            <button
-              class="text-s1 flex h-10 w-[90px] select-none items-center justify-center text-left text-base focus:outline-none"
-              [ngClass]="{
-                'text-s400 cursor-default':
-                  !nav || !nav.projectId || needSave === true,
-                'font-semibold': isReportsRouteActive === true
-              }"
-              (click)="navigateReports()"
-              [disabled]="!nav || !nav.projectId || needSave === true"
-              >Reports</button
             >
           </div>
 
