@@ -39,6 +39,10 @@ import { SessionsService } from '#backend/services/db/sessions.service';
 import { StructsService } from '#backend/services/db/structs.service';
 import { ParentService } from '#backend/services/parent.service';
 import { TabService } from '#backend/services/tab.service';
+import {
+  DEFAULT_PIVOT_COLUMNS_WIDTH,
+  DEFAULT_PIVOT_FIRST_COLUMN_WIDTH
+} from '#common/constants/mconfig-chart';
 import { THROTTLE_CUSTOM } from '#common/constants/top-backend';
 import { MconfigParentTypeEnum } from '#common/enums/mconfig-parent-type.enum';
 import { ToBackendRequestInfoNameEnum } from '#common/enums/to/to-backend-request-info-name.enum';
@@ -82,7 +86,8 @@ export class DuplicateMconfigAndQueryController {
     @Body() body: ToBackendDuplicateMconfigAndQueryRequestDto
   ) {
     let { traceId } = body.info;
-    let { projectId, repoId, branchId, envId, oldMconfigId } = body.payload;
+    let { projectId, repoId, branchId, envId, oldMconfigId, setPivotDefaults } =
+      body.payload;
 
     let repoType = await this.sessionsService.checkRepoId({
       repoId: repoId,
@@ -175,10 +180,20 @@ export class DuplicateMconfigAndQueryController {
       storeTransformedRequestString: oldMconfig.storePart?.reqJsonParts
     });
 
+    let chart =
+      setPivotDefaults === true
+        ? {
+            ...oldMconfig.chart,
+            firstColumnWidth: DEFAULT_PIVOT_FIRST_COLUMN_WIDTH,
+            valueColumnsWidth: DEFAULT_PIVOT_COLUMNS_WIDTH
+          }
+        : oldMconfig.chart;
+
     let newMconfig = Object.assign({}, oldMconfig, <MconfigTab>{
       mconfigId: newMconfigId,
       queryId: newQueryId,
-      parentType: newMconfigParentType
+      parentType: newMconfigParentType,
+      chart: chart
     });
 
     let newQuery = Object.assign({}, oldQuery, <QueryTab>{

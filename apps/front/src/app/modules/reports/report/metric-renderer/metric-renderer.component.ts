@@ -163,7 +163,8 @@ export class MetricRendererComponent implements ICellRendererAngularComp {
         showNav: this.params.data.rowType === RowTypeEnum.Metric,
         isSelectValid: selectValidResult.isSelectValid,
         metricId: this.params.data.metricId,
-        isToDuplicateQuery: true
+        isToDuplicateQuery: true,
+        setPivotDefaults: true
       });
     } else if (this.params.data.rowType === RowTypeEnum.Formula) {
       let chartPointsData = this.uiQuery.getValue().chartPointsData;

@@ -75,6 +75,7 @@ export interface ChartDialogData {
   canAccessModel: boolean;
   showNav: boolean;
   isToDuplicateQuery: boolean;
+  setPivotDefaults?: boolean;
   metricId?: string;
   listen?: { [a: string]: string };
 }
@@ -191,7 +192,8 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
         repoId: nav.repoId,
         branchId: nav.branchId,
         envId: nav.envId,
-        oldMconfigId: oldMconfigId
+        oldMconfigId: oldMconfigId,
+        setPivotDefaults: this.ref.data.setPivotDefaults
       };
 
       let apiService = this.ref.data.apiService;

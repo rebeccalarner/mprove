@@ -7,7 +7,7 @@ import type { MconfigChartYAxis } from '#common/zod/blockml/mconfig-chart-y-axis
 export const CHART_DEFAULT_SIZE_FIELD_VALUE = 'size_field_value';
 
 export const DEFAULT_PIVOT_FIRST_COLUMN_WIDTH = 230;
-export const DEFAULT_PIVOT_COLUMNS_WIDTH = 200;
+export const DEFAULT_PIVOT_COLUMNS_WIDTH = 210;
 
 export const DEFAULT_CHART_SERIES_LINE: MconfigChartSeries = {
   dataField: undefined,

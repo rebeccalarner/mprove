@@ -13,7 +13,8 @@ export let zToBackendDuplicateMconfigAndQueryRequestPayload = z
     repoId: z.string(),
     branchId: z.string(),
     envId: z.string(),
-    oldMconfigId: z.string()
+    oldMconfigId: z.string(),
+    setPivotDefaults: z.boolean().nullish()
   })
   .meta({ id: 'ToBackendDuplicateMconfigAndQueryRequestPayload' });
 
