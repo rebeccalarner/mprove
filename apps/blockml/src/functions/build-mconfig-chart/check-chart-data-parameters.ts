@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { BlockmlConfig } from '#blockml/config/blockml-config';
 import { BmError } from '#blockml/models/bm-error';
+import { LINE_NUM } from '#common/constants/top-blockml';
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
 import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
@@ -12,7 +13,9 @@ import { FuncEnum } from '#common/enums/special/func.enum';
 import { LogTypeEnum } from '#common/enums/special/log-type.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { isUndefined } from '#common/functions/is-undefined';
+import { MyRegex } from '#common/models/my-regex';
 import { dcType } from '#common/types/dc-type';
+import type { FileChartDataPivotValue } from '#common/zod/blockml/internal/file-chart-data-pivot-value';
 import type { FileStore } from '#common/zod/blockml/internal/file-store';
 import type { Model } from '#common/zod/blockml/model';
 import { log } from '../extra/log';
@@ -104,6 +107,50 @@ export function checkChartDataParameters<T extends dcType>(
 
       if (
         tile.type === ChartTypeEnum.PivotTable &&
+        (isUndefined(tile.data) || isUndefined(tile.data.pivot_rows))
+      ) {
+        item.errors.push(
+          new BmError({
+            title: ErTitleEnum.TILE_DATA_MISSING_PIVOT_ROWS,
+            message:
+              `tile of type "${tile.type}" must have ` +
+              `"${ParameterEnum.PivotRows}" parameter in "${ParameterEnum.Data}"`,
+            lines: [
+              {
+                line: tile.data_line_num,
+                name: x.fileName,
+                path: x.filePath
+              }
+            ]
+          })
+        );
+        return;
+      }
+
+      if (
+        tile.type === ChartTypeEnum.PivotTable &&
+        (isUndefined(tile.data) || isUndefined(tile.data.pivot_columns))
+      ) {
+        item.errors.push(
+          new BmError({
+            title: ErTitleEnum.TILE_DATA_MISSING_PIVOT_COLUMNS,
+            message:
+              `tile of type "${tile.type}" must have ` +
+              `"${ParameterEnum.PivotColumns}" parameter in "${ParameterEnum.Data}"`,
+            lines: [
+              {
+                line: tile.data_line_num,
+                name: x.fileName,
+                path: x.filePath
+              }
+            ]
+          })
+        );
+        return;
+      }
+
+      if (
+        tile.type === ChartTypeEnum.PivotTable &&
         (isUndefined(tile.data) || isUndefined(tile.data.pivot_values))
       ) {
         item.errors.push(
@@ -115,6 +162,26 @@ export function checkChartDataParameters<T extends dcType>(
             lines: [
               {
                 line: tile.data_line_num,
+                name: x.fileName,
+                path: x.filePath
+              }
+            ]
+          })
+        );
+        return;
+      }
+
+      if (
+        tile.type === ChartTypeEnum.PivotTable &&
+        tile.data.pivot_values.length === 0
+      ) {
+        item.errors.push(
+          new BmError({
+            title: ErTitleEnum.TILE_DATA_PIVOT_VALUES_EMPTY,
+            message: `"${ParameterEnum.PivotValues}" must have at least one element`,
+            lines: [
+              {
+                line: tile.data.pivot_values_line_num,
                 name: x.fileName,
                 path: x.filePath
               }
@@ -147,6 +214,29 @@ export function checkChartDataParameters<T extends dcType>(
       }
 
       if (isUndefined(tile.data)) {
+        return;
+      }
+
+      if (
+        tile.type === ChartTypeEnum.PivotTable &&
+        (tile.data.pivot_rows || []).length === 0 &&
+        (tile.data.pivot_columns || []).length === 0
+      ) {
+        item.errors.push(
+          new BmError({
+            title: ErTitleEnum.TILE_DATA_PIVOT_ROWS_AND_COLUMNS_EMPTY,
+            message:
+              `"${ParameterEnum.PivotRows}" and "${ParameterEnum.PivotColumns}" ` +
+              'cannot both be empty',
+            lines: [
+              {
+                line: tile.data.pivot_rows_line_num,
+                name: x.fileName,
+                path: x.filePath
+              }
+            ]
+          })
+        );
         return;
       }
 
@@ -411,6 +501,33 @@ export function checkChartDataParameters<T extends dcType>(
 
       if (isDefined(tile.data.pivot_values)) {
         tile.data.pivot_values.forEach(element => {
+          if (element?.constructor === Object) {
+            Object.keys(element)
+              .filter(k => !k.match(MyRegex.ENDS_WITH_LINE_NUM()))
+              .forEach(parameter => {
+                if ([ParameterEnum.Field.toString()].indexOf(parameter) < 0) {
+                  item.errors.push(
+                    new BmError({
+                      title:
+                        ErTitleEnum.TILE_DATA_UNKNOWN_PIVOT_VALUES_ELEMENT_PARAMETER,
+                      message: `parameter "${parameter}" cannot be used in ${ParameterEnum.PivotValues} element`,
+                      lines: [
+                        {
+                          line: element[
+                            (parameter +
+                              LINE_NUM) as keyof FileChartDataPivotValue
+                          ] as number,
+                          name: x.fileName,
+                          path: x.filePath
+                        }
+                      ]
+                    })
+                  );
+                  return;
+                }
+              });
+          }
+
           if (isUndefined(element.field)) {
             item.errors.push(
               new BmError({

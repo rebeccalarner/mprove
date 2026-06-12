@@ -5,11 +5,9 @@ tiles:
   select:
   - dim1
   - mea1
-  - mea2
   type: pivot_table
   data:
     pivot_rows:
     - dim1
     pivot_columns: []
-    pivot_values:
-    - field: mea1
+    pivot_values: []
