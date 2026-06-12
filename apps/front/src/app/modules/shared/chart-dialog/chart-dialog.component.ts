@@ -32,6 +32,7 @@ import { isDefined } from '#common/functions/is-defined';
 import { isDefinedAndNotEmpty } from '#common/functions/is-defined-and-not-empty';
 import { makeCopy } from '#common/functions/make-copy';
 import { makeId } from '#common/functions/make-id';
+import { setChartFields } from '#common/functions/set-chart-fields';
 import type { MconfigX } from '#common/zod/backend/mconfig-x';
 import type { Model } from '#common/zod/blockml/model';
 import type { ModelFieldY } from '#common/zod/blockml/model-field-y';
@@ -122,6 +123,7 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
   chartTypeEnumLine = ChartTypeEnum.Line;
   chartTypeEnumScatter = ChartTypeEnum.Scatter;
   chartTypeEnumBar = ChartTypeEnum.Bar;
+  groupMetricChartType = ChartTypeEnum.Line;
 
   isData = true;
   isFormat = true;
@@ -552,7 +554,10 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
             if (resp.info?.status === ResponseInfoStatusEnum.Ok) {
               let { mconfig, query } = resp.payload;
 
-              this.mconfig = mconfig;
+              this.mconfig = this.setGroupMetricChartType({
+                mconfig: mconfig,
+                newChartType: this.groupMetricChartType
+              });
               this.query = query;
 
               this.qData =
@@ -574,7 +579,10 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
         )
         .subscribe();
     } else {
-      let newMconfig = makeCopy(this.emptyGroupMconfig);
+      let newMconfig = this.setGroupMetricChartType({
+        mconfig: makeCopy(this.emptyGroupMconfig),
+        newChartType: this.groupMetricChartType
+      });
 
       let payload: ToBackendGetQueryRequestPayload = {
         projectId: nav.projectId,
@@ -613,6 +621,50 @@ export class ChartDialogComponent implements OnInit, OnDestroy {
         )
         .subscribe();
     }
+  }
+
+  groupMetricChartTypeChange(item: { newChartType: ChartTypeEnum }) {
+    let { newChartType } = item;
+
+    (document.activeElement as HTMLElement).blur();
+
+    if (this.groupMetricChartType === newChartType) {
+      return;
+    }
+
+    this.groupMetricChartType = newChartType;
+
+    let isMconfigDefined = isDefined(this.mconfig);
+    if (isMconfigDefined === true) {
+      this.mconfig = this.setGroupMetricChartType({
+        mconfig: this.mconfig,
+        newChartType: newChartType
+      });
+
+      this.cd.detectChanges();
+    }
+  }
+
+  setGroupMetricChartType(item: {
+    mconfig: MconfigX;
+    newChartType: ChartTypeEnum;
+  }) {
+    let { mconfig, newChartType } = item;
+
+    let newMconfig = makeCopy(mconfig);
+    let oldChartType = newMconfig.chart.type;
+    newMconfig.chart.type = newChartType;
+
+    newMconfig = setChartFields({
+      oldChartType: oldChartType,
+      newChartType: newChartType,
+      mconfig: newMconfig,
+      fields: newMconfig.fields
+    });
+
+    newMconfig.chart.series.forEach(s => (s.type = newChartType));
+
+    return newMconfig;
   }
 
   filterMetricBySearchFn(term: string, modelFieldY: ModelFieldY) {

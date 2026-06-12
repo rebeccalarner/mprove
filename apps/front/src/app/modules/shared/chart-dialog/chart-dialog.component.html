@@ -32,7 +32,7 @@
           >Group by</div
         >
 
-        <form [formGroup]="groupByFieldForm" class="w-full">
+        <form [formGroup]="groupByFieldForm" class="min-w-0 flex-1">
           <ng-select
             #groupMetricBySelect
             [fixNgSelectBottom]="groupMetricBySelect"
@@ -109,6 +109,32 @@
             </ng-template>
           </ng-select>
         </form>
+
+        <div class="flex flex-shrink-0 flex-row items-center space-x-5">
+          <m-chart-line-icon
+            class="h-6 w-6 cursor-pointer"
+            [ngClass]="{
+              'text-m500': groupMetricChartType === chartTypeEnumLine,
+              'text-s500': groupMetricChartType !== chartTypeEnumLine
+            }"
+            (click)="
+              groupMetricChartTypeChange({ newChartType: chartTypeEnumLine })
+            "
+          ></m-chart-line-icon>
+
+          <m-chart-pivot-table-icon
+            class="h-6 w-6 cursor-pointer"
+            [ngClass]="{
+              'text-m500': groupMetricChartType === chartTypeEnumPivotTable,
+              'text-s500': groupMetricChartType !== chartTypeEnumPivotTable
+            }"
+            (click)="
+              groupMetricChartTypeChange({
+                newChartType: chartTypeEnumPivotTable
+              })
+            "
+          ></m-chart-pivot-table-icon>
+        </div>
       </div>
     </div>
 
