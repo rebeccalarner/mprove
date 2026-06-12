@@ -1154,7 +1154,8 @@
                       class="h-full w-full"
                       [ngClass]="{
                         'max-w-max':
-                          mconfig?.chart.type === chartTypeEnumTable &&
+                          (mconfig?.chart.type === chartTypeEnumTable ||
+                            mconfig?.chart.type === chartTypeEnumPivotTable) &&
                           isSelectValid === true &&
                           mconfig?.chart.isValid === true &&
                           qData?.length > 0
