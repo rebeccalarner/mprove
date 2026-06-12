@@ -50,7 +50,10 @@
             ></m-pivot-drag-icon>
 
             <m-field-result
-              class="mr-2 h-5 w-5 flex-shrink-0"
+              class="mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+              [ngClass]="{
+                '-mt-[2px]': column.result === fieldResultEnum.String
+              }"
               [size]="2"
               [fieldClass]="column.fieldClass"
               [result]="column.result"
@@ -70,7 +73,10 @@
               ></m-pivot-drag-icon>
 
               <m-field-result
-                class="mr-2 h-5 w-5 flex-shrink-0"
+                class="mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+                [ngClass]="{
+                  '-mt-[2px]': column.result === fieldResultEnum.String
+                }"
                 [size]="2"
                 [fieldClass]="column.fieldClass"
                 [result]="column.result"
@@ -84,8 +90,27 @@
 
             <div
               *cdkDragPlaceholder
-              class="border-s300 h-8 w-full rounded border border-dashed"
-            ></div>
+              class="outline-s300 flex w-full flex-row items-center rounded px-2 py-1 outline outline-dashed outline-1 -outline-offset-1"
+            >
+              <m-pivot-drag-icon
+                class="text-s500 invisible -mt-[2px] mr-2 flex h-5 w-5 flex-shrink-0"
+              ></m-pivot-drag-icon>
+
+              <m-field-result
+                class="invisible mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+                [ngClass]="{
+                  '-mt-[2px]': column.result === fieldResultEnum.String
+                }"
+                [size]="2"
+                [fieldClass]="column.fieldClass"
+                [result]="column.result"
+              ></m-field-result>
+
+              <m-field-label
+                [column]="column"
+                class="invisible flex min-w-0 flex-1 text-[15px]"
+              ></m-field-label>
+            </div>
           </div>
         </div>
       </div>
@@ -119,7 +144,10 @@
             ></m-pivot-drag-icon>
 
             <m-field-result
-              class="mr-2 h-5 w-5 flex-shrink-0"
+              class="mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+              [ngClass]="{
+                '-mt-[2px]': column.result === fieldResultEnum.String
+              }"
               [size]="2"
               [fieldClass]="column.fieldClass"
               [result]="column.result"
@@ -139,7 +167,10 @@
               ></m-pivot-drag-icon>
 
               <m-field-result
-                class="mr-2 h-5 w-5 flex-shrink-0"
+                class="mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+                [ngClass]="{
+                  '-mt-[2px]': column.result === fieldResultEnum.String
+                }"
                 [size]="2"
                 [fieldClass]="column.fieldClass"
                 [result]="column.result"
@@ -153,8 +184,27 @@
 
             <div
               *cdkDragPlaceholder
-              class="border-s300 h-8 w-full rounded border border-dashed"
-            ></div>
+              class="outline-s300 flex w-full flex-row items-center rounded px-2 py-1 outline outline-dashed outline-1 -outline-offset-1"
+            >
+              <m-pivot-drag-icon
+                class="text-s500 invisible -mt-[2px] mr-2 flex h-5 w-5 flex-shrink-0"
+              ></m-pivot-drag-icon>
+
+              <m-field-result
+                class="invisible mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+                [ngClass]="{
+                  '-mt-[2px]': column.result === fieldResultEnum.String
+                }"
+                [size]="2"
+                [fieldClass]="column.fieldClass"
+                [result]="column.result"
+              ></m-field-result>
+
+              <m-field-label
+                [column]="column"
+                class="invisible flex min-w-0 flex-1 text-[15px]"
+              ></m-field-label>
+            </div>
           </div>
         </div>
       </div>
@@ -189,7 +239,10 @@
             ></m-pivot-drag-icon>
 
             <m-field-result
-              class="mr-2 h-5 w-5 flex-shrink-0"
+              class="mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+              [ngClass]="{
+                '-mt-[2px]': column.result === fieldResultEnum.String
+              }"
               [size]="2"
               [fieldClass]="column.fieldClass"
               [result]="column.result"
@@ -209,7 +262,10 @@
               ></m-pivot-drag-icon>
 
               <m-field-result
-                class="mr-2 h-5 w-5 flex-shrink-0"
+                class="mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+                [ngClass]="{
+                  '-mt-[2px]': column.result === fieldResultEnum.String
+                }"
                 [size]="2"
                 [fieldClass]="column.fieldClass"
                 [result]="column.result"
@@ -223,8 +279,27 @@
 
             <div
               *cdkDragPlaceholder
-              class="border-s300 h-8 w-full rounded border border-dashed"
-            ></div>
+              class="outline-s300 flex w-full flex-row items-center rounded px-2 py-1 outline outline-dashed outline-1 -outline-offset-1"
+            >
+              <m-pivot-drag-icon
+                class="text-s500 invisible -mt-[2px] mr-2 flex h-5 w-5 flex-shrink-0"
+              ></m-pivot-drag-icon>
+
+              <m-field-result
+                class="invisible mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center"
+                [ngClass]="{
+                  '-mt-[2px]': column.result === fieldResultEnum.String
+                }"
+                [size]="2"
+                [fieldClass]="column.fieldClass"
+                [result]="column.result"
+              ></m-field-result>
+
+              <m-field-label
+                [column]="column"
+                class="invisible flex min-w-0 flex-1 text-[15px]"
+              ></m-field-label>
+            </div>
           </div>
         </div>
       </div>
