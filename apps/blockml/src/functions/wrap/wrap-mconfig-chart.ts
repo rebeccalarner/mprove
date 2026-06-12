@@ -100,10 +100,6 @@ export function wrapMconfigChart(item: {
     format: isDefined(options?.format)
       ? toBooleanFromLowercaseString(options?.format)
       : DEFAULT_CHART.format,
-    pivotShowTotals: DEFAULT_CHART.pivotShowTotals,
-    pivotShowGrandTotal: DEFAULT_CHART.pivotShowGrandTotal,
-    pivotDefaultExpanded: DEFAULT_CHART.pivotDefaultExpanded,
-    pivotShowMenu: DEFAULT_CHART.pivotShowMenu,
     pivotTheme: DEFAULT_CHART.pivotTheme,
     xAxis: xAxis,
     yAxis: yAxis,

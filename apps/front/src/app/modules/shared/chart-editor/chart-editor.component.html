@@ -686,7 +686,8 @@
   <div
     *ngIf="
       isReport === false &&
-      [chartTypeEnumTable, chartTypeEnumSingle].indexOf(chart?.type) < 0
+      [chartTypeEnumTable, chartTypeEnumSingle].indexOf(chart?.type) < 0 &&
+      (uiChartTypes.pivot.indexOf(chart.type) < 0 || isDebugPivot === true)
     "
     class="text-s500 mt-7 flex h-12 cursor-pointer select-none flex-row items-start justify-start pr-5 font-semibold"
     (click)="toggleChartOptions()"
@@ -716,62 +717,6 @@
     "
     class="flex flex-col pl-5"
   >
-    <div
-      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
-      (click)="togglePivotShowTotals()"
-    >
-      <div
-        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
-        >Show Totals</div
-      >
-      <ui-switch
-        class="ml-5"
-        [checked]="chart.pivotShowTotals === true"
-      ></ui-switch>
-    </div>
-
-    <div
-      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
-      (click)="togglePivotShowGrandTotal()"
-    >
-      <div
-        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
-        >Show Grand Total</div
-      >
-      <ui-switch
-        class="ml-5"
-        [checked]="chart.pivotShowGrandTotal === true"
-      ></ui-switch>
-    </div>
-
-    <div
-      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
-      (click)="togglePivotDefaultExpanded()"
-    >
-      <div
-        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
-        >Default Expanded</div
-      >
-      <ui-switch
-        class="ml-5"
-        [checked]="chart.pivotDefaultExpanded === true"
-      ></ui-switch>
-    </div>
-
-    <div
-      class="mb-5 ml-[32px] flex max-w-min cursor-pointer flex-row items-center"
-      (click)="togglePivotShowMenu()"
-    >
-      <div
-        class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"
-        >Show Menu</div
-      >
-      <ui-switch
-        class="ml-5"
-        [checked]="chart.pivotShowMenu === true"
-      ></ui-switch>
-    </div>
-
     <div class="mb-5 ml-[32px] flex flex-row items-center">
       <div
         class="text-s1 flex h-9 w-[160px] flex-shrink-0 select-none items-center text-base"

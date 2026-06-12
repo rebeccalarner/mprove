@@ -443,7 +443,7 @@ export class ChartPivotTableComponent implements OnChanges {
       features: {
         shell: {
           header: {
-            visible: this.chart.pivotShowMenu === true
+            visible: false
           },
           toolPanel: {
             initialState: 'closed'
@@ -459,13 +459,10 @@ export class ChartPivotTableComponent implements OnChanges {
             format: (value: number) =>
               this.formatPivotValue(pivotValue.field, value)
           })),
-          showTotals: this.chart.pivotShowTotals === true,
-          showGrandTotal: this.chart.pivotShowGrandTotal === true,
-          defaultExpanded:
-            (this.chart.pivotRows || []).length > 1
-              ? true
-              : this.chart.pivotDefaultExpanded === true,
-          showToolPanel: this.chart.pivotShowMenu === true
+          showTotals: false,
+          showGrandTotal: false,
+          defaultExpanded: true,
+          showToolPanel: false
         }
       }
     };

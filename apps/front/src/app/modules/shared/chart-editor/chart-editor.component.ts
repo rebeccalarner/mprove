@@ -185,7 +185,7 @@ export class ChartEditorComponent implements OnChanges {
 
   yAxisIndexList: number[] = [];
 
-  isDebugPivot = true;
+  isDebugPivot = false;
 
   constructor(
     private fb: FormBuilder,
@@ -661,38 +661,6 @@ export class ChartEditorComponent implements OnChanges {
   toggleFormat() {
     let newChart: MconfigChart = <MconfigChart>{
       format: !this.chart.format
-    };
-
-    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
-  }
-
-  togglePivotShowTotals() {
-    let newChart: MconfigChart = <MconfigChart>{
-      pivotShowTotals: !this.chart.pivotShowTotals
-    };
-
-    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
-  }
-
-  togglePivotShowGrandTotal() {
-    let newChart: MconfigChart = <MconfigChart>{
-      pivotShowGrandTotal: !this.chart.pivotShowGrandTotal
-    };
-
-    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
-  }
-
-  togglePivotDefaultExpanded() {
-    let newChart: MconfigChart = <MconfigChart>{
-      pivotDefaultExpanded: !this.chart.pivotDefaultExpanded
-    };
-
-    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
-  }
-
-  togglePivotShowMenu() {
-    let newChart: MconfigChart = <MconfigChart>{
-      pivotShowMenu: !this.chart.pivotShowMenu
     };
 
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: false });
