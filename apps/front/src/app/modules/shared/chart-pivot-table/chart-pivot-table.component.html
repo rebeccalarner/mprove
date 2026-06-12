@@ -1,7 +1,51 @@
-<tbw-grid
-  data-tbw-grid
-  class="block h-full w-full"
-  [rows]="rows"
-  [gridConfig]="gridConfig"
-  [customStyles]="customStyles"
-></tbw-grid>
+<div class="flex h-full w-full flex-col">
+  @if (showMeasureListHeader && measureListHeader) {
+    <div
+      class="shrink-0 truncate px-3 pt-2 font-['Montserrat'] text-base"
+      [title]="measureListHeader"
+    >
+      @for (headerItem of measureHeaderItems; track headerItem.text) {
+        @for (part of headerItem.parts; track part.label) {
+          <span
+            [class.text-sm]="!part.isName"
+            [class.font-semibold]="part.isName"
+          >
+            {{ part.label }}
+          </span>
+        }
+
+        @if (!$last) {
+          <span class="opacity-70">, </span>
+        }
+      }
+    </div>
+  }
+
+  @if (dimensionListHeader) {
+    <div
+      class="shrink-0 space-y-1 px-3 pb-2 pt-1 font-['Montserrat'] text-base"
+      [title]="dimensionListHeader"
+    >
+      @for (headerItem of dimensionHeaderItems; track headerItem.text) {
+        <div class="truncate">
+          @for (part of headerItem.parts; track part.label) {
+            <span
+              [class.text-sm]="!part.isName"
+              [class.font-semibold]="part.isName"
+            >
+              {{ part.label }}
+            </span>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <tbw-grid
+    data-tbw-grid
+    class="block min-h-0 w-full flex-1"
+    [rows]="rows"
+    [gridConfig]="gridConfig"
+    [customStyles]="customStyles"
+  ></tbw-grid>
+</div>
