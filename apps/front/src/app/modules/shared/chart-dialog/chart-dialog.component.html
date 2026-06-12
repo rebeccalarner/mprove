@@ -216,9 +216,20 @@
     }"
   >
     <m-chart-view
-      class="h-full w-full overflow-auto rounded pb-6 pt-5"
+      class="h-full w-full overflow-auto rounded"
       [ngClass]="{
+        'pt-3':
+          mconfig?.chart.type === chartTypeEnumTable ||
+          mconfig?.chart.type === chartTypeEnumPivotTable,
+        'max-w-max':
+          (mconfig?.chart.type === chartTypeEnumTable ||
+            mconfig?.chart.type === chartTypeEnumPivotTable) &&
+          mconfig?.chart.isValid === true &&
+          qData?.length > 0,
         'border-s300 aspect-[3/1] border':
+          mconfig?.chart.type !== chartTypeEnumTable &&
+          mconfig?.chart.type !== chartTypeEnumPivotTable,
+        'pb-6 pt-5':
           mconfig?.chart.type !== chartTypeEnumTable &&
           mconfig?.chart.type !== chartTypeEnumPivotTable
       }"
