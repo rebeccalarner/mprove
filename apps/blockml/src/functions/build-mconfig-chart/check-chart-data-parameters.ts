@@ -481,6 +481,71 @@ export function checkChartDataParameters<T extends dcType>(
         });
       }
 
+      if (tile.type === ChartTypeEnum.PivotTable) {
+        let pivotDimensionFields = [
+          ...(tile.data.pivot_rows || []),
+          ...(tile.data.pivot_columns || [])
+        ];
+        let pivotValueFields = (tile.data.pivot_values || []).map(
+          element => element.field
+        );
+
+        tile.select.forEach(element => {
+          let field =
+            apiModel.type === ModelTypeEnum.Store
+              ? store.fields.find(sField => sField.name === element)
+              : apiModel.type === ModelTypeEnum.Malloy
+                ? apiModel.fields.find(modelField => modelField.id === element)
+                : undefined;
+
+          if (
+            field.fieldClass === FieldClassEnum.Dimension &&
+            pivotDimensionFields.indexOf(element) < 0
+          ) {
+            item.errors.push(
+              new BmError({
+                title:
+                  ErTitleEnum.TILE_DATA_PIVOT_SELECTED_DIMENSION_MISSING_FROM_ROWS_OR_COLUMNS,
+                message:
+                  `selected Dimension "${element}" must be used in ` +
+                  `"${ParameterEnum.PivotRows}" or "${ParameterEnum.PivotColumns}"`,
+                lines: [
+                  {
+                    line: tile.select_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+
+          if (
+            field.fieldClass === FieldClassEnum.Measure &&
+            pivotValueFields.indexOf(element) < 0
+          ) {
+            item.errors.push(
+              new BmError({
+                title:
+                  ErTitleEnum.TILE_DATA_PIVOT_SELECTED_MEASURE_MISSING_FROM_VALUES,
+                message:
+                  `selected Measure "${element}" must be used in ` +
+                  `"${ParameterEnum.PivotValues}"`,
+                lines: [
+                  {
+                    line: tile.select_line_num,
+                    name: x.fileName,
+                    path: x.filePath
+                  }
+                ]
+              })
+            );
+            return;
+          }
+        });
+      }
+
       if (isDefined(tile.data.y_fields)) {
         if (!Array.isArray(tile.data.y_fields)) {
           item.errors.push(

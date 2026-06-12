@@ -1,0 +1,14 @@
+dashboard: d1
+tiles:
+- title: t1
+  model: s1
+  select:
+  - dim1
+  - dim2
+  - mea1
+  type: pivot_table
+  data:
+    pivot_rows:
+    - dim1
+    pivot_values:
+    - field: mea1
