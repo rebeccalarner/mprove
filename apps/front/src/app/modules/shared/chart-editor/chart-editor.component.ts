@@ -1,5 +1,7 @@
+import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   Component,
+  ElementRef,
   HostListener,
   Input,
   OnChanges,
@@ -28,6 +30,7 @@ import { setChartSeries } from '#common/functions/set-chart-series';
 import type { MconfigField } from '#common/zod/backend/mconfig-field';
 import type { ReportX } from '#common/zod/backend/report-x';
 import type { MconfigChart } from '#common/zod/blockml/mconfig-chart';
+import type { MconfigChartPivotValue } from '#common/zod/blockml/mconfig-chart-pivot-value';
 import type { ChartSeriesWithField } from '#common/zod/front/chart-series-with-field';
 import type { EventChartDeleteYAxisElement } from '#common/zod/front/event-chart-delete-y-axis-element';
 import type { EventChartSeriesElementUpdate } from '#common/zod/front/event-chart-series-element-update';
@@ -62,6 +65,15 @@ export class ChartEditorComponent implements OnChanges {
   @ViewChild('sizeFieldSelect', { static: false })
   sizeFieldSelectElement: NgSelectComponent;
 
+  @ViewChild('pivotValuesList', { static: false })
+  pivotValuesListElement: ElementRef<HTMLDivElement>;
+
+  @ViewChild('pivotRowDimensionsList', { static: false })
+  pivotRowDimensionsListElement: ElementRef<HTMLDivElement>;
+
+  @ViewChild('pivotColumnDimensionsList', { static: false })
+  pivotColumnDimensionsListElement: ElementRef<HTMLDivElement>;
+
   @HostListener('window:keyup.esc')
   onEscKeyUp() {
     this.xFieldSelectElement?.close();
@@ -74,16 +86,6 @@ export class ChartEditorComponent implements OnChanges {
   chartTypeEnumTable = ChartTypeEnum.Table;
   chartTypeEnumSingle = ChartTypeEnum.Single;
   chartTypeEnumPivotTable = ChartTypeEnum.PivotTable;
-
-  pivotAggList = [
-    PivotAggEnum.Sum,
-    PivotAggEnum.Avg,
-    PivotAggEnum.Count,
-    PivotAggEnum.Min,
-    PivotAggEnum.Max,
-    PivotAggEnum.First,
-    PivotAggEnum.Last
-  ];
 
   pivotThemeList = [
     { value: 'standard', label: 'Standard' },
@@ -143,6 +145,14 @@ export class ChartEditorComponent implements OnChanges {
 
   numbersMeasuresAndCalculations: MconfigField[];
   numbersMeasuresAndCalculationsPlusEmpty: MconfigField[];
+
+  pivotValueColumns: MconfigField[] = [];
+  pivotRowColumns: MconfigField[] = [];
+  pivotColumnColumns: MconfigField[] = [];
+  isPivotDrag = false;
+  pivotValuesListHeight: string;
+  pivotRowDimensionsListHeight: string;
+  pivotColumnDimensionsListHeight: string;
 
   numbersYFields: MconfigField[];
 
@@ -239,6 +249,16 @@ export class ChartEditorComponent implements OnChanges {
           (x.fieldClass === FieldClassEnum.Measure ||
             x.fieldClass === FieldClassEnum.Calculation)
       );
+
+      this.pivotValueColumns = this.makePivotValueColumns();
+      this.pivotRowColumns = this.makePivotDimensionColumns({
+        fieldIds: this.chart.pivotRows || [],
+        includeUnassigned: true
+      });
+      this.pivotColumnColumns = this.makePivotDimensionColumns({
+        fieldIds: this.chart.pivotColumns || [],
+        includeUnassigned: false
+      });
 
       this.numbersMeasuresAndCalculationsPlusEmpty = [
         makeCopy(EMPTY_MCONFIG_FIELD),
@@ -462,86 +482,138 @@ export class ChartEditorComponent implements OnChanges {
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
   }
 
-  pivotRowsIsChecked(id: string) {
-    return (this.chart.pivotRows || []).findIndex(x => x === id) > -1;
-  }
+  pivotValuesDrop(item: { event: CdkDragDrop<MconfigField[]> }) {
+    let { event } = item;
+    this.isPivotDrag = false;
+    this.clearPivotSectionHeights({});
+    let newColumns = [...this.pivotValueColumns];
+    let [movedColumn] = newColumns.splice(event.previousIndex, 1);
 
-  pivotRowsOnClick(id: string) {
-    let pivotRows = this.chart.pivotRows || [];
-    let index = pivotRows.findIndex(x => x === id);
-
-    let newPivotRows =
-      index > -1
-        ? [...pivotRows.slice(0, index), ...pivotRows.slice(index + 1)]
-        : [...pivotRows, id];
+    newColumns.splice(event.currentIndex, 0, movedColumn);
+    this.pivotValueColumns = newColumns;
 
     let newChart: MconfigChart = <MconfigChart>{
-      pivotRows: newPivotRows,
-      pivotColumns: (this.chart.pivotColumns || []).filter(x => x !== id)
+      pivotValues: this.makePivotValues({ columns: newColumns })
     };
 
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
   }
 
-  pivotColumnsIsChecked(id: string) {
-    return (this.chart.pivotColumns || []).findIndex(x => x === id) > -1;
-  }
+  pivotDimensionsDrop(item: { event: CdkDragDrop<MconfigField[]> }) {
+    let { event } = item;
+    this.isPivotDrag = false;
+    this.clearPivotSectionHeights({});
+    let newRows = [...this.pivotRowColumns];
+    let newColumns = [...this.pivotColumnColumns];
+    let previousList = event.previousContainer.id;
+    let currentList = event.container.id;
 
-  pivotColumnsOnClick(id: string) {
-    let pivotColumns = this.chart.pivotColumns || [];
-    let index = pivotColumns.findIndex(x => x === id);
+    let previousColumns =
+      previousList === 'pivotRowDimensions' ? newRows : newColumns;
+    let currentColumns =
+      currentList === 'pivotRowDimensions' ? newRows : newColumns;
+    let [movedColumn] = previousColumns.splice(event.previousIndex, 1);
 
-    let newPivotColumns =
-      index > -1
-        ? [...pivotColumns.slice(0, index), ...pivotColumns.slice(index + 1)]
-        : [...pivotColumns, id];
+    currentColumns.splice(event.currentIndex, 0, movedColumn);
+    this.pivotRowColumns = newRows;
+    this.pivotColumnColumns = newColumns;
 
     let newChart: MconfigChart = <MconfigChart>{
-      pivotRows: (this.chart.pivotRows || []).filter(x => x !== id),
-      pivotColumns: newPivotColumns
+      pivotRows: newRows.map(x => x.id),
+      pivotColumns: newColumns.map(x => x.id)
     };
 
     this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
   }
 
-  pivotValuesIsChecked(id: string) {
-    return (this.chart.pivotValues || []).findIndex(x => x.field === id) > -1;
+  pivotDragStart(item: { section: 'values' | 'rows' | 'columns' }) {
+    let { section } = item;
+
+    this.isPivotDrag = true;
+    this.setPivotSectionHeight({ section: section });
   }
 
-  pivotValuesOnClick(id: string) {
-    let pivotValues = this.chart.pivotValues || [];
-    let index = pivotValues.findIndex(x => x.field === id);
-
-    let newChart: MconfigChart = <MconfigChart>{
-      pivotValues:
-        index > -1
-          ? [...pivotValues.slice(0, index), ...pivotValues.slice(index + 1)]
-          : [
-              ...pivotValues,
-              { field: id, aggFunc: PivotAggEnum.Sum, label: undefined }
-            ]
-    };
-
-    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
+  pivotDragEnd(item: {}) {
+    this.isPivotDrag = false;
+    this.clearPivotSectionHeights({});
   }
 
-  pivotValueAggChange(id: string, aggFunc: PivotAggEnum) {
-    let newChart: MconfigChart = <MconfigChart>{
-      pivotValues: (this.chart.pivotValues || []).map(pivotValue =>
-        pivotValue.field === id
-          ? Object.assign({}, pivotValue, { aggFunc: aggFunc })
-          : pivotValue
+  private setPivotSectionHeight(item: {
+    section: 'values' | 'rows' | 'columns';
+  }) {
+    let { section } = item;
+
+    this.clearPivotSectionHeights({});
+
+    if (section === 'values' && this.pivotValuesListElement) {
+      this.pivotValuesListHeight = `${this.pivotValuesListElement.nativeElement.offsetHeight}px`;
+    }
+
+    if (section === 'rows' && this.pivotRowDimensionsListElement) {
+      this.pivotRowDimensionsListHeight = `${this.pivotRowDimensionsListElement.nativeElement.offsetHeight}px`;
+    }
+
+    if (section === 'columns' && this.pivotColumnDimensionsListElement) {
+      this.pivotColumnDimensionsListHeight = `${this.pivotColumnDimensionsListElement.nativeElement.offsetHeight}px`;
+    }
+  }
+
+  private clearPivotSectionHeights(item: {}) {
+    this.pivotValuesListHeight = undefined;
+    this.pivotRowDimensionsListHeight = undefined;
+    this.pivotColumnDimensionsListHeight = undefined;
+  }
+
+  private makePivotValueColumns() {
+    let pivotFields = (this.chart.pivotValues || []).map(x => x.field);
+    let sortedColumns = pivotFields
+      .map(fieldId =>
+        this.numbersMeasuresAndCalculations.find(x => x.id === fieldId)
       )
-    };
+      .filter(x => isDefined(x)) as MconfigField[];
+    let remainingColumns = this.numbersMeasuresAndCalculations.filter(
+      x => pivotFields.indexOf(x.id) < 0
+    );
 
-    this.chartEditorUpdateChart({ chartPart: newChart, isCheck: true });
+    return [...sortedColumns, ...remainingColumns];
   }
 
-  getPivotValueAgg(id: string) {
-    return (
-      (this.chart.pivotValues || []).find(pivotValue => pivotValue.field === id)
-        ?.aggFunc || PivotAggEnum.Sum
-    );
+  private makePivotDimensionColumns(item: {
+    fieldIds: string[];
+    includeUnassigned: boolean;
+  }) {
+    let { fieldIds, includeUnassigned } = item;
+    let assignedIds = [
+      ...(this.chart.pivotRows || []),
+      ...(this.chart.pivotColumns || [])
+    ];
+    let sortedColumns = fieldIds
+      .map(fieldId => this.dimensions.find(x => x.id === fieldId))
+      .filter(x => isDefined(x)) as MconfigField[];
+    let unassignedColumns =
+      includeUnassigned === true
+        ? this.dimensions.filter(x => assignedIds.indexOf(x.id) < 0)
+        : [];
+
+    return [...sortedColumns, ...unassignedColumns];
+  }
+
+  private makePivotValues(item: { columns: MconfigField[] }) {
+    let { columns } = item;
+    let currentPivotValues = this.chart.pivotValues || [];
+
+    return columns.map(column => {
+      let currentPivotValue = currentPivotValues.find(
+        x => x.field === column.id
+      );
+      let pivotValue: MconfigChartPivotValue = currentPivotValue || {
+        field: column.id,
+        aggFunc: PivotAggEnum.Sum,
+        label: undefined
+      };
+
+      return pivotValue;
+    });
   }
 
   yFieldChange() {

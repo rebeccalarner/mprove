@@ -110,6 +110,7 @@ import { MagGlassIconComponent } from './icons/mag-glass-icon/mag-glass-icon.com
 import { MiniChartsIconComponent } from './icons/mini-charts-icon/mini-charts-icon.component';
 import { MinusSmIconComponent } from './icons/minus-sm-icon/minus-sm-icon.component';
 import { NetworkIconComponent } from './icons/network-icon/network-icon.component';
+import { PivotDragIconComponent } from './icons/pivot-drag-icon/pivot-drag-icon.component';
 import { ProviderIconComponent } from './icons/provider-icon/provider-icon.component';
 import { QuestionMarkCircleIconComponent } from './icons/question-mark-circle-icon/question-mark-circle-icon.component';
 import { RefreshIconComponent } from './icons/refresh-icon/refresh-icon.component';
@@ -288,6 +289,7 @@ let sharedComponents = [
   LinkOffIconComponent,
   FormulaIconComponent,
   NetworkIconComponent,
+  PivotDragIconComponent,
   QuestionMarkCircleIconComponent,
   TableIconComponent,
   ClockIconComponent,
