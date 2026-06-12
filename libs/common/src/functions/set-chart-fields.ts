@@ -86,15 +86,25 @@ export function setChartFields<T extends Mconfig>(item: {
         }
       });
 
-    let pivotValues =
-      mconfig.chart.pivotValues?.length > 0 &&
-      mconfig.chart.pivotValues.every(x => mconfig.select.includes(x.field))
-        ? mconfig.chart.pivotValues
-        : selectedMCsResultIsNumber.map(field => ({
+    let pivotValues = (mconfig.chart.pivotValues || []).filter(
+      x => selectedMCsResultIsNumber.indexOf(x.field) > -1
+    );
+
+    selectedMCsResultIsNumber
+      .filter(
+        field =>
+          pivotValues.map(pivotValue => pivotValue.field).indexOf(field) < 0
+      )
+      .forEach(field => {
+        pivotValues = [
+          ...pivotValues,
+          {
             field: field,
             aggFunc: PivotAggEnum.Sum,
             label: undefined as string | undefined
-          }));
+          }
+        ];
+      });
 
     let xField =
       isDefined(mconfig.chart.xField) &&
