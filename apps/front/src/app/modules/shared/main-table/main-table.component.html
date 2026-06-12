@@ -1,27 +1,30 @@
-<table>
-  <thead
-    cdkDropList
-    cdkDropListOrientation="horizontal"
-    (cdkDropListDropped)="drop($event)"
-  >
-    <tr>
-      <th
-        class="border-m0 group max-w-[350px] border-4 p-0 align-top"
-        [ngClass]="{
-          'min-w-[200px]': isTableHeaderWide === false,
-          'min-w-[240px]': isTableHeaderWide === true
-        }"
-        *ngFor="let column of mconfigFields; let columnIndex = index"
-      >
-        <ng-container
-          *ngTemplateOutlet="
-            tHeader;
-            context: { column: column, columnIndex: columnIndex }
-          "
-        ></ng-container>
-      </th>
+<div
+  class="thin-scrollbar h-full w-full overflow-auto pb-6 [scrollbar-gutter:stable]"
+>
+  <table class="border-separate border-spacing-0">
+    <thead
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="drop($event)"
+    >
+      <tr>
+        <th
+          class="group sticky top-0 z-10 max-w-[350px] p-0 align-top"
+          [ngClass]="{
+            'min-w-[200px]': isTableHeaderWide === false,
+            'min-w-[240px]': isTableHeaderWide === true
+          }"
+          *ngFor="let column of mconfigFields; let columnIndex = index"
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              tHeader;
+              context: { column: column, columnIndex: columnIndex }
+            "
+          ></ng-container>
+        </th>
 
-      <!-- <div
+        <!-- <div
         style="display: contents"
         cdkDropList
         cdkDropListOrientation="horizontal"
@@ -44,7 +47,7 @@
         </th>
       </div> -->
 
-      <!-- <div
+        <!-- <div
         style="display: inline"
         cdkDropList
         cdkDropListOrientation="horizontal"
@@ -66,59 +69,59 @@
           ></ng-container>
         </th>
       </div> -->
-    </tr>
-    <ng-template #tHeader let-column="column" let-columnIndex="columnIndex">
-      <div
-        *ngIf="isEdit === true"
-        class="bg-m0 flex h-12 items-start justify-start space-x-3 pr-4 pt-2"
-      >
-        <div class="flex items-center justify-start">
-          <div
-            class="text-m500 flex h-8 w-4 select-none items-center justify-center"
-            [ngClass]="{
-              invisible: isDrag === true
-            }"
-          >
-            <div *ngIf="column.sortingNumber > -1">{{
-              column.sortingNumber + 1
-            }}</div>
+      </tr>
+      <ng-template #tHeader let-column="column" let-columnIndex="columnIndex">
+        <div
+          *ngIf="isEdit === true"
+          class="bg-m0 flex h-12 items-start justify-start space-x-3 pr-4 pt-2"
+        >
+          <div class="flex items-center justify-start">
+            <div
+              class="text-m500 flex h-8 w-4 select-none items-center justify-center"
+              [ngClass]="{
+                invisible: isDrag === true
+              }"
+            >
+              <div *ngIf="column.sortingNumber > -1">{{
+                column.sortingNumber + 1
+              }}</div>
+            </div>
+
+            <button
+              *ngIf="column.sorting?.desc === false"
+              class="hover:bg-m200 text-m500 flex h-8 w-8 items-center justify-center rounded focus:outline-none"
+              [ngClass]="{
+                invisible: isDrag === true
+              }"
+              (click)="sort(column.id, false)"
+            >
+              <m-asc-icon></m-asc-icon>
+            </button>
+
+            <button
+              *ngIf="column.sorting?.desc === true"
+              class="hover:bg-m200 text-m500 flex h-8 w-8 items-center justify-center rounded focus:outline-none"
+              (click)="sort(column.id, true)"
+              [ngClass]="{
+                invisible: isDrag === true
+              }"
+            >
+              <m-desc-icon></m-desc-icon>
+            </button>
+
+            <button
+              *ngIf="!column.sorting"
+              class="hover:bg-m200 text-s500 invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
+              [ngClass]="{
+                'group-hover:visible': isDrag === false
+              }"
+              (click)="sort(column.id, true)"
+            >
+              <m-desc-icon></m-desc-icon>
+            </button>
           </div>
 
-          <button
-            *ngIf="column.sorting?.desc === false"
-            class="hover:bg-m200 text-m500 flex h-8 w-8 items-center justify-center rounded focus:outline-none"
-            [ngClass]="{
-              invisible: isDrag === true
-            }"
-            (click)="sort(column.id, false)"
-          >
-            <m-asc-icon></m-asc-icon>
-          </button>
-
-          <button
-            *ngIf="column.sorting?.desc === true"
-            class="hover:bg-m200 text-m500 flex h-8 w-8 items-center justify-center rounded focus:outline-none"
-            (click)="sort(column.id, true)"
-            [ngClass]="{
-              invisible: isDrag === true
-            }"
-          >
-            <m-desc-icon></m-desc-icon>
-          </button>
-
-          <button
-            *ngIf="!column.sorting"
-            class="hover:bg-m200 text-s500 invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
-            [ngClass]="{
-              'group-hover:visible': isDrag === false
-            }"
-            (click)="sort(column.id, true)"
-          >
-            <m-desc-icon></m-desc-icon>
-          </button>
-        </div>
-
-        <!-- <button
+          <!-- <button
                 class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
                 [ngClass]="{
                 'group-hover:visible': isDrag === false,
@@ -153,7 +156,7 @@
                 <m-arrow-left-icon></m-arrow-left-icon>
               </button> -->
 
-        <!-- <button
+          <!-- <button
                 class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
                 [ngClass]="{
                 'group-hover:visible': isDrag === false,
@@ -179,101 +182,102 @@
                 <m-arrow-right-icon></m-arrow-right-icon>
               </button> -->
 
-        <!-- <span class="drag-handle" cdkDragHandle>☰</span> -->
+          <!-- <span class="drag-handle" cdkDragHandle>☰</span> -->
 
-        <div
-          tp="A required field cannot be replaced"
-          [tpIsEnabled]="column.required === true"
-        >
-          <button
-            class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
-            [ngClass]="{
-              'group-hover:visible': isDrag === false,
-              'text-s300 cursor-default': column.required === true,
-              'hover:bg-m200 text-s500': column.required === false
-            }"
-            [disabled]="column.required === true"
-            (click)="replaceColumn(column)"
+          <div
+            tp="A required field cannot be replaced"
+            [tpIsEnabled]="column.required === true"
           >
-            <m-edit-icon></m-edit-icon>
-          </button>
-        </div>
-
-        <div
-          tp="A required field cannot be deselected"
-          [tpIsEnabled]="column.required === true"
-        >
-          <button
-            class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
-            [ngClass]="{
-              'group-hover:visible': isDrag === false,
-              'text-s300 cursor-default': column.required === true,
-              'hover:bg-m200 text-s500': column.required === false
-            }"
-            [disabled]="column.required === true"
-            (click)="remove(column.id)"
-          >
-            <m-trash-icon></m-trash-icon>
-          </button>
-        </div>
-      </div>
-
-      <div
-        cdkDrag
-        cdkDragHandle
-        [cdkDragDisabled]="isEdit === false"
-        class="draggable-element flex flex-col items-start justify-center overflow-hidden text-clip px-5 py-2"
-        [ngClass]="{
-          'drag-handle': isEdit === true,
-          'bg-m150': column.fieldClass === fieldClassDimension,
-          'bg-g2':
-            column.fieldClass === fieldClassMeasure ||
-            column.fieldClass === fieldClassCalculation
-        }"
-        (cdkDragStarted)="onDragStart()"
-        (cdkDragEnded)="onDragEnd()"
-      >
-        <div *cdkDragPlaceholder></div>
-
-        <div class="flex select-none flex-col items-start justify-center">
-          <div class="truncate text-sm font-normal">{{
-            column.topLabel | capitalize
-          }}</div>
-
-          <div class="flex flex-row text-left font-semibold">
-            <div *ngIf="column.groupLabel"
-              >{{ column.groupLabel | capitalize }} -
-              {{ column.label | capitalize }}</div
+            <button
+              class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
+              [ngClass]="{
+                'group-hover:visible': isDrag === false,
+                'text-s300 cursor-default': column.required === true,
+                'hover:bg-m200 text-s500': column.required === false
+              }"
+              [disabled]="column.required === true"
+              (click)="replaceColumn(column)"
             >
+              <m-edit-icon></m-edit-icon>
+            </button>
+          </div>
 
-            <div *ngIf="!column.groupLabel">{{
-              column.label | capitalize
-            }}</div>
+          <div
+            tp="A required field cannot be deselected"
+            [tpIsEnabled]="column.required === true"
+          >
+            <button
+              class="invisible flex h-8 w-8 items-center justify-center rounded focus:outline-none"
+              [ngClass]="{
+                'group-hover:visible': isDrag === false,
+                'text-s300 cursor-default': column.required === true,
+                'hover:bg-m200 text-s500': column.required === false
+              }"
+              [disabled]="column.required === true"
+              (click)="remove(column.id)"
+            >
+              <m-trash-icon></m-trash-icon>
+            </button>
           </div>
         </div>
-      </div>
-    </ng-template>
-  </thead>
 
-  <tbody>
-    <tr data-cy="mainTableRow" *ngFor="let row of qData; let i = index">
-      <td
-        data-cy="mainTableCell"
-        *ngFor="let column of mconfigFields"
-        class="max-w-[350px] truncate px-5"
-        [ngClass]="{
-          'min-w-[200px]': isTableHeaderWide === false,
-          'min-w-[240px]': isTableHeaderWide === true,
-          'bg-s100': (i + 1) % 2 === 0,
-          'text-right': column.result === fieldResultNumber
-        }"
-      >
-        {{
-          isFormat === true ? row[column.id]?.valueFmt : row[column.id]?.value
-        }}
-      </td>
-    </tr>
-  </tbody>
-</table>
+        <div
+          cdkDrag
+          cdkDragHandle
+          [cdkDragDisabled]="isEdit === false"
+          class="draggable-element flex flex-col items-start justify-center overflow-hidden text-clip border-b border-r border-t border-gray-300 px-5 py-2"
+          [ngClass]="{
+            'drag-handle': isEdit === true,
+            'border-l': columnIndex === 0,
+            'bg-m150': column.fieldClass === fieldClassDimension,
+            'bg-g2':
+              column.fieldClass === fieldClassMeasure ||
+              column.fieldClass === fieldClassCalculation
+          }"
+          (cdkDragStarted)="onDragStart()"
+          (cdkDragEnded)="onDragEnd()"
+        >
+          <div *cdkDragPlaceholder></div>
+
+          <div class="flex select-none flex-col items-start justify-center">
+            <div class="truncate text-sm font-normal">{{
+              column.topLabel | capitalize
+            }}</div>
+
+            <div class="flex flex-row text-left font-semibold">
+              <div *ngIf="column.groupLabel"
+                >{{ column.groupLabel | capitalize }} -
+                {{ column.label | capitalize }}</div
+              >
+
+              <div *ngIf="!column.groupLabel">{{
+                column.label | capitalize
+              }}</div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </thead>
+
+    <tbody>
+      <tr data-cy="mainTableRow" *ngFor="let row of qData; let i = index">
+        <td
+          data-cy="mainTableCell"
+          *ngFor="let column of mconfigFields"
+          class="font-ms text-s2 max-w-[350px] truncate border-b border-r border-[#e5e7eb] px-5 text-base first:border-l"
+          [ngClass]="{
+            'min-w-[200px]': isTableHeaderWide === false,
+            'min-w-[240px]': isTableHeaderWide === true,
+            'text-right': column.result === fieldResultNumber
+          }"
+        >
+          {{
+            isFormat === true ? row[column.id]?.valueFmt : row[column.id]?.value
+          }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <div *ngIf="chart$ | async"></div>

@@ -265,20 +265,15 @@
       *ngIf="isData === true && mconfig?.fields?.length > 0"
       class="flex w-full max-w-max flex-1 overflow-auto"
     >
-      <ng-scrollbar
-        [orientation]="'auto'"
-        [visibility]="'hover'"
-        [appearance]="'compact'"
-      >
-        <m-main-table
-          [isTableHeaderWide]="false"
-          [isEdit]="false"
-          [isFormat]="isFormat"
-          [mconfig]="mconfig"
-          [qData]="qData"
-          [mconfigFields]="mconfig?.fields"
-        ></m-main-table>
-      </ng-scrollbar>
+      <m-main-table
+        class="block h-full w-full"
+        [isTableHeaderWide]="false"
+        [isEdit]="false"
+        [isFormat]="isFormat"
+        [mconfig]="mconfig"
+        [qData]="qData"
+        [mconfigFields]="mconfig?.fields"
+      ></m-main-table>
     </div>
 
     <div

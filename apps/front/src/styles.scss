@@ -41,6 +41,10 @@ body {
 
 .thin-scrollbar::-webkit-scrollbar-thumb {
   border-radius: 3px;
+  background-color: transparent;
+}
+
+.thin-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: rgb(0 0 0 / 15%);
 }
 
@@ -54,6 +58,10 @@ body {
 
 .thin-scrollbar {
   scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.thin-scrollbar:hover {
   scrollbar-color: rgb(0 0 0 / 15%) transparent;
 }
 
