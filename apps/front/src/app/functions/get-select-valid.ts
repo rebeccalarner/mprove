@@ -75,14 +75,9 @@ export function getSelectValid(item: {
       field => pivotValues.map(value => value.field).indexOf(field.id) > -1
     );
 
-    let invalidPivotValueFields = pivotValueFields.filter(field => {
-      let pivotValue = pivotValues.find(value => value.field === field.id);
-
-      return (
-        pivotValue?.aggFunc !== 'count' &&
-        field.result !== FieldResultEnum.Number
-      );
-    });
+    let invalidPivotValueFields = pivotValueFields.filter(
+      field => field.result !== FieldResultEnum.Number
+    );
 
     if (pivotRows.length === 0 && pivotColumns.length === 0) {
       isSelectValid = false;
@@ -108,8 +103,7 @@ export function getSelectValid(item: {
       errorMessage = 'Pivot Value fields must be selected fields';
     } else if (invalidPivotValueFields.length > 0) {
       isSelectValid = false;
-      errorMessage =
-        'Pivot Value fields must be numeric unless aggregate is count';
+      errorMessage = 'Pivot Value fields must be numeric';
     }
   } else if (chart.type === ChartTypeEnum.Single) {
     if (selectedDimensions.length > 0) {

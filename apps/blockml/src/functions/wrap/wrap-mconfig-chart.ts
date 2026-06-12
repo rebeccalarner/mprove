@@ -90,10 +90,7 @@ export function wrapMconfigChart(item: {
     pivotColumns: data?.pivot_columns || [],
     pivotValues: (data?.pivot_values || []).map(pivotValue => ({
       field: pivotValue.field,
-      aggFunc: isDefined(pivotValue.aggregate)
-        ? pivotValue.aggregate
-        : PivotAggEnum.Sum,
-      label: pivotValue.label
+      aggFunc: PivotAggEnum.Sum
     })),
 
     // options

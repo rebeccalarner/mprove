@@ -163,9 +163,7 @@ export function prepareTile(item: {
       isDefined(chart.pivotValues) &&
       chart.pivotValues.length > 0
         ? chart.pivotValues.map(pivotValue => ({
-            field: pivotValue.field,
-            aggregate: pivotValue.aggFunc,
-            label: pivotValue.label
+            field: pivotValue.field
           }))
         : undefined
   };

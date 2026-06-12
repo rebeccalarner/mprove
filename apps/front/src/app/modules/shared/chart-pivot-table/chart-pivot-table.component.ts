@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { BaseGridPlugin, type ColumnConfig } from '@toolbox-web/grid';
 import type { GridConfig } from '@toolbox-web/grid-angular';
+import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { ParameterEnum } from '#common/enums/docs/parameter.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import type { MconfigField } from '#common/zod/backend/mconfig-field';
@@ -516,7 +517,7 @@ export class ChartPivotTableComponent implements OnChanges {
           columnGroupFields: this.chart.pivotColumns || [],
           valueFields: (this.chart.pivotValues || []).map(pivotValue => ({
             field: pivotValue.field,
-            aggFunc: pivotValue.aggFunc,
+            aggFunc: PivotAggEnum.Sum,
             header: pivotValue.label,
             format: (value: number) =>
               this.formatPivotValue(pivotValue.field, value)

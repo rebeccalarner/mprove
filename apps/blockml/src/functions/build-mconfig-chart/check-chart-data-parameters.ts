@@ -447,37 +447,6 @@ export function checkChartDataParameters<T extends dcType>(
             );
             return;
           }
-
-          //   let field =
-          //     apiModel.type === ModelTypeEnum.Store
-          //       ? store.fields.find(sField => sField.name === element.field)
-          //       : apiModel.type === ModelTypeEnum.Malloy
-          //         ? apiModel.fields.find(
-          //             modelField => modelField.id === element.field
-          //           )
-          //         : undefined;
-
-          //   if (
-          //     element.aggregate !== 'count' &&
-          //     field.result !== FieldResultEnum.Number
-          //   ) {
-          //     item.errors.push(
-          //       new BmError({
-          //         title:
-          //           ErTitleEnum.TILE_DATA_WRONG_PIVOT_VALUES_ELEMENT_FIELD_RESULT,
-          //         message: `"${ParameterEnum.Field}" inside "${ParameterEnum.PivotValues}" must have result type number unless aggregate is count`,
-          //         lines: [
-          //           {
-          //             line:
-          //               element.field_line_num || tile.data.pivot_values_line_num,
-          //             name: x.fileName,
-          //             path: x.filePath
-          //           }
-          //         ]
-          //       })
-          //     );
-          //     return;
-          //   }
         });
       }
 
