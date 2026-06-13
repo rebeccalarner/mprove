@@ -519,6 +519,12 @@ tiles: # Chart must have exactly one tile
     - field_path
     multi_field: field_path
     size_field: field_path
+    pivot_rows:
+    - field_path
+    pivot_columns:
+    - field_path
+    pivot_values:
+    - field: field_path
   options:
     x_axis:
       scale: false
@@ -529,6 +535,8 @@ tiles: # Chart must have exactly one tile
     - data_field: field_path
       y_axis_index: 0
       type: chart_type
+    first_column_width: 235
+    value_columns_width: 181
 \`\`\`
 
 ## Reference
@@ -543,8 +551,8 @@ tiles: # Chart must have exactly one tile
   { pageId: 'reference/dashboard', content: `# Dashboard
 
 <Callout>
-  Reports, Charts, Dashboards are intended to be created and modified through the
-  user interface. The file representation is for checking errors during
+  Reports, Charts, Dashboards are intended to be created and modified through
+  the user interface. The file representation is for checking errors during
   validation.
 </Callout>
 
@@ -591,6 +599,12 @@ tiles:
     - field_path
     multi_field: field_path
     size_field: field_path
+    pivot_rows:
+    - field_path
+    pivot_columns:
+    - field_path
+    pivot_values:
+    - field: field_path
   options:
     x_axis:
       scale: false
@@ -601,6 +615,8 @@ tiles:
     - data_field: field_path
       y_axis_index: 0
       type: chart_type
+    first_column_width: 235
+    value_columns_width: 181
   plate:
     plate_width: 8
     plate_height: 12
@@ -612,58 +628,69 @@ tiles:
 
 ### Dashboard
 
-| Name         | Type                                             | Default | Description                                                                  |
-| ------------ | ------------------------------------------------ | ------- | ---------------------------------------------------------------------------- |
-| dashboard\\*  | string                                           | -       | Dashboard name                                                               |
-| title        | string                                           | -       | Dashboard title in UI                                                        |
-| description  | string                                           | -       | Dashboard description in UI                                                  |
-| access_roles | string []                                        | -       | If specified, only users with the listed roles will have access to Dashboard |
+| Name         | Type                                                           | Default | Description                                                                  |
+| ------------ | -------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------- |
+| dashboard\\*  | string                                                         | -       | Dashboard name                                                               |
+| title        | string                                                         | -       | Dashboard title in UI                                                        |
+| description  | string                                                         | -       | Dashboard description in UI                                                  |
+| access_roles | string []                                                      | -       | If specified, only users with the listed roles will have access to Dashboard |
 | parameters   | [Top Filter []](/content/docs/reference/parameters#top-filter) | -       | Begin a section of dashboard parameters                                      |
 | tiles\\*      | [Tile []](/content/docs/reference/dashboard#tile)              | -       | Begin a section of tiles                                                     |
 
 ### Tile
 
-| Name        | Type                                 | Default | Description                                                                                 |
-| ----------- | ------------------------------------ | ------- | ------------------------------------------------------------------------------------------- |
-| title\\*     | string                               | -       | Tile title                                                                                  |
-| description | string                               | -       | Tile description in UI                                                                      |
-| model\\*     | string                               | -       | Model name                                                                                  |
-| select\\*    | string []                            | -       | List of selected fields                                                                     |
-| parameters  | [Tile Parameter []](#tile-parameter) | -       | Begin a section of tile parameters                                                          |
-| sorts       | string                               | -       | A way to sort data                                                                          |
-| limit       | number                               | 500     | Limit the number of rows                                                                    |
-| type\\*      | enum                                 | -       | <ul><li>table</li><li>line</li><li>scatter</li><li>bar</li><li>single</li><li>pie</li></ul> |
-| data        | [Tile Data](#tile-data)              | -       |                                                                                             |
-| options     | [Tile Options](#tile-options)        | -       |                                                                                             |
-| plate       | [Tile Plate](#tile-plate)            | -       | \`only for dashboard tiles\`                                                                |
+| Name        | Type                                 | Default | Description                                                                                                     |
+| ----------- | ------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------- |
+| title\\*     | string                               | -       | Tile title                                                                                                      |
+| description | string                               | -       | Tile description in UI                                                                                          |
+| model\\*     | string                               | -       | Model name                                                                                                      |
+| select\\*    | string []                            | -       | List of selected fields                                                                                         |
+| parameters  | [Tile Parameter []](#tile-parameter) | -       | Begin a section of tile parameters                                                                              |
+| sorts       | string                               | -       | A way to sort data                                                                                              |
+| limit       | number                               | 500     | Limit the number of rows                                                                                        |
+| type\\*      | enum                                 | -       | <ul><li>table</li><li>pivot_table</li><li>line</li><li>scatter</li><li>bar</li><li>single</li><li>pie</li></ul> |
+| data        | [Tile Data](#tile-data)              | -       |                                                                                                                 |
+| options     | [Tile Options](#tile-options)        | -       |                                                                                                                 |
+| plate       | [Tile Plate](#tile-plate)            | -       | \`only for dashboard tiles\`                                                                                      |
 
 ### Tile Parameter
 
 Tile parameter must have **listen**, **conditions** or **fractions**.
 
-| Name       | Type                                         | Default | Description                                                         |
-| ---------- | -------------------------------------------- | ------- | ------------------------------------------------------------------- |
-| apply_to\\* | string                                       | -       | Field or Filter name                                                |
-| listen     | string                                       | -       | \`only for dashboard tiles\` <br/> Specify dashboard parameter to listen to |
-| conditions | string []                                    | -       | \`for parameters mapped to Malloy Model\` <br/> List of filter expressions  |
+| Name       | Type                                                       | Default | Description                                                               |
+| ---------- | ---------------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| apply_to\\* | string                                                     | -       | Field or Filter name                                                      |
+| listen     | string                                                     | -       | \`only for dashboard tiles\` <br/> Specify dashboard parameter to listen to |
+| conditions | string []                                                  | -       | \`for parameters mapped to Malloy Model\` <br/> List of filter expressions  |
 | fractions  | [Fraction []](/content/docs/reference/parameters#fraction) | -       | \`for parameters mapped to Store Model\` <br/> List of fractions            |
 
 ### Tile Data
 
-| Name         | Type      | Default | Description                                                                                    |
-| ------------ | --------- | ------- | ---------------------------------------------------------------------------------------------- |
-| x_field\\*\\*  | string    | -       | One of selected fields (dimension) to get the X coordinate                                     |
-| y_fields\\*\\* | string [] | -       | One or more of selected fields (measure or calculation) to get series data                     |
-| multi_field  | string    | -       | One of selected fields (dimension) for additional grouping of series data based on field value |
-| size_field   | string    | -       | One of selected fields to set size of data point for scatter chart                             |
+| Name          | Type                                                       | Default | Description                                                                                                     |
+| ------------- | ---------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| x_field\\*\\*   | string                                                     | -       | \`for non-tables\` One of selected fields (dimension) to get the X coordinate                                     |
+| y_fields\\*\\*  | string []                                                  | -       | \`for non-tables\` One or more of selected fields (measure or calculation) to get series data                     |
+| multi_field   | string                                                     | -       | \`for non-tables\` One of selected fields (dimension) for additional grouping of series data based on field value |
+| size_field    | string                                                     | -       | \`for scatter\` One of selected fields to set size of data point                                                  |
+| pivot_rows    | string []                                                  | -       | \`for pivot_table\` Zero or more of selected fields (dimensions)                                                  |
+| pivot_columns | string []                                                  | -       | \`for pivot_table\` Zero or more of selected fields (dimensions)                                                  |
+| pivot_values  | [Data Pivot Values Element []](#data-pivot-values-element) | -       | \`for pivot_table\` One or more elements                                                                          |
+
+### Data Pivot Values Element
+
+| Name    | Type   | Default | Description                                     |
+| ------- | ------ | ------- | ----------------------------------------------- |
+| field\\* | string | -       | One of selected fields (measure or calculation) |
 
 ### Tile Options
 
-| Name   | Type                                                 | Default | Description |
-| ------ | ---------------------------------------------------- | ------- | ----------- |
-| x_axis | [Options X Axis](#options-x-axis)                    | -       |             |
-| y_axis | [Options Y Axis Element []](#options-y-axis-element) | -       |             |
-| series | [Options Series Element []](#options-series-element) | -       |             |
+| Name                | Type                                                 | Default | Description       |
+| ------------------- | ---------------------------------------------------- | ------- | ----------------- |
+| x_axis              | [Options X Axis](#options-x-axis)                    | -       |                   |
+| y_axis              | [Options Y Axis Element []](#options-y-axis-element) | -       |                   |
+| series              | [Options Series Element []](#options-series-element) | -       |                   |
+| first_column_width  | integer                                              | 230     | \`for pivot_table\` |
+| value_columns_width | integer                                              | 210     | \`for pivot_table\` |
 
 ### Options X Axis
 
@@ -679,12 +706,12 @@ Tile parameter must have **listen**, **conditions** or **fractions**.
 
 ### Options Series Element
 
-| Name            | Type    | Default | Description                                                       |
-| --------------- | ------- | ------- | ----------------------------------------------------------------- |
+| Name            | Type    | Default | Description                                                             |
+| --------------- | ------- | ------- | ----------------------------------------------------------------------- |
 | data_field\\*\\*  | string  | -       | \`for Dashboard or Chart tile options only\` <br/> One of y_fields values |
 | data_row_id\\*\\* | string  | -       | \`for Report's options only\` <br/> One of row_ids with show_chart "true" |
-| y_axis_index    | integer | 0       | 0 (Y Axis Left) or 1 (Y Axis Right)                               |
-| type            | enum    | -       | <ul><li>line</li><li>bar</li></ul>                                |
+| y_axis_index    | integer | 0       | 0 (Y Axis Left) or 1 (Y Axis Right)                                     |
+| type            | enum    | -       | <ul><li>line</li><li>bar</li></ul>                                      |
 
 ### Tile Plate
 
