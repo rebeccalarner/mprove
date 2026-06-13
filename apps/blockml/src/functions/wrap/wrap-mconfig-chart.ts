@@ -3,7 +3,6 @@ import {
   DEFAULT_CHART_Y_AXIS
 } from '#common/constants/mconfig-chart';
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
-import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { isDefined } from '#common/functions/is-defined';
 import { makeCopy } from '#common/functions/make-copy';
 import { toBooleanFromLowercaseString } from '#common/functions/to-boolean-from-lowercase-string';
@@ -89,8 +88,7 @@ export function wrapMconfigChart(item: {
     pivotRows: data?.pivot_rows || [],
     pivotColumns: data?.pivot_columns || [],
     pivotValues: (data?.pivot_values || []).map(pivotValue => ({
-      field: pivotValue.field,
-      aggFunc: PivotAggEnum.Sum
+      field: pivotValue.field
     })),
 
     // options

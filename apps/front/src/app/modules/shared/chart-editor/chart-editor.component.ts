@@ -22,7 +22,6 @@ import {
 import { UI_CHART_TYPES } from '#common/constants/ui-chart-types';
 import { ChangeTypeEnum } from '#common/enums/change-type.enum';
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
-import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import { ModelTypeEnum } from '#common/enums/model-type.enum';
@@ -614,9 +613,7 @@ export class ChartEditorComponent implements OnChanges {
         x => x.field === column.id
       );
       let pivotValue: MconfigChartPivotValue = currentPivotValue || {
-        field: column.id,
-        aggFunc: PivotAggEnum.Sum,
-        label: undefined
+        field: column.id
       };
 
       return pivotValue;

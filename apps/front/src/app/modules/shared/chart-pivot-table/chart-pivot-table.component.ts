@@ -69,7 +69,7 @@ class PivotGeneratedHeaderPlugin extends BaseGridPlugin<{
     hookPriority: { processColumns: 100 }
   };
 
-  readonly name = 'mprovePivotGeneratedHeader';
+  readonly name = 'myPivotGeneratedHeader';
 
   override processColumns(columns: readonly ColumnConfig[]): ColumnConfig[] {
     let processedColumns = columns.map(column => {
@@ -562,391 +562,14 @@ export class ChartPivotTableComponent implements OnChanges {
 
   rows: PivotTableRow[] = [];
   gridConfig: GridConfig<PivotTableRow>;
-  customStyles: string;
+
   measureListHeader: string;
   showMeasureListHeader: boolean;
   dimensionListHeader: string;
   measureHeaderItems: PivotHeaderItem[] = [];
   dimensionHeaderItems: PivotHeaderItem[] = [];
 
-  constructor(
-    private dataService: DataService,
-    private structQuery: StructQuery
-  ) {}
-
-  @HostListener('document:mouseup')
-  onDocumentMouseUp() {
-    this.applyPendingColumnResize();
-  }
-
-  ngOnChanges() {
-    this.preparePivotCaches();
-    this.rows = this.makeRows();
-    this.measureHeaderItems = this.makeMeasureHeaderItems();
-    this.measureListHeader = this.measureHeaderItems
-      .map(headerItem => headerItem.text)
-      .join(', ');
-    this.showMeasureListHeader = this.hasColumnDimensions();
-    this.dimensionHeaderItems = this.makeDimensionHeaderItems();
-    this.dimensionListHeader = this.dimensionHeaderItems
-      .map(headerItem => headerItem.text)
-      .join(', ');
-    this.gridConfig = this.makeGridConfig();
-    this.customStyles = this.makeCustomStyles();
-    this.setThemeStylesheet();
-  }
-
-  pivotColumnResize(event: Event) {
-    let detail = (event as CustomEvent<PivotColumnResizeDetail>).detail;
-
-    if (!detail?.field || !Number.isFinite(detail.width)) {
-      return;
-    }
-
-    this.pendingColumnResizeDetail = {
-      field: detail.field,
-      width: Math.round(detail.width)
-    };
-  }
-
-  private applyPendingColumnResize() {
-    if (!this.pendingColumnResizeDetail) {
-      return;
-    }
-
-    let { field, width } = this.pendingColumnResizeDetail;
-    this.pendingColumnResizeDetail = undefined;
-
-    if (field === '__pivotLabel') {
-      this.chart.firstColumnWidth = width;
-      this.gridConfig = this.makeGridConfig();
-      this.chartPartChange.emit(<MconfigChart>{ firstColumnWidth: width });
-      return;
-    }
-
-    if (this.isPivotValueColumn({ field: field })) {
-      this.chart.valueColumnsWidth = width;
-      this.gridConfig = this.makeGridConfig();
-      this.chartPartChange.emit(<MconfigChart>{ valueColumnsWidth: width });
-    }
-  }
-
-  private makeRows() {
-    return (this.qData || []).map(row => {
-      let pivotRow: PivotTableRow = {};
-
-      this.mconfigFields.forEach(field => {
-        let cell = row[field.id];
-        let formattedValue = cell?.valueFmt ?? cell?.value;
-
-        pivotRow[field.id] = this.pivotValueFieldIdSet.has(field.id)
-          ? Number(cell?.value)
-          : formattedValue;
-      });
-
-      return pivotRow;
-    });
-  }
-
-  private makeGridConfig(): GridConfig<PivotTableRow> {
-    return {
-      icons: {
-        sortAsc: this.makeSortIcon({ desc: false }),
-        sortDesc: this.makeSortIcon({ desc: true }),
-        sortNone: this.makeSortIcon({ desc: true })
-      },
-      columns: this.mconfigFields.map(field => ({
-        field: field.id,
-        header: field.groupLabel
-          ? `${field.groupLabel} - ${field.label}`
-          : field.label,
-        sortable: true,
-        resizable: true
-      })),
-      plugins: [
-        new PivotGeneratedHeaderPlugin({
-          hasColumnDimensions: this.hasColumnDimensions(),
-          valueColumnsWidth: this.getPivotValueColumnsWidth(),
-          firstColumnWidth: this.getPivotFirstColumnWidth(),
-          measureHeaders: this.makePivotMeasureHeaders(),
-          measureLabels: this.makePivotMeasureLabels(),
-          pivotColumnOrder: this.makePivotColumnOrder(),
-          pivotValueFields: this.pivotValueFieldIds,
-          rowHeaders: (this.chart.pivotRows || []).map(fieldId => {
-            let field = this.mconfigFieldById.get(fieldId);
-
-            return {
-              label: field?.label || fieldId,
-              prefix: this.getPivotFieldPrefixes({ fieldId: fieldId })
-            };
-          })
-        }),
-        new PivotAlwaysExpandedPlugin({
-          enabled: (this.chart.pivotRows || []).length > 1
-        }),
-        new PivotDescFirstSortPlugin(),
-        new PivotEmptyLastSortPlugin()
-      ],
-      features: {
-        shell: {
-          header: {
-            visible: false
-          },
-          toolPanel: {
-            initialState: 'closed'
-          }
-        },
-        multiSort: {
-          maxSortColumns: 1,
-          showSortIndex: false
-        },
-        pivot: {
-          rowGroupFields: this.chart.pivotRows || [],
-          columnGroupFields: this.chart.pivotColumns || [],
-          valueFields: (this.chart.pivotValues || []).map(pivotValue => ({
-            field: pivotValue.field,
-            aggFunc: PivotAggEnum.Sum,
-            header: pivotValue.label,
-            format: (value: number) =>
-              this.formatPivotValue(pivotValue.field, value)
-          })),
-          showTotals: false,
-          showGrandTotal: false,
-          defaultExpanded: true,
-          showToolPanel: false
-        }
-      }
-    };
-  }
-
-  private makeSortIcon(item: { desc: boolean }) {
-    let { desc } = item;
-    let transform = desc ? 'rotate(90deg) scaleX(-1)' : 'rotate(90deg)';
-
-    return `
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        style="height: 20px; width: 20px; transform: ${transform};"
-      >
-        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-      </svg>
-    `;
-  }
-
-  private makeMeasureHeaderItems() {
-    return (this.chart.pivotValues || [])
-      .map(pivotValue => {
-        let field = this.mconfigFieldById.get(pivotValue.field);
-        let name = pivotValue.label || field?.label || pivotValue.field;
-        let prefixes = field ? [field.topLabel, field.groupLabel] : [];
-        let parts = [
-          ...prefixes
-            .filter(label => !!label)
-            .map(label => ({ label: label, isName: false })),
-          { label: name, isName: true }
-        ];
-
-        return {
-          text: parts.map(part => part.label).join(' '),
-          parts: parts
-        };
-      })
-      .filter(headerItem => !!headerItem.text);
-  }
-
-  private makeDimensionHeaderItems() {
-    return (this.chart.pivotColumns || [])
-      .map(fieldId => {
-        let field = this.mconfigFieldById.get(fieldId);
-
-        if (!field) {
-          return {
-            text: fieldId,
-            parts: [{ label: fieldId, isName: true }]
-          };
-        }
-
-        let parts = [
-          ...[field.topLabel, field.groupLabel]
-            .filter(label => !!label)
-            .map(label => ({ label: label, isName: false })),
-          { label: field.label, isName: true }
-        ];
-
-        return {
-          text: parts.map(part => part.label).join(' '),
-          parts: parts
-        };
-      })
-      .filter(headerItem => !!headerItem.text);
-  }
-
-  private makePivotMeasureLabels() {
-    let labels: Record<string, string> = {};
-
-    (this.chart.pivotValues || []).forEach(pivotValue => {
-      let field = this.mconfigFieldById.get(pivotValue.field);
-
-      labels[pivotValue.field] =
-        pivotValue.label || field?.label || pivotValue.field;
-    });
-
-    return labels;
-  }
-
-  private makePivotMeasureHeaders() {
-    let headers: Record<string, PivotFieldHeader> = {};
-
-    (this.chart.pivotValues || []).forEach(pivotValue => {
-      let field = this.mconfigFieldById.get(pivotValue.field);
-
-      headers[pivotValue.field] = {
-        label: pivotValue.label || field?.label || pivotValue.field,
-        prefix: this.getPivotFieldPrefixes({ fieldId: pivotValue.field })
-      };
-    });
-
-    return headers;
-  }
-
-  private hasColumnDimensions() {
-    return (this.chart.pivotColumns || []).length > 0;
-  }
-
-  private isPivotValueColumn(item: { field: string }) {
-    let { field } = item;
-    let fieldParts = field.split('|');
-    let valueField = fieldParts[fieldParts.length - 1];
-
-    return this.pivotValueFieldIdSet.has(valueField);
-  }
-
-  private getPivotFirstColumnWidth() {
-    return this.chart.firstColumnWidth || DEFAULT_PIVOT_FIRST_COLUMN_WIDTH;
-  }
-
-  private getPivotValueColumnsWidth() {
-    return this.chart.valueColumnsWidth || DEFAULT_PIVOT_COLUMNS_WIDTH;
-  }
-
-  private makePivotColumnOrder() {
-    let order: Record<string, number> = {};
-    let pivotColumns = this.chart.pivotColumns || [];
-
-    if (pivotColumns.length === 0) {
-      return order;
-    }
-
-    this.rows.forEach(row => {
-      let columnKey = pivotColumns
-        .map(fieldId => String(row[fieldId] ?? ''))
-        .join('|');
-
-      if (order[columnKey] === undefined) {
-        order[columnKey] = Object.keys(order).length;
-      }
-    });
-
-    return order;
-  }
-
-  private getPivotFieldPrefixes(item: { fieldId: string }) {
-    let { fieldId } = item;
-    let field = this.mconfigFieldById.get(fieldId);
-
-    return [field?.topLabel, field?.groupLabel].filter(label => !!label);
-  }
-
-  private preparePivotCaches() {
-    this.mconfigFieldById = new Map<string, MconfigField>();
-    this.pivotValueFieldIds = (this.chart.pivotValues || []).map(
-      pivotValue => pivotValue.field
-    );
-    this.pivotValueFieldIdSet = new Set(this.pivotValueFieldIds);
-    this.pivotValueFormatMetadataByFieldId = new Map<
-      string,
-      PivotValueFormatMetadata
-    >();
-    this.formattedPivotValueCache = new Map<string, string>();
-
-    (this.mconfigFields || []).forEach(field => {
-      this.mconfigFieldById.set(field.id, field);
-    });
-
-    let struct = this.structQuery.getValue();
-
-    this.pivotValueFieldIds.forEach(fieldId => {
-      let field = this.mconfigFieldById.get(fieldId);
-      let fieldThousandsSeparatorTag = field?.mproveTags?.find(
-        tag => tag.key === ParameterEnum.ThousandsSeparator
-      );
-      let thousandsSeparator =
-        fieldThousandsSeparatorTag?.value ??
-        struct.mproveConfig.thousandsSeparator;
-      let formatNumber =
-        field?.formatNumber || struct.mproveConfig.formatNumber || undefined;
-
-      this.pivotValueFormatMetadataByFieldId.set(fieldId, {
-        currencyPrefix:
-          field?.currencyPrefix ||
-          struct.mproveConfig.currencyPrefix ||
-          undefined,
-        currencySuffix:
-          field?.currencySuffix ||
-          struct.mproveConfig.currencySuffix ||
-          undefined,
-        formatNumber: formatNumber,
-        thousandsSeparator: thousandsSeparator
-      });
-    });
-  }
-
-  private formatPivotValue(fieldId: string, value: number) {
-    let cacheKey = `${fieldId}::${value}`;
-    let cachedValue = this.formattedPivotValueCache.get(cacheKey);
-
-    if (cachedValue !== undefined) {
-      return cachedValue;
-    }
-
-    let metadata = this.pivotValueFormatMetadataByFieldId.get(fieldId);
-
-    if (!metadata) {
-      return String(value);
-    }
-
-    if (!metadata.formatNumber) {
-      let formattedValue = Number(value)
-        .toLocaleString()
-        .split(',')
-        .join(metadata.thousandsSeparator);
-
-      this.formattedPivotValueCache.set(cacheKey, formattedValue);
-
-      return formattedValue;
-    }
-
-    let formattedValue = this.dataService.d3FormatValue({
-      value: value,
-      formatNumber: metadata.formatNumber,
-      fieldResult: FieldResultEnum.Number,
-      currencyPrefix: metadata.currencyPrefix,
-      currencySuffix: metadata.currencySuffix,
-      thousandsSeparator: metadata.thousandsSeparator
-    });
-
-    this.formattedPivotValueCache.set(cacheKey, formattedValue);
-
-    return formattedValue;
-  }
-
-  private makeCustomStyles() {
-    let isMultiRowGroup = (this.chart.pivotRows || []).length > 1;
-
-    return `
+  customStyles: string = `
       :host {
         --tbw-grid-font-family: 'Montserrat', sans-serif;
       }
@@ -1149,47 +772,422 @@ export class ChartPivotTableComponent implements OnChanges {
         font-weight: 400;
       }
 
-      ${
-        isMultiRowGroup
-          ? `
-            .pivot-group-row .pivot-toggle {
-              display: none;
-            }
-
-            .pivot-group-row .pivot-label {
-              margin-left: 20px;
-            }
-
-            .pivot-group-row .pivot-count {
-              display: none;
-            }
-
-            .pivot-group-row .cell:not(:first-child) {
-              color: transparent;
-            }
-          `
-          : ''
+      .pivot-group-row .cell:not(:first-child) {
+        color: transparent !important;
       }
+
+      .pivot-group-row .cell:not(:first-child) * {
+        visibility: hidden !important;
+      }
+
+      .pivot-group-row .pivot-toggle {
+        display: none;
+      }
+
+      .pivot-group-row .pivot-label {
+        margin-left: 20px;
+      }
+
+      .pivot-group-row .pivot-count {
+        display: none;
+      }
+    `;
+
+  constructor(
+    private dataService: DataService,
+    private structQuery: StructQuery
+  ) {}
+
+  @HostListener('document:mouseup')
+  onDocumentMouseUp() {
+    this.applyPendingColumnResize();
+  }
+
+  ngOnChanges() {
+    this.preparePivotCaches();
+    this.rows = this.makeRows();
+    this.measureHeaderItems = this.makeMeasureHeaderItems();
+    this.measureListHeader = this.measureHeaderItems
+      .map(headerItem => headerItem.text)
+      .join(', ');
+    this.showMeasureListHeader = this.hasColumnDimensions();
+    this.dimensionHeaderItems = this.makeDimensionHeaderItems();
+    this.dimensionListHeader = this.dimensionHeaderItems
+      .map(headerItem => headerItem.text)
+      .join(', ');
+    this.gridConfig = this.makeGridConfig();
+    // this.setThemeStylesheet();
+  }
+
+  pivotColumnResize(event: Event) {
+    let detail = (event as CustomEvent<PivotColumnResizeDetail>).detail;
+
+    if (!detail?.field || !Number.isFinite(detail.width)) {
+      return;
+    }
+
+    this.pendingColumnResizeDetail = {
+      field: detail.field,
+      width: Math.round(detail.width)
+    };
+  }
+
+  private applyPendingColumnResize() {
+    if (!this.pendingColumnResizeDetail) {
+      return;
+    }
+
+    let { field, width } = this.pendingColumnResizeDetail;
+    this.pendingColumnResizeDetail = undefined;
+
+    if (field === '__pivotLabel') {
+      this.chart.firstColumnWidth = width;
+      this.gridConfig = this.makeGridConfig();
+      this.chartPartChange.emit(<MconfigChart>{ firstColumnWidth: width });
+      return;
+    }
+
+    if (this.isPivotValueColumn({ field: field })) {
+      this.chart.valueColumnsWidth = width;
+      this.gridConfig = this.makeGridConfig();
+      this.chartPartChange.emit(<MconfigChart>{ valueColumnsWidth: width });
+    }
+  }
+
+  private makeRows() {
+    return (this.qData || []).map(row => {
+      let pivotRow: PivotTableRow = {};
+
+      this.mconfigFields.forEach(field => {
+        let cell = row[field.id];
+        let formattedValue = cell?.valueFmt ?? cell?.value;
+
+        pivotRow[field.id] = this.pivotValueFieldIdSet.has(field.id)
+          ? Number(cell?.value)
+          : formattedValue;
+      });
+
+      return pivotRow;
+    });
+  }
+
+  private makeGridConfig(): GridConfig<PivotTableRow> {
+    return {
+      icons: {
+        sortAsc: this.makeSortIcon({ desc: false }),
+        sortDesc: this.makeSortIcon({ desc: true }),
+        sortNone: this.makeSortIcon({ desc: true })
+      },
+      columns: this.mconfigFields.map(field => ({
+        field: field.id,
+        header: field.groupLabel
+          ? `${field.groupLabel} - ${field.label}`
+          : field.label,
+        sortable: true,
+        resizable: true
+      })),
+      plugins: [
+        new PivotGeneratedHeaderPlugin({
+          hasColumnDimensions: this.hasColumnDimensions(),
+          valueColumnsWidth: this.getPivotValueColumnsWidth(),
+          firstColumnWidth: this.getPivotFirstColumnWidth(),
+          measureHeaders: this.makePivotMeasureHeaders(),
+          measureLabels: this.makePivotMeasureLabels(),
+          pivotColumnOrder: this.makePivotColumnOrder(),
+          pivotValueFields: this.pivotValueFieldIds,
+          rowHeaders: (this.chart.pivotRows || []).map(fieldId => {
+            let field = this.mconfigFieldById.get(fieldId);
+
+            return {
+              label: field?.label || fieldId,
+              prefix: this.getPivotFieldPrefixes({ fieldId: fieldId })
+            };
+          })
+        }),
+        new PivotAlwaysExpandedPlugin({
+          enabled: (this.chart.pivotRows || []).length > 1
+        }),
+        new PivotDescFirstSortPlugin(),
+        new PivotEmptyLastSortPlugin()
+      ],
+      features: {
+        shell: {
+          header: {
+            visible: false
+          },
+          toolPanel: {
+            initialState: 'closed'
+          }
+        },
+        multiSort: {
+          maxSortColumns: 1,
+          showSortIndex: false
+        },
+        pivot: {
+          rowGroupFields: this.chart.pivotRows || [],
+          columnGroupFields: this.chart.pivotColumns || [],
+          animation: false,
+          valueFields: (this.chart.pivotValues || []).map(pivotValue => ({
+            field: pivotValue.field,
+            aggFunc: PivotAggEnum.Sum,
+            format: (value: number) =>
+              this.formatPivotValue(pivotValue.field, value)
+          })),
+          showTotals: false,
+          showGrandTotal: false,
+          defaultExpanded: true,
+          showToolPanel: false
+        }
+      }
+    };
+  }
+
+  private makeSortIcon(item: { desc: boolean }) {
+    let { desc } = item;
+    let transform = desc ? 'rotate(90deg) scaleX(-1)' : 'rotate(90deg)';
+
+    return `
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        style="height: 20px; width: 20px; transform: ${transform};"
+      >
+        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+      </svg>
     `;
   }
 
-  private setThemeStylesheet() {
-    let theme = this.chart.pivotTheme || 'standard';
-    let href = `/assets/toolbox-grid-themes/dg-theme-${theme}.css`;
+  private makeMeasureHeaderItems() {
+    return (this.chart.pivotValues || [])
+      .map(pivotValue => {
+        let field = this.mconfigFieldById.get(pivotValue.field);
+        let name =
+          // pivotValue.label ||
+          field?.label || pivotValue.field;
+        let prefixes = field ? [field.topLabel, field.groupLabel] : [];
+        let parts = [
+          ...prefixes
+            .filter(label => !!label)
+            .map(label => ({ label: label, isName: false })),
+          { label: name, isName: true }
+        ];
 
-    let link = document.getElementById(
-      ChartPivotTableComponent.themeLinkId
-    ) as HTMLLinkElement;
-
-    if (!link) {
-      link = document.createElement('link');
-      link.id = ChartPivotTableComponent.themeLinkId;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-
-    if (link.href !== new URL(href, window.location.origin).href) {
-      link.href = href;
-    }
+        return {
+          text: parts.map(part => part.label).join(' '),
+          parts: parts
+        };
+      })
+      .filter(headerItem => !!headerItem.text);
   }
+
+  private makeDimensionHeaderItems() {
+    return (this.chart.pivotColumns || [])
+      .map(fieldId => {
+        let field = this.mconfigFieldById.get(fieldId);
+
+        if (!field) {
+          return {
+            text: fieldId,
+            parts: [{ label: fieldId, isName: true }]
+          };
+        }
+
+        let parts = [
+          ...[field.topLabel, field.groupLabel]
+            .filter(label => !!label)
+            .map(label => ({ label: label, isName: false })),
+          { label: field.label, isName: true }
+        ];
+
+        return {
+          text: parts.map(part => part.label).join(' '),
+          parts: parts
+        };
+      })
+      .filter(headerItem => !!headerItem.text);
+  }
+
+  private makePivotMeasureLabels() {
+    let labels: Record<string, string> = {};
+
+    (this.chart.pivotValues || []).forEach(pivotValue => {
+      let field = this.mconfigFieldById.get(pivotValue.field);
+
+      labels[pivotValue.field] =
+        // pivotValue.label ||
+        field?.label || pivotValue.field;
+    });
+
+    return labels;
+  }
+
+  private makePivotMeasureHeaders() {
+    let headers: Record<string, PivotFieldHeader> = {};
+
+    (this.chart.pivotValues || []).forEach(pivotValue => {
+      let field = this.mconfigFieldById.get(pivotValue.field);
+
+      headers[pivotValue.field] = {
+        label:
+          // pivotValue.label ||
+          field?.label || pivotValue.field,
+        prefix: this.getPivotFieldPrefixes({ fieldId: pivotValue.field })
+      };
+    });
+
+    return headers;
+  }
+
+  private hasColumnDimensions() {
+    return (this.chart.pivotColumns || []).length > 0;
+  }
+
+  private isPivotValueColumn(item: { field: string }) {
+    let { field } = item;
+    let fieldParts = field.split('|');
+    let valueField = fieldParts[fieldParts.length - 1];
+
+    return this.pivotValueFieldIdSet.has(valueField);
+  }
+
+  private getPivotFirstColumnWidth() {
+    return this.chart.firstColumnWidth || DEFAULT_PIVOT_FIRST_COLUMN_WIDTH;
+  }
+
+  private getPivotValueColumnsWidth() {
+    return this.chart.valueColumnsWidth || DEFAULT_PIVOT_COLUMNS_WIDTH;
+  }
+
+  private makePivotColumnOrder() {
+    let order: Record<string, number> = {};
+    let pivotColumns = this.chart.pivotColumns || [];
+
+    if (pivotColumns.length === 0) {
+      return order;
+    }
+
+    this.rows.forEach(row => {
+      let columnKey = pivotColumns
+        .map(fieldId => String(row[fieldId] ?? ''))
+        .join('|');
+
+      if (order[columnKey] === undefined) {
+        order[columnKey] = Object.keys(order).length;
+      }
+    });
+
+    return order;
+  }
+
+  private getPivotFieldPrefixes(item: { fieldId: string }) {
+    let { fieldId } = item;
+    let field = this.mconfigFieldById.get(fieldId);
+
+    return [field?.topLabel, field?.groupLabel].filter(label => !!label);
+  }
+
+  private preparePivotCaches() {
+    this.mconfigFieldById = new Map<string, MconfigField>();
+    this.pivotValueFieldIds = (this.chart.pivotValues || []).map(
+      pivotValue => pivotValue.field
+    );
+    this.pivotValueFieldIdSet = new Set(this.pivotValueFieldIds);
+    this.pivotValueFormatMetadataByFieldId = new Map<
+      string,
+      PivotValueFormatMetadata
+    >();
+    this.formattedPivotValueCache = new Map<string, string>();
+
+    (this.mconfigFields || []).forEach(field => {
+      this.mconfigFieldById.set(field.id, field);
+    });
+
+    let struct = this.structQuery.getValue();
+
+    this.pivotValueFieldIds.forEach(fieldId => {
+      let field = this.mconfigFieldById.get(fieldId);
+      let fieldThousandsSeparatorTag = field?.mproveTags?.find(
+        tag => tag.key === ParameterEnum.ThousandsSeparator
+      );
+      let thousandsSeparator =
+        fieldThousandsSeparatorTag?.value ??
+        struct.mproveConfig.thousandsSeparator;
+      let formatNumber =
+        field?.formatNumber || struct.mproveConfig.formatNumber || undefined;
+
+      this.pivotValueFormatMetadataByFieldId.set(fieldId, {
+        currencyPrefix:
+          field?.currencyPrefix ||
+          struct.mproveConfig.currencyPrefix ||
+          undefined,
+        currencySuffix:
+          field?.currencySuffix ||
+          struct.mproveConfig.currencySuffix ||
+          undefined,
+        formatNumber: formatNumber,
+        thousandsSeparator: thousandsSeparator
+      });
+    });
+  }
+
+  private formatPivotValue(fieldId: string, value: number) {
+    let cacheKey = `${fieldId}::${value}`;
+    let cachedValue = this.formattedPivotValueCache.get(cacheKey);
+
+    if (cachedValue !== undefined) {
+      return cachedValue;
+    }
+
+    let metadata = this.pivotValueFormatMetadataByFieldId.get(fieldId);
+
+    if (!metadata) {
+      return String(value);
+    }
+
+    if (!metadata.formatNumber) {
+      let formattedValue = Number(value)
+        .toLocaleString()
+        .split(',')
+        .join(metadata.thousandsSeparator);
+
+      this.formattedPivotValueCache.set(cacheKey, formattedValue);
+
+      return formattedValue;
+    }
+
+    let formattedValue = this.dataService.d3FormatValue({
+      value: value,
+      formatNumber: metadata.formatNumber,
+      fieldResult: FieldResultEnum.Number,
+      currencyPrefix: metadata.currencyPrefix,
+      currencySuffix: metadata.currencySuffix,
+      thousandsSeparator: metadata.thousandsSeparator
+    });
+
+    this.formattedPivotValueCache.set(cacheKey, formattedValue);
+
+    return formattedValue;
+  }
+
+  // private setThemeStylesheet() {
+  //   let theme = this.chart.pivotTheme || 'standard';
+  //   let href = `/assets/toolbox-grid-themes/dg-theme-${theme}.css`;
+
+  //   let link = document.getElementById(
+  //     ChartPivotTableComponent.themeLinkId
+  //   ) as HTMLLinkElement;
+
+  //   if (!link) {
+  //     link = document.createElement('link');
+  //     link.id = ChartPivotTableComponent.themeLinkId;
+  //     link.rel = 'stylesheet';
+  //     document.head.appendChild(link);
+  //   }
+
+  //   if (link.href !== new URL(href, window.location.origin).href) {
+  //     link.href = href;
+  //   }
+  // }
 }

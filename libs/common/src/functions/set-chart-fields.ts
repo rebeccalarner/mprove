@@ -1,5 +1,4 @@
 import { ChartTypeEnum } from '#common/enums/chart/chart-type.enum';
-import { PivotAggEnum } from '#common/enums/chart/pivot-agg.enum';
 import { FieldClassEnum } from '#common/enums/field-class.enum';
 import { FieldResultEnum } from '#common/enums/field-result.enum';
 import type { Mconfig } from '#common/zod/blockml/mconfig';
@@ -99,9 +98,7 @@ export function setChartFields<T extends Mconfig>(item: {
         pivotValues = [
           ...pivotValues,
           {
-            field: field,
-            aggFunc: PivotAggEnum.Sum,
-            label: undefined as string | undefined
+            field: field
           }
         ];
       });
