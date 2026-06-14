@@ -202,8 +202,21 @@ export function createModelMetrics(
           });
 
           let xParentNode = xNodeResult?.parentNode ?? xTopNode;
+          let xTimeNode = xParentNode;
+          let fieldGroupTagIsDefined = isDefined(fieldGroupTag);
+          let xParentNodeIsDefined = isDefined(xParentNode);
 
-          let timeNodeLabel = xParentNode?.label ?? apiModel.label;
+          if (fieldGroupTagIsDefined && xParentNodeIsDefined) {
+            let xTimeGroupNodeResult = findModelNode({
+              nodes: apiModel.nodes,
+              nodeId: xParentNode.id,
+              parentNode: xTopNode
+            });
+
+            xTimeNode = xTimeGroupNodeResult?.parentNode ?? xTopNode;
+          }
+
+          let timeNodeLabel = xTimeNode?.label ?? apiModel.label;
 
           let timeLabel = `${timeNodeLabel} ${timeFieldLabel}`;
 
