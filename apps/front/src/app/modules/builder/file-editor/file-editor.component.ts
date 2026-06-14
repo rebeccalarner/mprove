@@ -831,15 +831,23 @@ export class FileEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.modifiedExtensions = modifiedExtensions;
     this.originalExtensions = originalExtensions;
 
+    let isMproveConfigFile = this.file.fileId === MPROVE_CONFIG_FILENAME;
+
+    let isInMproveDir =
+      this.struct.mproveConfig.mproveDirValue === MPROVE_CONFIG_DIR_DOT_SLASH ||
+      (isDefined(mdir) &&
+        this.file.fileNodeId.split(mdir)[0] === `${this.nav.projectId}/`);
+
+    let isBlockmlFile =
+      BLOCKML_EXT_LIST.map(ex => ex.toString()).indexOf(dotExt) >= 0;
+
+    let isMalloyFileWithModel =
+      dotExt === '.malloy' &&
+      (this.struct.modelFilePaths ?? []).indexOf(this.file.fileNodeId) >= 0;
+
     if (
-      this.file.fileId === MPROVE_CONFIG_FILENAME ||
-      ((this.struct.mproveConfig.mproveDirValue ===
-        MPROVE_CONFIG_DIR_DOT_SLASH ||
-        (isDefined(mdir) &&
-          this.file.fileNodeId.split(mdir)[0] === `${this.nav.projectId}/`)) &&
-        [...BLOCKML_EXT_LIST, '.malloy']
-          .map(ex => ex.toString())
-          .indexOf(dotExt) >= 0)
+      isMproveConfigFile ||
+      (isInMproveDir && (isBlockmlFile || isMalloyFileWithModel))
     ) {
       this.showGoTo = true;
 

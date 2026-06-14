@@ -167,6 +167,7 @@ export class BlockmlService {
       extraSchemas: rs.extraSchemas,
       mproveConfig: rs.mproveConfig,
       errors: rs.errors,
+      modelFilePaths: [...new Set(rs.models.map(x => x.filePath))],
       metrics: rs.metrics,
       presets: rs.presets,
       mproveVersion:

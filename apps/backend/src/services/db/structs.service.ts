@@ -48,6 +48,7 @@ export class StructsService {
       projectId: struct.projectId,
       structId: struct.structId,
       errors: struct.errors,
+      modelFilePaths: struct.modelFilePaths ?? [],
       metrics: struct.metrics.map(x => {
         let modelMetricX: ModelMetricX = Object.assign({}, x, {
           hasAccessToModel: modelPartXs.find(y => y.modelId === x.modelId)
@@ -75,6 +76,7 @@ export class StructsService {
       structId: structId,
       projectId: projectId,
       errors: [],
+      modelFilePaths: [],
       metrics: [],
       presets: [],
       extraSchemas: [],

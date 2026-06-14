@@ -335,6 +335,7 @@ export type StructSt = z.infer<typeof zStructSt>;
 export let zStructLt = z
   .object({
     errors: z.array(zBmlError),
+    modelFilePaths: z.array(z.string()).default([]),
     metrics: z.array(zModelMetric),
     presets: z.array(zPreset),
     extraSchemas: z.array(zExtraSchema),

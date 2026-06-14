@@ -20,6 +20,7 @@ let structState: StructState = {
     thousandsSeparator: undefined
   },
   errors: [],
+  modelFilePaths: [],
   metrics: [],
   presets: [],
   mproveVersion: undefined,

@@ -9,6 +9,7 @@ export let zStruct = z
     projectId: z.string(),
     structId: z.string(),
     errors: z.array(zBmlError),
+    modelFilePaths: z.array(z.string()),
     metrics: z.array(zModelMetric),
     presets: z.array(zPreset),
     mproveConfig: zMproveConfig,

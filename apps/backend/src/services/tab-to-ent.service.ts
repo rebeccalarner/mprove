@@ -1139,6 +1139,7 @@ export class TabToEntService {
 
     let structLt: StructLt = {
       errors: tab.errors,
+      modelFilePaths: tab.modelFilePaths ?? [],
       metrics: tab.metrics,
       presets: tab.presets,
       extraSchemas: tab.extraSchemas,
