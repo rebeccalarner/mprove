@@ -23,12 +23,12 @@ body {
 
 // scroll for other places (non ngx-scrollbar)
 ::-webkit-scrollbar {
-  width: 15px;
-  height: 15px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 0px;
+  border-radius: 3px;
   background-color: rgba(0, 0, 0, 0.15);
 }
 
@@ -66,14 +66,14 @@ body {
 }
 
 // codemirror scroll for WebKit browsers (Chrome, Safari)
-// reserve space to prevent layout shift, show thumb on hover
 .cm-scroller::-webkit-scrollbar {
-  width: 15px;
-  height: 15px;
+  width: 6px;
+  height: 6px;
   background: transparent;
 }
 
 .cm-scroller::-webkit-scrollbar-thumb {
+  border-radius: 3px;
   background: transparent;
 }
 
@@ -81,9 +81,21 @@ body {
   background: transparent;
 }
 
+.cm-scroller::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.cm-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
 .cm-editor:hover .cm-scroller::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 0px;
+  background: rgb(0 0 0 / 15%);
+}
+
+.cm-editor:hover .cm-scroller {
+  scrollbar-color: rgb(0 0 0 / 15%) transparent;
 }
 
 // codemirror focus border

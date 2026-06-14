@@ -3,11 +3,21 @@
 }
 
 :host ::ng-deep ::-webkit-scrollbar {
-  width: 15px;
-  height: 15px;
+  width: 6px;
+  height: 6px;
 }
 
 :host ::ng-deep ::-webkit-scrollbar-thumb {
-  border-radius: 0px;
+  border-radius: 3px;
   background-color: rgba(0, 0, 0, 0.15);
+}
+
+:host ::ng-deep ::-webkit-scrollbar-track,
+:host ::ng-deep ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+:host ::ng-deep .ag-root-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 15%) transparent;
 }
