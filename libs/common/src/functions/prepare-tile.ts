@@ -148,20 +148,17 @@ export function prepareTile(item: {
         : undefined,
     pivot_rows:
       UI_CHART_TYPES.pivotRows.indexOf(chart.type) > -1 &&
-      isDefined(chart.pivotRows) &&
-      chart.pivotRows.length > 0
+      isDefined(chart.pivotRows)
         ? chart.pivotRows
         : undefined,
     pivot_columns:
       UI_CHART_TYPES.pivotColumns.indexOf(chart.type) > -1 &&
-      isDefined(chart.pivotColumns) &&
-      chart.pivotColumns.length > 0
+      isDefined(chart.pivotColumns)
         ? chart.pivotColumns
         : undefined,
     pivot_values:
       UI_CHART_TYPES.pivotValues.indexOf(chart.type) > -1 &&
-      isDefined(chart.pivotValues) &&
-      chart.pivotValues.length > 0
+      isDefined(chart.pivotValues)
         ? chart.pivotValues.map(pivotValue => ({
             field: pivotValue.field
           }))
