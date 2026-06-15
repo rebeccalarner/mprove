@@ -91,6 +91,7 @@ export class SchemasComponent implements OnInit, OnDestroy {
   showIndexes = false;
   showQuestionMarks = false;
 
+  prevRepoId: string;
   prevBranchId: string;
   prevEnvId: string;
 
@@ -99,18 +100,21 @@ export class SchemasComponent implements OnInit, OnDestroy {
     tap(x => {
       this.nav = x;
 
-      let navChanged =
-        isDefined(this.prevEnvId) &&
+      let isNavChanged =
+        isDefined(this.prevRepoId) &&
         isDefined(this.prevBranchId) &&
-        (this.prevEnvId !== this.nav.envId ||
-          this.prevBranchId !== this.nav.branchId);
+        isDefined(this.prevEnvId) &&
+        (this.prevRepoId !== this.nav.repoId ||
+          this.prevBranchId !== this.nav.branchId ||
+          this.prevEnvId !== this.nav.envId);
 
-      this.prevEnvId = this.nav.envId;
+      this.prevRepoId = this.nav.repoId;
       this.prevBranchId = this.nav.branchId;
+      this.prevEnvId = this.nav.envId;
 
       this.cd.detectChanges();
 
-      if (navChanged) {
+      if (isNavChanged && isDefined(this.nav.projectId)) {
         this.loadSchemas({ isRefreshExistingCache: false });
       }
     })
