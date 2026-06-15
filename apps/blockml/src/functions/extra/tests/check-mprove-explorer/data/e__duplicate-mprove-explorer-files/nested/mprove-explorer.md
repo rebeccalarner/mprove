@@ -1,0 +1,1 @@
+Prefer line charts.

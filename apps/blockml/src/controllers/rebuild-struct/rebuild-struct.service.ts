@@ -18,6 +18,7 @@ import { buildStoreNext } from '#blockml/functions/build-store-next/_build-store
 import { buildStoreStart } from '#blockml/functions/build-store-start/_build-store-start';
 import { buildTile } from '#blockml/functions/build-tile/_build-tile';
 import { buildYaml } from '#blockml/functions/build-yaml/_build-yaml';
+import { buildExplorer } from '#blockml/functions/extra/build-explorer';
 import { checkSuggestModelDimension } from '#blockml/functions/extra/check-suggest-model-dimension';
 import { collectFiles } from '#blockml/functions/extra/collect-files';
 import { getMproveConfigFile } from '#blockml/functions/extra/get-mprove-config-file';
@@ -100,6 +101,7 @@ interface RebuildStructPrep {
   charts: FileChart[];
   extraSchemas: ExtraSchema[];
   mproveConfig: MproveConfig;
+  mproveExplorer: string;
 }
 
 @Injectable()
@@ -232,6 +234,7 @@ export class RebuildStructService {
       charts: apiCharts,
       metrics: prep.metrics,
       presets: prep.presets,
+      mproveExplorer: prep.mproveExplorer,
       mconfigs: mconfigs,
       queries: queries,
       extraSchemas: prep.extraSchemas,
@@ -413,9 +416,20 @@ export class RebuildStructService {
           caseSensitiveStringFilters: toBooleanFromLowercaseString(
             PROJECT_CONFIG_CASE_SENSITIVE_STRING_FILTERS
           )
-        }
+        },
+        mproveExplorer: undefined
       };
     }
+
+    let { mproveExplorer } = buildExplorer(
+      {
+        files: item.files,
+        errors: errors,
+        structId: item.structId,
+        caller: CallerEnum.RebuildStruct
+      },
+      this.cs
+    );
 
     if (isDefined(item.overrideTimezone)) {
       projectConfig.default_timezone = item.overrideTimezone;
@@ -827,7 +841,8 @@ export class RebuildStructService {
         caseSensitiveStringFilters: toBooleanFromLowercaseString(
           projectConfig.case_sensitive_string_filters
         )
-      }
+      },
+      mproveExplorer: mproveExplorer
     };
 
     return prep;

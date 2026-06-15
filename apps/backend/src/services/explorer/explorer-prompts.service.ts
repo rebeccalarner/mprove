@@ -12,6 +12,7 @@ export class ExplorerPromptsService {
     branchId: string;
     envId: string;
     explorerModelParts: ExplorerModelPart[];
+    mproveExplorer: string;
   }): string {
     return getExplorerSessionSystemPrompt(item);
   }

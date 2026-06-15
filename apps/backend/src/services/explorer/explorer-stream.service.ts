@@ -30,6 +30,7 @@ import { ServerError } from '#common/models/server-error';
 import { CodexService } from '../codex.service';
 import { ProjectsService } from '../db/projects.service';
 import { SessionsService } from '../db/sessions.service';
+import { StructsService } from '../db/structs.service';
 import { UsersService } from '../db/users.service';
 import { SessionDrainService } from '../session/session-drain.service';
 import { TabService } from '../tab.service';
@@ -85,6 +86,7 @@ export class ExplorerStreamService implements OnModuleDestroy {
     private explorerModelPartsService: ExplorerModelPartsService,
     private sessionsService: SessionsService,
     private projectsService: ProjectsService,
+    private structsService: StructsService,
     private usersService: UsersService,
     private tabService: TabService,
     private logger: Logger,
@@ -610,6 +612,11 @@ export class ExplorerStreamService implements OnModuleDestroy {
 
     let traceId = makeId();
 
+    let struct = await this.structsService.getStructCheckExists({
+      structId: bridge.structId,
+      projectId: session.projectId
+    });
+
     let explorerModelParts = userId
       ? await this.explorerModelPartsService.getExplorerModelParts({
           userId: userId,
@@ -628,7 +635,8 @@ export class ExplorerStreamService implements OnModuleDestroy {
         repoId: session.repoId,
         branchId: session.branchId,
         envId: session.envId,
-        explorerModelParts: explorerModelParts
+        explorerModelParts: explorerModelParts,
+        mproveExplorer: struct?.mproveExplorer
       });
 
     // Pre-streaming events

@@ -92,6 +92,7 @@ export enum FuncEnum {
   CollectFiles = 'extra/collect-files',
   CheckAccess = 'extra/check-access',
   CheckFilterConditions = 'extra/check-filter-conditions',
+  CheckMproveExplorer = 'extra/check-mprove-explorer',
   CheckStoreFraction = 'extra/check-store-fraction',
   CheckStoreFractionControls = 'extra/check-store-fraction-controls',
   CheckStoreFractionControlsUse = 'extra/check-store-fraction-controls-use',

@@ -58,6 +58,7 @@ export class StructsService {
       }),
       presets: struct.presets,
       mproveConfig: struct.mproveConfig,
+      mproveExplorer: struct.mproveExplorer,
       mproveVersion: struct.mproveVersion,
       serverTs: Number(struct.serverTs)
     };
@@ -91,6 +92,7 @@ export class StructsService {
         currencySuffix: PROJECT_CONFIG_CURRENCY_SUFFIX,
         thousandsSeparator: PROJECT_CONFIG_THOUSANDS_SEPARATOR
       },
+      mproveExplorer: undefined,
       mproveVersion:
         this.cs.get<BackendConfig['mproveReleaseTag']>('mproveReleaseTag'),
       keyTag: undefined,

@@ -1143,7 +1143,8 @@ export class TabToEntService {
       metrics: tab.metrics,
       presets: tab.presets,
       extraSchemas: tab.extraSchemas,
-      mproveConfig: tab.mproveConfig
+      mproveConfig: tab.mproveConfig,
+      mproveExplorer: tab.mproveExplorer
     };
 
     let structEnt: StructEnt = {

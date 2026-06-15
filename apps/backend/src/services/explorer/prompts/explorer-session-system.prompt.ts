@@ -8,6 +8,7 @@ import {
   SEARCH_FIELD_NAME_MATCH_FIELDS_LIMIT,
   SEARCH_FIELD_NAMES_LIMIT
 } from '#backend/services/explorer/tools/search-model-fields/search-model-field-leaf-names.service';
+import { MPROVE_EXPLORER_FILENAME } from '#common/constants/top';
 import type { ExplorerModelPart } from '../types/explorer-model-part';
 
 const ALWAYS_INCLUDED_DOC_PAGE_IDS = [
@@ -34,7 +35,21 @@ export function getExplorerSessionSystemPrompt(item: {
   branchId: string;
   envId: string;
   explorerModelParts: ExplorerModelPart[];
+  mproveExplorer: string;
 }): string {
+  let mproveExplorerTrimmed = item.mproveExplorer?.trim();
+
+  let projectSpecificInstructions = mproveExplorerTrimmed
+    ? `
+## Project-specific Instructions
+
+The project includes custom instructions from \`${MPROVE_EXPLORER_FILENAME}\`.
+Follow these instructions:
+
+${item.mproveExplorer}
+`
+    : '';
+
   return `You are data analyst for an Mprove project.
 Mprove is an open source business intelligence with Malloy Semantic Layer.
 
@@ -101,6 +116,8 @@ structId in that history matches the current <message_context> structId.
 lists, links, and tables where appropriate to make your responses clear and well-structured.
 
 - Never put URLs inside code blocks or inline code.
+
+${projectSpecificInstructions}
 
 ## Documentation
 The full content of the following reference pages is included below. 

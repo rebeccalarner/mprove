@@ -52,6 +52,7 @@ export let zToBlockmlRebuildStructResponsePayload = z
     charts: z.array(zChart),
     metrics: z.array(zModelMetric),
     presets: z.array(zPreset),
+    mproveExplorer: z.string().nullish(),
     mconfigs: z.array(zMconfig),
     queries: z.array(zQuery)
   })

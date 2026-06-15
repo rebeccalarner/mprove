@@ -339,7 +339,8 @@ export let zStructLt = z
     metrics: z.array(zModelMetric),
     presets: z.array(zPreset),
     extraSchemas: z.array(zExtraSchema),
-    mproveConfig: zMproveConfig
+    mproveConfig: zMproveConfig,
+    mproveExplorer: z.string().nullish()
   })
   .meta({ id: 'StructLt' });
 export type StructLt = z.infer<typeof zStructLt>;

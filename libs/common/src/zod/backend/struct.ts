@@ -13,6 +13,7 @@ export let zStruct = z
     metrics: z.array(zModelMetric),
     presets: z.array(zPreset),
     mproveConfig: zMproveConfig,
+    mproveExplorer: z.string().nullish(),
     mproveVersion: z.string(),
     serverTs: z.number().int()
   })
