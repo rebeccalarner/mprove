@@ -906,8 +906,11 @@ export class ModelsComponent implements OnInit, OnDestroy {
         100
       );
 
-      if (this.refreshProgress >= 100) {
+      if (this.refreshProgress < 100) {
+        this.cd.detectChanges();
+      } else {
         this.refreshProgress = 0;
+        this.cd.detectChanges();
 
         if (
           this.mconfig?.select.length > 0 &&
