@@ -98,6 +98,17 @@ tiles:
 \`\`\`
 
 ## Rules
+- Always use the "search_model_fields" tool, even if there is only one model.
+
+- When user asks time related questions, use these examples to disambiguate:
+"sales for last 3 days" -> f\`last 3 days\`
+"sales for last 3 days completed" -> f\`last 3 days\`
+"sales for last 3 days completed without current" -> f\`last 3 days\`
+"sales for 3 days" -> f\`3 days\`
+"sales for 3 days completed with current" -> f\`3 days\`
+"sales for 3 days completed including current" -> f\`3 days\`
+"sales for 3 days completed plus current" -> f\`3 days ago to now\`
+
 - Never invent the chart id. Always use "<chart-id-placeholder>" for the top-level
 "chart:" value. "produce_chart" replaces it with a generated id.
 
